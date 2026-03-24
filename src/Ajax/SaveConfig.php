@@ -1,0 +1,35 @@
+<?php
+namespace WPHZ\UGC\Ajax;
+
+use WPHZ\UGC\AbstractSingleton;
+use WPHZ\UGC\Helpers\NonceHelper;
+use WPHZ\UGC\Helpers\SanitizeHelper;
+use WPHZ\UGC\Repository\CarouselRepository;
+
+class SaveConfig extends AbstractSingleton {
+
+    public function init(): void {
+        add_action('wp_ajax_wphz_ugc_save_config', [$this, 'handle']);
+    }
+
+    public function handle(): void {
+        NonceHelper::verify('wphz_ugc_admin');
+
+        $config = [
+            'name'           => SanitizeHelper::text($_POST['name']       ?? 'New Carousel'),
+            'mute'           => !empty($_POST['mute']) && $_POST['mute'] === '1',
+            'direction'      => in_array($_POST['direction'] ?? '', ['ltr', 'rtl'], true)
+                                    ? $_POST['direction']
+                                    : 'ltr',
+        ];
+
+        $carousel_id = (int) ($_POST['carousel_id'] ?? 0);
+
+        if ($carousel_id > 0) {
+            CarouselRepository::instance()->update($carousel_id, $config);
+            wp_send_json_success(['message' => __('Configuration saved.', 'wphz-ugc')]);
+        } else {
+            wp_send_json_error(['message' => __('Invalid Carousel ID.', 'wphz-ugc')]);
+        }
+    }
+}

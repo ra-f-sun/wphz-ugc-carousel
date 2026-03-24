@@ -1,0 +1,10 @@
+{
+  "name": "wphz/ugc-carousel",
+  "description": "UGC Video Carousel for WooCommerce",
+  "type": "wordpress-plugin",
+  "require": { "php": ">=8.0" },
+  "autoload": {
+    "psr-4": { "WPHZ\\UGC\\": "src/" }
+  },
+  "config": { "vendor-dir": "vendor" }
+}

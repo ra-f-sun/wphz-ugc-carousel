@@ -1,0 +1,271 @@
+/* WPHZ UGC Carousel — Admin Styles */
+
+/* ── Page Layout ──────────────────────────────────── */
+.wphz-ugc-admin .tab-content {
+    margin-top: 16px;
+}
+
+/* ── Save Status Indicator ────────────────────────── */
+.wphz-save-status {
+    display: inline-block;
+    margin-left: 12px;
+    font-weight: 600;
+    vertical-align: middle;
+}
+
+/* ── Danger Zone ──────────────────────────────────── */
+.wphz-danger-zone {
+    background: #fff8f8;
+    border: 1px solid #f5c6cb;
+    border-radius: 4px;
+    padding: 16px 20px;
+    margin-top: 16px;
+}
+
+.wphz-danger-zone h2 {
+    margin-top: 0;
+}
+
+/* ── Shortcode Box (Phase 4) ──────────────────────── */
+.wphz-shortcode-box {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #f0f0f1;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    padding: 10px 14px;
+    margin-bottom: 16px;
+}
+
+.wphz-shortcode-box code {
+    flex: 1;
+    font-size: 13px;
+    background: transparent;
+    padding: 0;
+}
+
+/* ── Items List (Phase 4) ─────────────────────────── */
+.wphz-items-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.wphz-item-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    padding: 12px;
+    margin-bottom: 8px;
+    cursor: grab;
+}
+
+.wphz-item-row:active {
+    cursor: grabbing;
+}
+
+.wphz-item-row .wphz-drag-handle {
+    color: #999;
+    font-size: 18px;
+    line-height: 1;
+    padding-top: 2px;
+    cursor: grab;
+}
+
+.wphz-item-row .wphz-item-thumb {
+    width: 80px;
+    height: 56px;
+    object-fit: cover;
+    border-radius: 2px;
+    flex-shrink: 0;
+}
+
+.wphz-item-row .wphz-item-meta {
+    flex: 1;
+    min-width: 0;
+}
+
+.wphz-item-row .wphz-item-url {
+    font-size: 12px;
+    color: #555;
+    word-break: break-all;
+    margin-bottom: 6px;
+}
+
+/* Product chips */
+.wphz-product-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 6px;
+}
+
+.wphz-chip {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    background: #e0e0e0;
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 12px;
+}
+
+.wphz-chip-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.wphz-chip-name {
+    font-weight: 600;
+    margin-right: 8px;
+}
+
+.wphz-chip .wphz-remove-product {
+    cursor: pointer;
+    color: #c0392b;
+    font-weight: bold;
+    line-height: 1;
+    background: none;
+    border: none;
+    padding: 0;
+}
+
+.wphz-chip-option {
+    font-size: 11px;
+    color: #444;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 2px;
+}
+
+.wphz-chip-option input[type="checkbox"] {
+    margin: 0;
+}
+
+/* Product search autocomplete */
+.wphz-product-search-wrap {
+    position: relative;
+    margin-top: 8px;
+}
+
+.wphz-product-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 9999;
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 0 0 4px 4px;
+    width: 100%;
+    max-height: 220px;
+    overflow-y: auto;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    box-shadow: 0 4px 8px rgba(0,0,0,.1);
+}
+
+.wphz-product-suggestions li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    cursor: pointer;
+    font-size: 13px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.wphz-product-suggestions li:last-child {
+    border-bottom: none;
+}
+
+.wphz-product-suggestions li:hover {
+    background: #f0f6fc;
+}
+
+.wphz-product-suggestions img {
+    width: 32px;
+    height: 32px;
+    object-fit: cover;
+    border-radius: 2px;
+    flex-shrink: 0;
+}
+
+/* Delete button */
+.wphz-delete-item {
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+/* ── Phase 13: UI Layout & Decoupled Inline Styles ───────── */
+.wphz-integration-box {
+    margin-top: 20px;
+    padding: 15px;
+    background: #fff;
+    border: 1px solid #ccd0d4;
+    box-shadow: 0 1px 1px rgba(0,0,0,.04);
+}
+
+.wphz-integration-box h3 {
+    margin-top: 0;
+}
+
+.wphz-integration-box p {
+    margin-bottom: 10px;
+}
+
+.wphz-integration-box pre {
+    background: #f0f0f1;
+    padding: 15px;
+    overflow-x: auto;
+    border-radius: 4px;
+    font-size: 13px;
+}
+
+.wphz-video-sources {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-right: 15px;
+}
+
+.wphz-source-group {
+    padding: 10px;
+    border-radius: 4px;
+}
+
+.wphz-source-group--hd {
+    background: #f0f0f1;
+}
+
+.wphz-source-group--sd {
+    background: #ebebeb;
+}
+
+.wphz-source-group label {
+    font-weight: 600;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.wphz-source-group--sd label {
+    color: #555;
+}
+
+.wphz-source-row {
+    display: flex;
+    gap: 10px;
+}
+
+.wphz-source-row input {
+    flex: 1;
+}
