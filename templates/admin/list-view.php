@@ -33,7 +33,15 @@
                         <td class="column-primary">
                             <strong><a href="?page=wphz-ugc-carousel&action=edit&id=<?php echo esc_attr($c['id']); ?>" class="row-title"><?php echo esc_html($c['name']); ?></a></strong>
                             <div class="row-actions">
-                                <span class="edit"><a href="?page=wphz-ugc-carousel&action=edit&id=<?php echo esc_attr($c['id']); ?>">Edit</a></span>
+                                <span class="edit"><a href="?page=wphz-ugc-carousel&action=edit&id=<?php echo esc_attr($c['id']); ?>">Edit</a> | </span>
+                                <?php 
+                                    $duplicate_url = wp_nonce_url(
+                                        admin_url('admin-ajax.php?action=wphz_ugc_duplicate_carousel&id=' . $c['id']),
+                                        'wphz_ugc_admin',
+                                        'wphz_nonce'
+                                    );
+                                ?>
+                                <span class="duplicate"><a href="<?php echo esc_url($duplicate_url); ?>" onclick="return confirm('Duplicate this carousel?');">Duplicate</a></span>
                             </div>
                         </td>
                         <td><code>[wphz_ugc_carousel id="<?php echo esc_attr($c['id']); ?>"]</code></td>

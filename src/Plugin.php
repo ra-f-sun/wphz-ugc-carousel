@@ -44,6 +44,7 @@ final class Plugin extends AbstractSingleton {
         DeleteItem::instance()->init();
         CreateCarousel::instance()->init();
         DeleteCarousel::instance()->init();
+        \WPHZ\UGC\Ajax\DuplicateCarousel::instance()->init();
     }
 
     private function is_woocommerce_active(): bool {
