@@ -11,12 +11,22 @@ $products     = $item['products'] ?? [];
 $has_products = count($products) > 0;
 $multi_prod   = count($products) > 1;
 $active_class = $active ? 'wphz-ugc-slide--active' : '';
+
+// Dynamically generate a targeting class based on the video filename (e.g., ugc1.mp4 -> wphz-ugc-video-ugc1)
+$primary_video_url = !empty($item['video_url_hd']) ? $item['video_url_hd'] : (!empty($item['video_url_sd']) ? $item['video_url_sd'] : '');
+$video_class = 'wphz-ugc-video';
+if ($primary_video_url) {
+    $video_filename = pathinfo((string) parse_url($primary_video_url, PHP_URL_PATH), PATHINFO_FILENAME);
+    if ($video_filename) {
+        $video_class .= ' wphz-ugc-video-' . sanitize_html_class($video_filename);
+    }
+}
 ?>
 <div class="wphz-ugc-slide <?php echo esc_attr($active_class); ?>" data-index="<?php echo (int) $index; ?>">
 
     <!-- Video Area -->
     <div class="wphz-ugc-video-wrap">
-        <video class="wphz-ugc-video"
+        <video class="<?php echo esc_attr($video_class); ?>"
                data-src-hd="<?php echo esc_url($item['video_url_hd'] ?? ''); ?>"
                data-src-sd="<?php echo esc_url($item['video_url_sd'] ?? ''); ?>"
                playsinline
