@@ -25,7 +25,7 @@ final class Plugin extends AbstractSingleton {
             return;
         }
 
-        add_action('admin_init', function() {
+        add_action('init', function() {
             if (get_option('wphz_ugc_db_version') !== WPHZ_UGC_VERSION) {
                 \WPHZ\UGC\Installer\Installer::activate();
             }
@@ -39,6 +39,7 @@ final class Plugin extends AbstractSingleton {
 
         SaveConfig::instance()->init();
         SaveContent::instance()->init();
+        \WPHZ\UGC\Ajax\SaveCustomCss::instance()->init();
         ProductSearch::instance()->init();
         DeleteItem::instance()->init();
         CreateCarousel::instance()->init();

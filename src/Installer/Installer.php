@@ -45,6 +45,7 @@ class Installer {
             direction varchar(10) DEFAULT 'ltr',
             on_arrow_right varchar(255),
             on_arrow_left varchar(255),
+            custom_css longtext DEFAULT NULL,
             created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             PRIMARY KEY  (id)
@@ -52,6 +53,11 @@ class Installer {
 
         dbDelta($sql_items);
         dbDelta($sql_carousels);
+
+        // Safe migration: add custom_css column to existing installs
+        if ( ! $wpdb->get_var("SHOW COLUMNS FROM {$table_carousels} LIKE 'custom_css'") ) {
+            $wpdb->query("ALTER TABLE {$table_carousels} ADD COLUMN custom_css longtext DEFAULT NULL");
+        }
 
         // Safe migration: Port old `video_url` data to `video_url_hd` and explicitly drop the old column
         if ($wpdb->get_var("SHOW COLUMNS FROM {$table_items} LIKE 'video_url'")) {

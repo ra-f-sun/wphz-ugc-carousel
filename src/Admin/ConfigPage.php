@@ -23,6 +23,7 @@ class ConfigPage extends AbstractSingleton {
             'direction'      => $config['direction']  ?? 'ltr',
             'on_arrow_right' => $config['on_arrow_right'] ?? '',
             'on_arrow_left'  => $config['on_arrow_left']  ?? '',
+            'custom_css'     => $config['custom_css']     ?? '',
         ];
     }
 }
