@@ -161,6 +161,7 @@
 
 .wphz-ugc-products--carousel {
   position: relative;
+  overflow: hidden;
 }
 
 .wphz-ugc-products-track {
@@ -192,7 +193,7 @@
 
 /* ── Single Product Card ────────────────────── */
 .wphz-ugc-product-item {
-  flex: 0 0 calc(100% - 24px); /* For single product, almost full width */
+  flex: 0 0 100%; /* Match exactly the width of the video wrapper */
   min-width: 0;
   display: flex;
   align-items: center;

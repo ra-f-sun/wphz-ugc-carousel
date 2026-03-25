@@ -38,6 +38,11 @@
  *
  * 6. LIVE DRAG PREVIEW: `_onDragMove` now moves the track in real-time as the
  *    user drags, matching native swipe feel.
+ *
+ * 7. PRODUCT CAROUSEL INFINITE: WPHZProductCarousel now uses the same
+ *    clone-based infinite loop pattern as the main carousel. Pixel-based
+ *    transforms replace the old percentage approach. Single-item carousels
+ *    (only one product) skip cloning and hide arrows entirely.
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
@@ -217,12 +222,7 @@ class WPHZUGCCarousel {
     const center = this._getCenterOffset(visible);
     const translateX = -(this.current - center) * this._slideWidth;
 
-    if (!animate) {
-      this.track.style.transition = "none";
-    } else {
-      this.track.style.transition = ""; // Restore CSS transition
-    }
-
+    this.track.style.transition = animate ? "" : "none";
     this.track.style.transform = `translateX(${translateX}px)`;
 
     if (!animate) {
@@ -237,34 +237,13 @@ class WPHZUGCCarousel {
     return 4.0;
   }
 
-  /* ── Center Offset ───────────────────────────────────────────────────────
-   * Returns the visual slot number (0-indexed from left) where the ACTIVE
-   * slide should sit inside the visible viewport.
-   *
-   * Formula: center = visible − 1.25
-   *
-   * Desktop (4.5 visible):  center = 3.25
-   *   → ~0.25 slide peeks on left | 4 full slides | ~0.25 peek on right
-   *   → active = last fully-visible slide ("the one before the right peek")
-   *
-   * Tablet (3.3 visible):   center ≈ 2.05
-   *   → tiny left peek | 2 full slides | active | right peek
-   *
-   * Mobile (1.33 visible):  center ≈ 0.08
-   *   → active (mostly full) | 0.33 peek on right
-   *
-   * Math check (desktop): window = [current−3.25 … current+1.25]
-   *   • slide current−4: 0.25 visible on left ✓ (partial left peek)
-   *   • slides current−3, −2, −1, current: 1.0 each (fully visible)
-   *   • slide current+1: 0.25 visible on right ✓ (partial right peek)
-   *   • total = 0.25 + 4 + 0.25 = 4.5 ✓
-   */
   _getCenterOffset(visible) {
     if (window.innerWidth <= 768) return (visible - 1) / 2;
     return Math.max(0, visible - 2.25);
     // desktop: 4.0 - 2.25 = 1.75 → left=75%, right=25% ✓
     // tablet:  3.3 - 2.25 = 1.05 → left=5%,  right=25%
   }
+
   /* ── Infinite Snapback ───────────────────────────────────────────────────
    * After the CSS transition completes (~400 ms + 50 ms buffer), if we have
    * scrolled into a clone zone, silently jump to the corresponding real slide
@@ -275,9 +254,6 @@ class WPHZUGCCarousel {
    *   Prepended clones : 0   … N-1       (clone of orig 0…N-1)
    *   Originals        : N   … 2N-1
    *   Appended clones  : 2N  … 3N-1      (clone of orig 0…N-1)
-   *
-   * Bug fix: also hands off video playback from the clone to the original so
-   * the video does not keep running off-screen after the jump.
    */
   _scheduleSnapback() {
     clearTimeout(this._snapTimer);
@@ -286,7 +262,6 @@ class WPHZUGCCarousel {
       const lo = this.cloneCount; // N
       const hi = this.cloneCount + this.totalOrig; // 2N
 
-      // Nothing to do if we are still in the originals zone
       if (this.current >= lo && this.current < hi) return;
 
       const prevCurrent = this.current;
@@ -297,8 +272,7 @@ class WPHZUGCCarousel {
         this.current += this.totalOrig;
       }
 
-      // Pause the clone video (now scrolled off-screen) and start the
-      // corresponding original's video so playback continues seamlessly.
+      // Pause the clone video and resume on the real slide
       const cloneVideo =
         this.slides[prevCurrent]?.querySelector(".wphz-ugc-video");
       if (cloneVideo) {
@@ -306,9 +280,9 @@ class WPHZUGCCarousel {
         cloneVideo.currentTime = 0;
       }
 
-      this._applyTransform(false); // Instant, invisible position jump
+      this._applyTransform(false);
       this._updateSlideClasses();
-      this._playCenter(); // Resume on the real slide
+      this._playCenter();
     }, 450); // 400 ms transition + 50 ms buffer
   }
 
@@ -329,12 +303,11 @@ class WPHZUGCCarousel {
     const playPromise = video.play();
     if (playPromise !== undefined) {
       playPromise.catch(() => {
-        // Unmuted autoplay was blocked — fall back to muted autoplay,
-        // which browsers universally allow.
+        // Unmuted autoplay blocked — retry muted (browsers always allow this)
         video.muted = true;
         this.isMuted = true;
         video.play().catch(() => {
-          // Still blocked (e.g. tab not yet focused) — give up silently.
+          // Still blocked (tab not yet focused) — give up silently
         });
       });
     }
@@ -379,7 +352,7 @@ class WPHZUGCCarousel {
     this._drag.active = true;
     this._drag.startX = x;
     this._drag.diffX = 0;
-    this.track.style.transition = "none"; // Disable transition during drag
+    this.track.style.transition = "none";
   }
 
   _onDragMove(x) {
@@ -387,7 +360,6 @@ class WPHZUGCCarousel {
 
     this._drag.diffX = x - this._drag.startX;
 
-    // Live drag preview: shift the track in real-time with the finger/cursor.
     const visible = this._getVisibleCount();
     const center = this._getCenterOffset(visible);
     const base = -(this.current - center) * this._slideWidth;
@@ -397,16 +369,16 @@ class WPHZUGCCarousel {
   _onDragEnd() {
     if (!this._drag.active) return;
     this._drag.active = false;
-    this.track.style.transition = ""; // Re-enable CSS transition
+    this.track.style.transition = "";
 
-    const threshold = 60; // px required to trigger a slide change
+    const threshold = 60;
 
     if (this._drag.diffX < -threshold) {
       this.next();
     } else if (this._drag.diffX > threshold) {
       this.prev();
     } else {
-      this._applyTransform(true); // Snap back to current slide
+      this._applyTransform(true);
     }
   }
 
@@ -421,7 +393,7 @@ class WPHZUGCCarousel {
       if (!video) return;
 
       video.muted = !video.muted;
-      this.isMuted = video.muted; // Update global state
+      this.isMuted = video.muted;
 
       const muteIcon = btn.querySelector(".wphz-icon-mute");
       const unmuteIcon = btn.querySelector(".wphz-icon-unmute");
@@ -437,14 +409,134 @@ class WPHZProductCarousel {
   constructor(el) {
     this.wrap = el;
     this.track = el.querySelector(".wphz-ugc-products-track");
-    this.items = Array.from(el.querySelectorAll(".wphz-ugc-product-item"));
-    this.current = 0;
+    this.origItems = Array.from(el.querySelectorAll(".wphz-ugc-product-item"));
+    this.totalOrig = this.origItems.length;
 
-    if (this.items.length > 1) {
-      this._bindArrows();
+    this._itemWidth = 0;
+    this._snapTimer = null;
+
+    if (this.totalOrig === 0) return;
+
+    // Single item — no carousel behaviour needed, hide arrows and exit.
+    if (this.totalOrig === 1) {
+      this._setArrowVisibility(false);
+      return;
+    }
+
+    // Remove gap — pixel-based step math requires items to be flush.
+    // The card padding/border provides enough visual separation.
+    this.track.style.gap = "0";
+
+    this._buildInfiniteTrack();
+    this._bindArrows();
+
+    // RAF: wait for DOM mutations from _buildInfiniteTrack() to be painted
+    // before reading offsetWidth for pixel sizing.
+    requestAnimationFrame(() => {
+      this._setItemSizes();
+      this._applyTransform(false);
+    });
+
+    window.addEventListener("resize", () => {
+      this._setItemSizes();
+      this._applyTransform(false);
+    });
+  }
+
+  /* ── Infinite Track ──────────────────────────────────────────────────────
+   * Same clone-before/after pattern as WPHZUGCCarousel.
+   * Index map after cloning (N = totalOrig):
+   *   0   … N-1   → prepended clones
+   *   N   … 2N-1  → original items   ← current starts here
+   *   2N  … 3N-1  → appended clones
+   */
+  _buildInfiniteTrack() {
+    this.cloneCount = this.totalOrig;
+
+    for (let i = this.totalOrig - 1; i >= 0; i--) {
+      const clone = this.origItems[i].cloneNode(true);
+      clone.setAttribute("aria-hidden", "true");
+      this.track.insertBefore(clone, this.track.firstChild);
+    }
+
+    for (let i = 0; i < this.totalOrig; i++) {
+      const clone = this.origItems[i].cloneNode(true);
+      clone.setAttribute("aria-hidden", "true");
+      this.track.appendChild(clone);
+    }
+
+    this.items = Array.from(
+      this.track.querySelectorAll(".wphz-ugc-product-item"),
+    );
+    this.totalItems = this.items.length;
+
+    // Start at the first original item (index N)
+    this.current = this.cloneCount;
+  }
+
+  /* ── Item Sizing ─────────────────────────────────────────────────────────
+   * Each item fills exactly the wrap width — one item visible at a time.
+   * Pixel-based so translateX step = exactly one item = wrap.offsetWidth.
+   */
+  _setItemSizes() {
+    this._itemWidth = this.wrap.offsetWidth;
+    if (!this._itemWidth) return;
+
+    this.items.forEach((item) => {
+      item.style.flex = `0 0 ${this._itemWidth}px`;
+    });
+  }
+
+  /* ── Transform ───────────────────────────────────────────────────────────
+   * translateX = -(current × itemWidth)
+   * current=N (first original) → track shifts left by N item-widths,
+   * placing the first original flush at position 0 in the viewport.
+   */
+  _applyTransform(animate) {
+    if (!this._itemWidth) return;
+
+    const translateX = -(this.current * this._itemWidth);
+
+    this.track.style.transition = animate ? "" : "none";
+    this.track.style.transform = `translateX(${translateX}px)`;
+
+    if (!animate) {
+      void this.track.offsetHeight; // Force reflow → instant jump, no flash
+      this.track.style.transition = "";
     }
   }
 
+  /* ── Navigation ──────────────────────────────────────────────────────────*/
+  _slide(dir) {
+    this.current += dir;
+    this._applyTransform(true);
+    this._scheduleSnapback();
+  }
+
+  /* ── Snapback ────────────────────────────────────────────────────────────
+   * After the 300 ms CSS transition + 50 ms buffer, jump silently from a
+   * clone back to the corresponding original without animation.
+   */
+  _scheduleSnapback() {
+    clearTimeout(this._snapTimer);
+
+    this._snapTimer = setTimeout(() => {
+      const lo = this.cloneCount;
+      const hi = this.cloneCount + this.totalOrig;
+
+      if (this.current >= lo && this.current < hi) return;
+
+      if (this.current >= hi) {
+        this.current -= this.totalOrig;
+      } else {
+        this.current += this.totalOrig;
+      }
+
+      this._applyTransform(false);
+    }, 350); // 300 ms transition + 50 ms buffer
+  }
+
+  /* ── Arrows ──────────────────────────────────────────────────────────────*/
   _bindArrows() {
     this.wrap
       .querySelector(".wphz-product-arrow--next")
@@ -454,10 +546,14 @@ class WPHZProductCarousel {
       ?.addEventListener("click", () => this._slide(-1));
   }
 
-  _slide(dir) {
-    const max = this.items.length - 1;
-    this.current = Math.max(0, Math.min(max, this.current + dir));
-    this.track.style.transform = `translateX(-${this.current * 100}%)`;
+  _setArrowVisibility(visible) {
+    const display = visible ? "" : "none";
+    this.wrap
+      .querySelector(".wphz-product-arrow--next")
+      ?.style.setProperty("display", display);
+    this.wrap
+      .querySelector(".wphz-product-arrow--prev")
+      ?.style.setProperty("display", display);
   }
 }
 
@@ -481,7 +577,6 @@ document.addEventListener("DOMContentLoaded", () => {
     .forEach((el) => new WPHZProductCarousel(el));
 });
 
-/* ── Custom Event Listeners for External Controls ────────────────────────── */
 /* ── External Button Binding (auto, no functions.php needed) ─────────────────
  * Any element with [data-wphz-target] + [data-wphz-action] anywhere on the
  * page will control the matching carousel instance automatically.
@@ -490,14 +585,11 @@ document.addEventListener("DOMContentLoaded", () => {
  *   <button data-wphz-target="42" data-wphz-action="next">→</button>
  *   <button data-wphz-target="42" data-wphz-action="prev">←</button>
  *
- * - data-wphz-target  : must match the carousel's data-carousel-id value
- * - data-wphz-action  : "next" or "prev"
+ * - data-wphz-target : must match the carousel's data-carousel-id value
+ * - data-wphz-action : "next" or "prev"
  *
  * Uses event delegation on document so buttons added dynamically (e.g. via
  * page builders or AJAX) also work without re-binding.
- *
- * The old custom-event approach (wphz_carousel_slide_next/prev) and the
- * functions.php snippet are no longer needed and can be deleted.
  */
 document.addEventListener("click", (e) => {
   const btn = e.target.closest("[data-wphz-target]");
