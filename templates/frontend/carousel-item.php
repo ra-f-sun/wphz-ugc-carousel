@@ -39,7 +39,7 @@ if ($primary_video_url) {
 
         <button type="button" class="wphz-ugc-mute-btn" aria-label="<?php esc_attr_e('Toggle sound', 'wphz-ugc'); ?>">
             <!-- Muted icon -->
-            <span class="wphz-icon-mute" style="display: <?php echo $is_muted ? 'inline-block' : 'none'; ?>;">
+            <span class="wphz-icon-mute" style="display: <?php echo $is_muted ? 'flex' : 'none'; ?>;">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
                     <line x1="23" y1="9" x2="17" y2="15"></line>
@@ -47,7 +47,7 @@ if ($primary_video_url) {
                 </svg>
             </span>
             <!-- Unmuted icon -->
-            <span class="wphz-icon-unmute" style="display: <?php echo $is_muted ? 'none' : 'inline-block'; ?>;">
+            <span class="wphz-icon-unmute" style="display: <?php echo $is_muted ? 'none' : 'flex'; ?>;">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
                     <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>

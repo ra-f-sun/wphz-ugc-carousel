@@ -307,7 +307,7 @@ class WPHZUGCCarousel {
       this._applyTransform(false);
       this._updateSlideClasses();
       this._playCenter();
-    }, 450); // 400 ms transition + 50 ms buffer
+    }, 550); // 500 ms transition + 50 ms buffer
   }
 
   /* ── Slide Classes ─────────────────────────────────────────────────────── */
@@ -387,33 +387,24 @@ class WPHZUGCCarousel {
     this._drag.active = true;
     this._drag.startX = x;
     this._drag.diffX = 0;
-    this.track.style.transition = "none";
   }
 
   _onDragMove(x) {
     if (!this._drag.active || !this._slideWidth) return;
 
     this._drag.diffX = x - this._drag.startX;
-
-    const visible = this._getVisibleCount();
-    const center = this._getCenterOffset(visible);
-    const base = -(this.current - center) * this._slideWidth;
-    this.track.style.transform = `translateX(${base + this._drag.diffX}px)`;
   }
 
   _onDragEnd() {
     if (!this._drag.active) return;
     this._drag.active = false;
-    this.track.style.transition = "";
 
-    const threshold = 60;
+    const threshold = 12;
 
     if (this._drag.diffX < -threshold) {
       this.next();
     } else if (this._drag.diffX > threshold) {
       this.prev();
-    } else {
-      this._applyTransform(true);
     }
   }
 

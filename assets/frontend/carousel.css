@@ -85,7 +85,7 @@
 /* Flex layout with transition for sliding */
 .wphz-ugc-track {
   display: flex;
-  transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition: transform 0.5s cubic-bezier(0.22, 0.61, 0.36, 1);
   will-change: transform;
 }
 
@@ -107,7 +107,7 @@
     transform 0.4s ease,
     box-shadow 0.4s ease;
   cursor: pointer;
-  aspect-ratio: 3/4;
+  aspect-ratio: 3/4.25;
 }
 
 /* Scale up the center/active video */
@@ -150,6 +150,32 @@
   background: rgba(0, 0, 0, 0.8);
 }
 
+.wphz-icon-mute,
+.wphz-icon-unmute {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+}
+
+.wphz-ugc-mute-btn:hover {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.wphz-ugc-mute-btn:focus {
+  outline: none;
+  box-shadow: none;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.wphz-ugc-mute-btn:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
 /* ── Product Strip (Under Video) ────────────── */
 .wphz-ugc-products {
   display: flex;
@@ -199,7 +225,7 @@
   align-items: center;
   gap: 12px;
   background: #fff;
-  border: 1px solid #eee;
+  border: 1px solid rgba(216, 216, 216);
   padding: 8px;
   border-radius: 8px;
 }
