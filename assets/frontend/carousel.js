@@ -32,9 +32,11 @@
  * 4. AUTOPLAY FALLBACK: When unmuted autoplay is blocked by browser policy the
  *    old code silently gave up. Now it retries with `video.muted = true`.
  *
- * 5. INITIAL POSITIONING: One `requestAnimationFrame` is not always enough for
- *    the browser to compute the flex layout after DOM mutations (cloning).
- *    FIX → Double RAF so slide sizes are read after at least one layout pass.
+ * 5. INITIAL POSITIONING: Double RAF replaced with ResizeObserver.
+ *    ResizeObserver fires after the browser has committed actual pixel
+ *    dimensions — no timing guesswork. It also replaces the window resize
+ *    listener, handling both initial layout and subsequent resizes in one place.
+ *    FIX → Both carousels now use ResizeObserver on their container element.
  *
  * 6. LIVE DRAG PREVIEW: `_onDragMove` now moves the track in real-time as the
  *    user drags, matching native swipe feel.
@@ -64,6 +66,9 @@ class WPHZUGCCarousel {
     this._drag = { active: false, startX: 0, diffX: 0 };
     this._snapTimer = null;
 
+    // ResizeObserver instance — stored so it could be disconnected if needed
+    this._resizeObserver = null;
+
     this.init();
   }
 
@@ -82,29 +87,32 @@ class WPHZUGCCarousel {
     // Hide track until positioned — prevents flash at wrong position
     this.track.style.visibility = "hidden";
 
-    // Double RAF: first waits for paint, second ensures the flex layout
-    // triggered by _buildInfiniteTrack() is fully computed before we read widths.
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        this._setSlideSizes();
-        this._applyTransform(false);
-        this.track.style.visibility = "";
-        this._playCenter();
-      });
-    });
-
-    // Recompute on resize (slide sizes AND transform must both update)
-    window.addEventListener("resize", () => {
+    // ResizeObserver replaces both the double-RAF init measurement and the
+    // window resize listener. It fires after the browser has committed real
+    // pixel dimensions to the observed element, so offsetWidth is always
+    // accurate — no timing guesswork.
+    //
+    // First observation fires on attach (replaces double-RAF).
+    // Subsequent observations fire on resize (replaces window listener).
+    // The visibility gate ensures _playCenter() only runs once on first layout.
+    this._resizeObserver = new ResizeObserver(() => {
       this._setSlideSizes();
       this._applyTransform(false);
+
+      if (this.track.style.visibility === "hidden") {
+        this.track.style.visibility = "";
+        this._playCenter();
+      }
     });
+
+    this._resizeObserver.observe(this.stage);
   }
 
   /* ── Slide Sizing ────────────────────────────────────────────────────────
    * Sets each slide's flex-basis as an absolute pixel value derived from
    * the stage's measured width. Inline styles override any CSS media-query
    * rules, so no changes to the stylesheet are required.
-   * Called on init (double-RAF) and on every resize.
+   * Called by ResizeObserver on every layout change.
    */
   _setSlideSizes() {
     const stageWidth = this.stage.offsetWidth;
@@ -414,6 +422,7 @@ class WPHZProductCarousel {
 
     this._itemWidth = 0;
     this._snapTimer = null;
+    this._resizeObserver = null;
 
     if (this.totalOrig === 0) return;
 
@@ -430,17 +439,14 @@ class WPHZProductCarousel {
     this._buildInfiniteTrack();
     this._bindArrows();
 
-    // RAF: wait for DOM mutations from _buildInfiniteTrack() to be painted
-    // before reading offsetWidth for pixel sizing.
-    requestAnimationFrame(() => {
+    // ResizeObserver replaces both the single-RAF init and the window resize
+    // listener. Fires after real pixel dimensions are committed by the browser.
+    this._resizeObserver = new ResizeObserver(() => {
       this._setItemSizes();
       this._applyTransform(false);
     });
 
-    window.addEventListener("resize", () => {
-      this._setItemSizes();
-      this._applyTransform(false);
-    });
+    this._resizeObserver.observe(this.wrap);
   }
 
   /* ── Infinite Track ──────────────────────────────────────────────────────
