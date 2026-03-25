@@ -1,4 +1,5 @@
 <?php
+
 namespace WPHZ\UGC\Ajax;
 
 use WPHZ\UGC\AbstractSingleton;
@@ -6,14 +7,17 @@ use WPHZ\UGC\Helpers\NonceHelper;
 use WPHZ\UGC\Repository\CarouselRepository;
 use WPHZ\UGC\Repository\ItemRepository;
 
-class DuplicateCarousel extends AbstractSingleton {
+class DuplicateCarousel extends AbstractSingleton
+{
 
-    public function init(): void {
+    public function init(): void
+    {
         // We use admin-ajax.php but it's fundamentally a GET redirect hook
         add_action('wp_ajax_wphz_ugc_duplicate_carousel', [$this, 'handle']);
     }
 
-    public function handle(): void {
+    public function handle(): void
+    {
         // Specifically look for 'wphz_nonce' as provided by wp_nonce_url
         NonceHelper::verify('wphz_ugc_admin', 'wphz_nonce');
 
@@ -59,6 +63,7 @@ class DuplicateCarousel extends AbstractSingleton {
                 'video_id'     => $item['video_id'],
                 'video_url_hd' => $item['video_url_hd'],
                 'video_url_sd' => $item['video_url_sd'],
+                'poster_url'   => $item['poster_url'] ?? '',
                 'product_ids'  => $product_ids,
             ]);
         }
