@@ -1,19 +1,31 @@
 <?php
+
 namespace WPHZ\UGC\Installer;
 
-class Installer {
+class Installer
+{
 
-    public static function activate(): void {
+    public static function items_has_poster_column(): bool
+    {
+        global $wpdb;
+        $table_items = $wpdb->prefix . 'wphz_ugc_items';
+        return (bool) $wpdb->get_var("SHOW COLUMNS FROM {$table_items} LIKE 'poster_url'");
+    }
+
+    public static function activate(): void
+    {
         self::create_tables();
         self::migrate_to_multi_carousel();
         flush_rewrite_rules();
     }
 
-    public static function deactivate(): void {
+    public static function deactivate(): void
+    {
         flush_rewrite_rules();
     }
 
-    private static function create_tables(): void {
+    private static function create_tables(): void
+    {
         global $wpdb;
         $table_items     = $wpdb->prefix . 'wphz_ugc_items';
         $table_carousels = $wpdb->prefix . 'wphz_ugc_carousels';
@@ -28,6 +40,7 @@ class Installer {
             video_id bigint(20) unsigned NOT NULL,
             video_url_hd text DEFAULT NULL,
             video_url_sd text DEFAULT NULL,
+            poster_url text DEFAULT NULL,
             product_ids longtext NOT NULL,
             created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -55,7 +68,7 @@ class Installer {
         dbDelta($sql_carousels);
 
         // Safe migration: add custom_css column to existing installs
-        if ( ! $wpdb->get_var("SHOW COLUMNS FROM {$table_carousels} LIKE 'custom_css'") ) {
+        if (! $wpdb->get_var("SHOW COLUMNS FROM {$table_carousels} LIKE 'custom_css'")) {
             $wpdb->query("ALTER TABLE {$table_carousels} ADD COLUMN custom_css longtext DEFAULT NULL");
         }
 
@@ -65,10 +78,16 @@ class Installer {
             $wpdb->query("ALTER TABLE {$table_items} DROP COLUMN video_url");
         }
 
+        // Safe migration: add poster_url column to existing installs
+        if (! $wpdb->get_var("SHOW COLUMNS FROM {$table_items} LIKE 'poster_url'")) {
+            $wpdb->query("ALTER TABLE {$table_items} ADD COLUMN poster_url text DEFAULT NULL");
+        }
+
         update_option('wphz_ugc_db_version', WPHZ_UGC_VERSION);
     }
 
-    private static function migrate_to_multi_carousel(): void {
+    private static function migrate_to_multi_carousel(): void
+    {
         global $wpdb;
         $table_items     = $wpdb->prefix . 'wphz_ugc_items';
         $table_carousels = $wpdb->prefix . 'wphz_ugc_carousels';

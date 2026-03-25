@@ -69,6 +69,11 @@ class WPHZUGCCarousel {
     // ResizeObserver instance — stored so it could be disconnected if needed
     this._resizeObserver = null;
 
+    this.posterEngine =
+      typeof window.WPHZUGCPosterEngine === "function"
+        ? new window.WPHZUGCPosterEngine(el)
+        : null;
+
     this.init();
   }
 
@@ -154,10 +159,10 @@ class WPHZUGCCarousel {
     this.totalSlides = this.slides.length;
   }
 
-  /* ── Phase 12: Dual-Resolution Video Governor ───────────────────────
+  /* ── Phase 12: Dual-Resolution Source Selection ─────────────────────
    * Reads data attributes explicitly set by PHP and determines the maximum
    * safe resolution target based on live client APIs.
-   * Runs natively before DOM cloning so copies inherit the safe URL natively.
+   * Runs before DOM cloning so copies inherit the selected source metadata.
    */
   _setVideoSources() {
     const isSlow = navigator.connection && navigator.connection.downlink < 3;
@@ -182,8 +187,15 @@ class WPHZUGCCarousel {
         targetSrc = preferSD ? sd : hd;
       }
 
-      if (targetSrc) {
-        video.src = targetSrc;
+      video.dataset.selectedSrc = targetSrc;
+
+      this.posterEngine?.applyPoster(video);
+
+      // No explicit poster URL: attach lightweight metadata source so browser
+      // can render first-frame fallback instead of black inactive slides.
+      const hasPoster = !!(video.dataset.posterUrl || "").trim();
+      if (!hasPoster && this.posterEngine) {
+        this.posterEngine.attachSource(video);
       }
     });
   }
@@ -284,8 +296,12 @@ class WPHZUGCCarousel {
       const cloneVideo =
         this.slides[prevCurrent]?.querySelector(".wphz-ugc-video");
       if (cloneVideo) {
-        cloneVideo.pause();
-        cloneVideo.currentTime = 0;
+        if (this.posterEngine) {
+          this.posterEngine.pause(cloneVideo);
+        } else {
+          cloneVideo.pause();
+          cloneVideo.currentTime = 0;
+        }
       }
 
       this._applyTransform(false);
@@ -306,15 +322,22 @@ class WPHZUGCCarousel {
     const video = this.slides[this.current]?.querySelector(".wphz-ugc-video");
     if (!video) return;
 
-    video.muted = this.isMuted;
+    const playPromise = this.posterEngine
+      ? this.posterEngine.play(video, this.isMuted)
+      : (() => {
+          video.muted = this.isMuted;
+          return video.play();
+        })();
 
-    const playPromise = video.play();
-    if (playPromise !== undefined) {
+    if (playPromise && typeof playPromise.catch === "function") {
       playPromise.catch(() => {
         // Unmuted autoplay blocked — retry muted (browsers always allow this)
         video.muted = true;
         this.isMuted = true;
-        video.play().catch(() => {
+        const retryPromise = this.posterEngine
+          ? this.posterEngine.play(video, true)
+          : video.play();
+        retryPromise?.catch(() => {
           // Still blocked (tab not yet focused) — give up silently
         });
       });
@@ -326,8 +349,12 @@ class WPHZUGCCarousel {
   _pauseCenter() {
     const video = this.slides[this.current]?.querySelector(".wphz-ugc-video");
     if (video) {
-      video.pause();
-      video.currentTime = 0;
+      if (this.posterEngine) {
+        this.posterEngine.pause(video);
+      } else {
+        video.pause();
+        video.currentTime = 0;
+      }
     }
   }
 

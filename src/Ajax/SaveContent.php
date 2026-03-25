@@ -1,24 +1,35 @@
 <?php
+
 namespace WPHZ\UGC\Ajax;
 
 use WPHZ\UGC\AbstractSingleton;
 use WPHZ\UGC\Helpers\NonceHelper;
+use WPHZ\UGC\Installer\Installer;
 use WPHZ\UGC\Repository\ItemRepository;
 
-class SaveContent extends AbstractSingleton {
+class SaveContent extends AbstractSingleton
+{
 
-    public function init(): void {
+    public function init(): void
+    {
         add_action('wp_ajax_wphz_ugc_save_content', [$this, 'handle']);
     }
 
-    public function handle(): void {
+    public function handle(): void
+    {
         NonceHelper::verify('wphz_ugc_admin');
 
         $items_raw   = $_POST['items'] ?? [];
         $carousel_id = (int) ($_POST['carousel_id'] ?? 0);
-        
+
         if ($carousel_id <= 0) {
             wp_send_json_error(['message' => __('Invalid Carousel ID.', 'wphz-ugc')]);
+        }
+
+        if (!Installer::items_has_poster_column()) {
+            wp_send_json_error([
+                'message' => __('Database schema is outdated. Please reload the page and try again.', 'wphz-ugc')
+            ]);
         }
 
         $repo = ItemRepository::instance();
@@ -31,7 +42,8 @@ class SaveContent extends AbstractSingleton {
             $video_id     = (int) ($data['video_id']   ?? 0);
             $video_url_hd = esc_url_raw($data['video_url_hd'] ?? '');
             $video_url_sd = esc_url_raw($data['video_url_sd'] ?? '');
-            
+            $poster_url   = esc_url_raw($data['poster_url'] ?? '');
+
             $products_raw = (array) ($data['products'] ?? []);
             $product_ids  = [];
             foreach ($products_raw as $pdata) {
@@ -48,14 +60,21 @@ class SaveContent extends AbstractSingleton {
                 continue;
             }
 
-            $repo->insert([
+            if (!$repo->insert([
                 'carousel_id'  => (string) $carousel_id,
                 'sort_order'   => $sort++,
                 'video_id'     => $video_id,
                 'video_url_hd' => $video_url_hd,
                 'video_url_sd' => $video_url_sd,
+                'poster_url'   => $poster_url,
                 'product_ids'  => $product_ids,
-            ]);
+            ])) {
+                global $wpdb;
+                wp_send_json_error([
+                    'message' => __('Failed to save carousel content. Please retry after refreshing the page.', 'wphz-ugc'),
+                    'debug'   => $wpdb->last_error,
+                ]);
+            }
         }
 
         wp_send_json_success([
@@ -64,7 +83,8 @@ class SaveContent extends AbstractSingleton {
         ]);
     }
 
-    private function clear_existing(int $carousel_id): void {
+    private function clear_existing(int $carousel_id): void
+    {
         global $wpdb;
         $table = $wpdb->prefix . 'wphz_ugc_items';
         $wpdb->delete($table, ['carousel_id' => (string) $carousel_id]);

@@ -3,6 +3,7 @@ defined('ABSPATH') || exit;
 $video_id     = (int) ($item['video_id'] ?? 0);
 $video_url_hd = $item['video_url_hd'] ?? '';
 $video_url_sd = $item['video_url_sd'] ?? '';
+$poster_url   = $item['poster_url'] ?? '';
 $product_ids  = $item['product_ids'] ?? [];   
 $row_id       = $item['id'] ?? 'new-' . uniqid();
 ?>
@@ -22,7 +23,7 @@ $row_id       = $item['id'] ?? 'new-' . uniqid();
                        value="<?php echo esc_url($video_url_hd); ?>" 
                        placeholder="https://..." 
                        class="wphz-url-input regular-text">
-                <button type="button" class="button wphz-media-btn"><?php esc_html_e('Media Library', 'wphz-ugc'); ?></button>
+                <button type="button" class="button wphz-media-btn" data-media-type="video"><?php esc_html_e('Media Library', 'wphz-ugc'); ?></button>
             </div>
             <input type="hidden" name="items[<?php echo esc_attr($row_id); ?>][video_id]" value="<?php echo esc_attr($video_id); ?>">
         </div>
@@ -36,7 +37,20 @@ $row_id       = $item['id'] ?? 'new-' . uniqid();
                        value="<?php echo esc_url($video_url_sd); ?>" 
                        placeholder="https://..." 
                        class="wphz-url-input regular-text">
-                <button type="button" class="button wphz-media-btn"><?php esc_html_e('Media Library', 'wphz-ugc'); ?></button>
+                <button type="button" class="button wphz-media-btn" data-media-type="video"><?php esc_html_e('Media Library', 'wphz-ugc'); ?></button>
+            </div>
+        </div>
+
+        <!-- Poster Source -->
+        <div class="wphz-source-group wphz-source-group--poster">
+            <label><?php esc_html_e('Poster Image (shown while video is not playing)', 'wphz-ugc'); ?></label>
+            <div class="wphz-source-row">
+                <input type="url"
+                       name="items[<?php echo esc_attr($row_id); ?>][poster_url]"
+                       value="<?php echo esc_url($poster_url); ?>"
+                       placeholder="https://..."
+                       class="wphz-url-input regular-text">
+                <button type="button" class="button wphz-media-btn" data-media-type="image"><?php esc_html_e('Media Library', 'wphz-ugc'); ?></button>
             </div>
         </div>
 

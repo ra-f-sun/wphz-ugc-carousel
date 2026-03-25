@@ -36,9 +36,17 @@ class AssetLoader extends AbstractSingleton {
         );
 
         wp_enqueue_script(
+            'wphz-ugc-poster-engine',
+            WPHZ_UGC_URL . 'assets/frontend/poster-engine.js',
+            [],
+            WPHZ_UGC_VERSION,
+            true
+        );
+
+        wp_enqueue_script(
             'wphz-ugc-frontend',
             WPHZ_UGC_URL . 'assets/frontend/carousel.js',
-            [],            // no jQuery dependency — vanilla JS
+            ['wphz-ugc-poster-engine'], // no jQuery dependency — vanilla JS
             WPHZ_UGC_VERSION,
             true           // load in footer
         );

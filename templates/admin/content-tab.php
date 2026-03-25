@@ -67,7 +67,7 @@
                     <label><?php esc_html_e('HD Video (1080p, Broadband)', 'wphz-ugc'); ?></label>
                     <div class="wphz-source-row">
                         <input type="url" name="items[{{rowId}}][video_url_hd]" value="" placeholder="https://..." class="wphz-url-input regular-text">
-                        <button type="button" class="button wphz-media-btn"><?php esc_html_e('Media Library', 'wphz-ugc'); ?></button>
+                        <button type="button" class="button wphz-media-btn" data-media-type="video"><?php esc_html_e('Media Library', 'wphz-ugc'); ?></button>
                     </div>
                     <input type="hidden" name="items[{{rowId}}][video_id]" value="0">
                 </div>
@@ -75,7 +75,14 @@
                     <label><?php esc_html_e('SD Video (480p, Mobile Fallback)', 'wphz-ugc'); ?></label>
                     <div class="wphz-source-row">
                         <input type="url" name="items[{{rowId}}][video_url_sd]" value="" placeholder="https://..." class="wphz-url-input regular-text">
-                        <button type="button" class="button wphz-media-btn"><?php esc_html_e('Media Library', 'wphz-ugc'); ?></button>
+                        <button type="button" class="button wphz-media-btn" data-media-type="video"><?php esc_html_e('Media Library', 'wphz-ugc'); ?></button>
+                    </div>
+                </div>
+                <div class="wphz-source-group wphz-source-group--poster">
+                    <label><?php esc_html_e('Poster Image (shown while video is not playing)', 'wphz-ugc'); ?></label>
+                    <div class="wphz-source-row">
+                        <input type="url" name="items[{{rowId}}][poster_url]" value="" placeholder="https://..." class="wphz-url-input regular-text">
+                        <button type="button" class="button wphz-media-btn" data-media-type="image"><?php esc_html_e('Media Library', 'wphz-ugc'); ?></button>
                     </div>
                 </div>
             </div>

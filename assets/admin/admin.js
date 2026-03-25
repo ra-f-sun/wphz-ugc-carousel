@@ -47,22 +47,19 @@ jQuery(function ($) {
     });
 
     // ── Phase 12: Scoped Media Picker ───────────────────
-    var mediaFrame = null;
     $(document).on('click', '.wphz-media-btn', function (e) {
         e.preventDefault();
         var $btn = $(this);
         var $input = $btn.siblings('.wphz-url-input');
+        var mediaType = ($btn.data('media-type') || 'video').toString();
+        var isImage = mediaType === 'image';
 
-        if (mediaFrame) {
-            mediaFrame.off('select'); // clear previous listeners
-        } else {
-            mediaFrame = wp.media({
-                title:    wphzUGC.mediaTitle || 'Select Video',
-                button:   { text: wphzUGC.mediaButton || 'Use this video' },
-                library:  { type: 'video' },
-                multiple: false,
-            });
-        }
+        var mediaFrame = wp.media({
+            title:    isImage ? (wphzUGC.imageTitle || 'Select Image') : (wphzUGC.mediaTitle || 'Select Video'),
+            button:   { text: isImage ? (wphzUGC.imageButton || 'Use this image') : (wphzUGC.mediaButton || 'Use this video') },
+            library:  { type: isImage ? 'image' : 'video' },
+            multiple: false,
+        });
 
         mediaFrame.on('select', function () {
             var attachment = mediaFrame.state().get('selection').first().toJSON();
@@ -204,6 +201,7 @@ jQuery(function ($) {
             var videoId    = $row.find('[name="items[' + rowId + '][video_id]"]').val() || 0;
             var videoUrlHd = $row.find('[name="items[' + rowId + '][video_url_hd]"]').val();
             var videoUrlSd = $row.find('[name="items[' + rowId + '][video_url_sd]"]').val();
+            var posterUrl  = $row.find('[name="items[' + rowId + '][poster_url]"]').val();
             var products = {};
 
             $row.find('.wphz-chip').each(function () {
@@ -223,6 +221,7 @@ jQuery(function ($) {
                 video_id:     videoId,
                 video_url_hd: videoUrlHd,
                 video_url_sd: videoUrlSd,
+                poster_url:   posterUrl,
                 products:     products,
             };
         });

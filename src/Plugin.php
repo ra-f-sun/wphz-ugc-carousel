@@ -1,4 +1,5 @@
 <?php
+
 namespace WPHZ\UGC;
 
 use WPHZ\UGC\Admin\AdminMenu;
@@ -13,20 +14,26 @@ use WPHZ\UGC\Ajax\CreateCarousel;
 use WPHZ\UGC\Ajax\DeleteCarousel;
 use WPHZ\UGC\Frontend\CartHandler;
 
-final class Plugin extends AbstractSingleton {
+final class Plugin extends AbstractSingleton
+{
 
-    protected function __construct() {
+    protected function __construct()
+    {
         $this->init_hooks();
     }
 
-    private function init_hooks(): void {
+    private function init_hooks(): void
+    {
         if (!$this->is_woocommerce_active()) {
             add_action('admin_notices', [$this, 'notice_wc_missing']);
             return;
         }
 
-        add_action('init', function() {
-            if (get_option('wphz_ugc_db_version') !== WPHZ_UGC_VERSION) {
+        add_action('init', function () {
+            if (
+                get_option('wphz_ugc_db_version') !== WPHZ_UGC_VERSION
+                || !\WPHZ\UGC\Installer\Installer::items_has_poster_column()
+            ) {
                 \WPHZ\UGC\Installer\Installer::activate();
             }
         });
@@ -47,11 +54,13 @@ final class Plugin extends AbstractSingleton {
         \WPHZ\UGC\Ajax\DuplicateCarousel::instance()->init();
     }
 
-    private function is_woocommerce_active(): bool {
+    private function is_woocommerce_active(): bool
+    {
         return class_exists('WooCommerce');
     }
 
-    public function notice_wc_missing(): void {
+    public function notice_wc_missing(): void
+    {
         echo '<div class="notice notice-error"><p>'
             . esc_html__('WPHZ UGC Carousel requires WooCommerce to be active.', 'wphz-ugc')
             . '</p></div>';

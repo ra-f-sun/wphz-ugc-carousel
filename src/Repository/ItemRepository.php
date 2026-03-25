@@ -40,6 +40,7 @@ class ItemRepository extends AbstractSingleton {
             'video_id'     => (int) ($data['video_id'] ?? 0),
             'video_url_hd' => esc_url_raw($data['video_url_hd'] ?? ''),
             'video_url_sd' => esc_url_raw($data['video_url_sd'] ?? ''),
+            'poster_url'   => esc_url_raw($data['poster_url'] ?? ''),
             'product_ids'  => wp_json_encode($data['product_ids'] ?? []),
         ]);
         return $result ? $wpdb->insert_id : false;
@@ -52,6 +53,7 @@ class ItemRepository extends AbstractSingleton {
         if (isset($data['product_ids']))  $fields['product_ids']  = wp_json_encode($data['product_ids']);
         if (isset($data['video_url_hd'])) $fields['video_url_hd'] = esc_url_raw($data['video_url_hd']);
         if (isset($data['video_url_sd'])) $fields['video_url_sd'] = esc_url_raw($data['video_url_sd']);
+        if (isset($data['poster_url']))   $fields['poster_url']   = esc_url_raw($data['poster_url']);
         if (empty($fields)) return false;
         return (bool) $wpdb->update($this->table(), $fields, ['id' => $id]);
     }

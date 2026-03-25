@@ -1,9 +1,10 @@
 <?php
+
 /**
  * Plugin Name: WPHZ UGC Carousel
  * Plugin URI:  https://wphelpzone.com
  * Description: User-Generated Content video carousel with WooCommerce product attachment.
- * Version:     1.0.4
+ * Version:     1.0.5
  * Author:      WPHelpZone LLC
  * Text Domain: wphz-ugc
  * Requires at least: 6.0
@@ -13,7 +14,7 @@
 
 defined('ABSPATH') || exit;
 
-define('WPHZ_UGC_VERSION',   '1.0.4');
+define('WPHZ_UGC_VERSION',   '1.0.5');
 define('WPHZ_UGC_FILE',      __FILE__);
 define('WPHZ_UGC_DIR',       plugin_dir_path(__FILE__));
 define('WPHZ_UGC_URL',       plugin_dir_url(__FILE__));
