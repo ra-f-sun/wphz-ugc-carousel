@@ -56,14 +56,15 @@ class WPHZUGCCarousel {
     this.track = el.querySelector(".wphz-ugc-track");
     this.origSlides = Array.from(el.querySelectorAll(".wphz-ugc-slide"));
     this.totalOrig = this.origSlides.length;
-    this.isMuted = el.dataset.muted === "1";
+    this.defaultMuted = el.dataset.muted === "1";
+    this.muteByItemIndex = {};
     this.direction = el.dataset.direction || "ltr";
 
     // Cached slide width in px (set by _setSlideSizes)
     this._slideWidth = 0;
 
     // Drag/Swipe state
-    this._drag = { active: false, startX: 0, diffX: 0 };
+    this._drag = { active: false, startX: 0, startY: 0, diffX: 0, diffY: 0 };
     this._snapTimer = null;
 
     // ResizeObserver instance — stored so it could be disconnected if needed
@@ -319,21 +320,27 @@ class WPHZUGCCarousel {
 
   /* ── Video Control ─────────────────────────────────────────────────────── */
   _playCenter() {
-    const video = this.slides[this.current]?.querySelector(".wphz-ugc-video");
+    const slide = this.slides[this.current];
+    const video = slide?.querySelector(".wphz-ugc-video");
     if (!video) return;
 
+    this._muteAllNonActiveSlides();
+
+    const itemMuted = this._isItemMutedBySlide(slide);
+
     const playPromise = this.posterEngine
-      ? this.posterEngine.play(video, this.isMuted)
+      ? this.posterEngine.play(video, itemMuted)
       : (() => {
-          video.muted = this.isMuted;
+          video.muted = itemMuted;
           return video.play();
         })();
 
     if (playPromise && typeof playPromise.catch === "function") {
       playPromise.catch(() => {
         // Unmuted autoplay blocked — retry muted (browsers always allow this)
+        const itemIndex = this._getItemIndexFromSlide(slide);
+        this._setItemMuted(itemIndex, true);
         video.muted = true;
-        this.isMuted = true;
         const retryPromise = this.posterEngine
           ? this.posterEngine.play(video, true)
           : video.play();
@@ -347,8 +354,12 @@ class WPHZUGCCarousel {
   }
 
   _pauseCenter() {
-    const video = this.slides[this.current]?.querySelector(".wphz-ugc-video");
+    const slide = this.slides[this.current];
+    const video = slide?.querySelector(".wphz-ugc-video");
     if (video) {
+      const itemIndex = this._getItemIndexFromSlide(slide);
+      this._setItemMuted(itemIndex, true);
+
       if (this.posterEngine) {
         this.posterEngine.pause(video);
       } else {
@@ -366,33 +377,36 @@ class WPHZUGCCarousel {
   _bindDrag() {
     const track = this.track;
 
-    track.addEventListener("mousedown", (e) => this._onDragStart(e.clientX));
-    window.addEventListener("mousemove", (e) => this._onDragMove(e.clientX));
+    track.addEventListener("mousedown", (e) => this._onDragStart(e.clientX, e.clientY));
+    window.addEventListener("mousemove", (e) => this._onDragMove(e.clientX, e.clientY));
     window.addEventListener("mouseup", () => this._onDragEnd());
 
     track.addEventListener(
       "touchstart",
-      (e) => this._onDragStart(e.touches[0].clientX),
+      (e) => this._onDragStart(e.touches[0].clientX, e.touches[0].clientY),
       { passive: true },
     );
     track.addEventListener(
       "touchmove",
-      (e) => this._onDragMove(e.touches[0].clientX),
+      (e) => this._onDragMove(e.touches[0].clientX, e.touches[0].clientY),
       { passive: true },
     );
     track.addEventListener("touchend", () => this._onDragEnd());
   }
 
-  _onDragStart(x) {
+  _onDragStart(x, y) {
     this._drag.active = true;
     this._drag.startX = x;
+    this._drag.startY = y;
     this._drag.diffX = 0;
+    this._drag.diffY = 0;
   }
 
-  _onDragMove(x) {
+  _onDragMove(x, y) {
     if (!this._drag.active || !this._slideWidth) return;
 
     this._drag.diffX = x - this._drag.startX;
+    this._drag.diffY = y - this._drag.startY;
   }
 
   _onDragEnd() {
@@ -400,6 +414,13 @@ class WPHZUGCCarousel {
     this._drag.active = false;
 
     const threshold = 12;
+    const absX = Math.abs(this._drag.diffX);
+    const absY = Math.abs(this._drag.diffY);
+    const isHorizontalSwipe = absX > absY;
+
+    if (!isHorizontalSwipe) {
+      return;
+    }
 
     if (this._drag.diffX < -threshold) {
       this.next();
@@ -418,14 +439,71 @@ class WPHZUGCCarousel {
       const video = slide?.querySelector(".wphz-ugc-video");
       if (!video) return;
 
-      video.muted = !video.muted;
-      this.isMuted = video.muted;
+      const itemIndex = this._getItemIndexFromSlide(slide);
+      if (itemIndex < 0) return;
 
-      const muteIcon = btn.querySelector(".wphz-icon-mute");
-      const unmuteIcon = btn.querySelector(".wphz-icon-unmute");
-      if (muteIcon) muteIcon.style.display = video.muted ? "" : "none";
-      if (unmuteIcon) unmuteIcon.style.display = video.muted ? "none" : "";
+      const clickedIndex = this.slides.indexOf(slide);
+      const nextMuted = !this._isItemMutedBySlide(slide);
+      this._setItemMuted(itemIndex, nextMuted);
+
+      if (clickedIndex !== -1 && clickedIndex !== this.current) {
+        this.goTo(clickedIndex);
+        return;
+      }
+
+      video.muted = nextMuted;
     });
+  }
+
+  _setItemMuted(itemIndex, isMuted) {
+    if (itemIndex < 0) return;
+
+    this.muteByItemIndex[itemIndex] = !!isMuted;
+
+    this.slides.forEach((slide) => {
+      if (this._getItemIndexFromSlide(slide) !== itemIndex) return;
+      this._setSlideMuted(slide, !!isMuted);
+    });
+  }
+
+  _muteAllNonActiveSlides() {
+    this.slides.forEach((slide, index) => {
+      if (index === this.current) return;
+      this._setSlideMuted(slide, true);
+    });
+  }
+
+  _setSlideMuted(slide, isMuted) {
+    if (!slide) return;
+
+    const video = slide.querySelector(".wphz-ugc-video");
+    if (video) {
+      video.muted = !!isMuted;
+    }
+
+    const btn = slide.querySelector(".wphz-ugc-mute-btn");
+    if (!btn) return;
+
+    const muteIcon = btn.querySelector(".wphz-icon-mute");
+    const unmuteIcon = btn.querySelector(".wphz-icon-unmute");
+    if (muteIcon) muteIcon.style.display = isMuted ? "" : "none";
+    if (unmuteIcon) unmuteIcon.style.display = isMuted ? "none" : "";
+  }
+
+  _isItemMutedBySlide(slide) {
+    const itemIndex = this._getItemIndexFromSlide(slide);
+    if (itemIndex < 0) return this.defaultMuted;
+    if (Object.prototype.hasOwnProperty.call(this.muteByItemIndex, itemIndex)) {
+      return !!this.muteByItemIndex[itemIndex];
+    }
+    return this.defaultMuted;
+  }
+
+  _getItemIndexFromSlide(slide) {
+    if (!slide) return -1;
+    const raw = slide.dataset.index;
+    const parsed = Number.parseInt(raw || "", 10);
+    return Number.isNaN(parsed) ? -1 : parsed;
   }
 }
 
