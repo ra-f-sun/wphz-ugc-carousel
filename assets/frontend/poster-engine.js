@@ -93,7 +93,7 @@
 
     pause(video) {
       if (!video) return;
-      this.resetToPoster(video);
+      video.pause();
     }
 
     _bindDiagnostics(video) {

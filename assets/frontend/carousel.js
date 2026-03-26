@@ -66,6 +66,8 @@ class WPHZUGCCarousel {
     // Drag/Swipe state
     this._drag = { active: false, startX: 0, startY: 0, diffX: 0, diffY: 0 };
     this._snapTimer = null;
+    this._intersectionObserver = null;
+    this._slideVisibilityObserver = null;
 
     // ResizeObserver instance — stored so it could be disconnected if needed
     this._resizeObserver = null;
@@ -83,6 +85,7 @@ class WPHZUGCCarousel {
 
     this._setVideoSources(); // Phase 12 Governor
     this._buildInfiniteTrack();
+    this._bindSlideVisibilityObserver();
     this._bindDrag();
     this._bindMuteButtons();
 
@@ -112,6 +115,18 @@ class WPHZUGCCarousel {
     });
 
     this._resizeObserver.observe(this.stage);
+
+    this._intersectionObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+        if (!entry.isIntersecting) {
+            this._pauseForViewport();
+        } else {
+            this._resumeForViewport();
+        }
+      });
+    }, { threshold: 0.2 });
+
+    this._intersectionObserver.observe(this.root);
   }
 
   /* ── Slide Sizing ────────────────────────────────────────────────────────
@@ -324,34 +339,48 @@ class WPHZUGCCarousel {
     const video = slide?.querySelector(".wphz-ugc-video");
     if (!video) return;
 
+    // ── Clone zone guard ──────────────────────────────────────────────────
+    // If current points to a prepended or appended clone, skip playback.
+    // The clone only exists to make the CSS transition look seamless.
+    // Playing it causes a visible "restart" when snapback hands off to the
+    // real slide (same content, but currentTime resets to 0 on the original).
+    // Showing the poster during the 550ms transition is sufficient.
+    const lo = this.cloneCount;
+    const hi = this.cloneCount + this.totalOrig;
+    if (this.current < lo || this.current >= hi) {
+        this._muteAllNonActiveSlides();
+        if (this.posterEngine) {
+            this.posterEngine.resetToPoster(video);
+        }
+        return;
+    }
+    // ─────────────────────────────────────────────────────────────────────
+
     this._muteAllNonActiveSlides();
 
     const itemMuted = this._isItemMutedBySlide(slide);
 
     const playPromise = this.posterEngine
-      ? this.posterEngine.play(video, itemMuted)
-      : (() => {
-          video.muted = itemMuted;
-          return video.play();
+        ? this.posterEngine.play(video, itemMuted)
+        : (() => {
+            video.muted = itemMuted;
+            return video.play();
         })();
 
     if (playPromise && typeof playPromise.catch === "function") {
-      playPromise.catch(() => {
-        // Unmuted autoplay blocked — retry muted (browsers always allow this)
-        const itemIndex = this._getItemIndexFromSlide(slide);
-        this._setItemMuted(itemIndex, true);
-        video.muted = true;
-        const retryPromise = this.posterEngine
-          ? this.posterEngine.play(video, true)
-          : video.play();
-        retryPromise?.catch(() => {
-          // Still blocked (tab not yet focused) — give up silently
+        playPromise.catch(() => {
+            const itemIndex = this._getItemIndexFromSlide(slide);
+            this._setItemMuted(itemIndex, true);
+            video.muted = true;
+            const retryPromise = this.posterEngine
+                ? this.posterEngine.play(video, true)
+                : video.play();
+            retryPromise?.catch(() => {});
         });
-      });
     }
 
     video.onended = () => this._onVideoEnded();
-  }
+}
 
   _pauseCenter() {
     const slide = this.slides[this.current];
@@ -369,6 +398,34 @@ class WPHZUGCCarousel {
     }
   }
 
+  _pauseForViewport() {
+    const video = this.slides[this.current]?.querySelector(".wphz-ugc-video");
+    if (!video) return;
+    video.pause();
+  }
+
+  _resumeForViewport() {
+      const video = this.slides[this.current]?.querySelector(".wphz-ugc-video");
+      if (!video) return;
+      video.currentTime = 0;
+      this._playCenter();
+  }
+
+  _bindSlideVisibilityObserver() {
+    this._slideVisibilityObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+            if (entry.isIntersecting) return;
+            const video = entry.target.querySelector(".wphz-ugc-video");
+            if (video) {
+                video.currentTime = 0;
+            }
+          });
+      }, { threshold: 0 });
+
+      this.slides.forEach((slide) => {
+          this._slideVisibilityObserver.observe(slide);
+      });
+  }
   _onVideoEnded() {
     this.direction === "rtl" ? this.prev() : this.next();
   }
