@@ -45,6 +45,17 @@
  *    clone-based infinite loop pattern as the main carousel. Pixel-based
  *    transforms replace the old percentage approach. Single-item carousels
  *    (only one product) skip cloning and hide arrows entirely.
+ *
+ * 8. INITIAL POSITION SHIFT: current starts at cloneCount + round(centerOffset)
+ *    so ALL visible viewport positions are filled with originals. The clone
+ *    boundary is pushed N slides away in either direction — normal navigation
+ *    never reaches it.
+ *
+ * 9. INDEX-DISTANCE RESETS: Replaced per-slide IntersectionObserver with
+ *    circular index-distance calculation. After every navigation, videos whose
+ *    item index is far from the active item (in circular/loop terms) get reset.
+ *    Nearby items keep their paused frame. This works correctly through
+ *    snapback because circular distance is position-independent.
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
@@ -66,8 +77,6 @@ class WPHZUGCCarousel {
     // Drag/Swipe state
     this._drag = { active: false, startX: 0, startY: 0, diffX: 0, diffY: 0 };
     this._snapTimer = null;
-    this._intersectionObserver = null;
-    this._slideVisibilityObserver = null;
 
     // ResizeObserver instance — stored so it could be disconnected if needed
     this._resizeObserver = null;
@@ -85,12 +94,14 @@ class WPHZUGCCarousel {
 
     this._setVideoSources(); // Phase 12 Governor
     this._buildInfiniteTrack();
-    this._bindSlideVisibilityObserver();
     this._bindDrag();
     this._bindMuteButtons();
 
-    // Start with the first original slide in the active position
-    this.current = this.cloneCount;
+    // Shifted start — originals fill the entire viewport.
+    // Clone boundary is pushed N slides away in either direction.
+    const visible = this._getVisibleCount();
+    const centerOffset = this._getCenterOffset(visible);
+    this.current = this.cloneCount + Math.round(centerOffset);
     this._updateSlideClasses();
 
     // Hide track until positioned — prevents flash at wrong position
@@ -116,17 +127,19 @@ class WPHZUGCCarousel {
 
     this._resizeObserver.observe(this.stage);
 
-    this._intersectionObserver = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
+    // Viewport observer — pause/resume when entire carousel section
+    // enters or leaves the viewport.
+    this._viewportObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
         if (!entry.isIntersecting) {
-            this._pauseForViewport();
+          this._pauseForViewport();
         } else {
-            this._resumeForViewport();
+          this._resumeForViewport();
         }
       });
     }, { threshold: 0.2 });
 
-    this._intersectionObserver.observe(this.root);
+    this._viewportObserver.observe(this.root);
   }
 
   /* ── Slide Sizing ────────────────────────────────────────────────────────
@@ -219,8 +232,10 @@ class WPHZUGCCarousel {
   /* ── Navigation ─────────────────────────────────────────────────────────── */
   goTo(index) {
     this._pauseCenter();
+     this._syncClonePosters();
     this.current = index;
     this._updateSlideClasses();
+    this._resetDistantVideos();
     this._applyTransform(true);
     this._playCenter();
     this._scheduleSnapback();
@@ -264,6 +279,38 @@ class WPHZUGCCarousel {
     if (!animate) {
       void this.track.offsetHeight; // Force reflow → instant snap, no flash
       this.track.style.transition = "";
+    }
+  }
+
+  _syncClonePosters() {
+    const lo = this.cloneCount;
+    const hi = this.cloneCount + this.totalOrig;
+
+    for (let i = lo; i < hi; i++) {
+      const video = this.slides[i]?.querySelector(".wphz-ugc-video");
+      if (!video || video.readyState < 2 || !video.videoWidth) continue;
+
+      const itemIndex = this._getItemIndexFromSlide(this.slides[i]);
+      if (itemIndex < 0) continue;
+
+      let frameUrl;
+      try {
+        const c = document.createElement("canvas");
+        c.width = video.videoWidth;
+        c.height = video.videoHeight;
+        c.getContext("2d").drawImage(video, 0, 0, c.width, c.height);
+        frameUrl = c.toDataURL("image/png");
+      } catch (_) {
+        continue; // Cross-origin — clone keeps its configured poster
+      }
+
+      // Apply captured frame to all clones sharing this data-index
+      this.slides.forEach((s, idx) => {
+        if (idx >= lo && idx < hi) return; // Skip originals
+        if (this._getItemIndexFromSlide(s) !== itemIndex) return;
+        const v = s.querySelector(".wphz-ugc-video");
+        if (v) v.poster = frameUrl;
+      });
     }
   }
 
@@ -322,6 +369,7 @@ class WPHZUGCCarousel {
 
       this._applyTransform(false);
       this._updateSlideClasses();
+      this._resetDistantVideos();
       this._playCenter();
     }, 550); // 500 ms transition + 50 ms buffer
   }
@@ -330,6 +378,50 @@ class WPHZUGCCarousel {
   _updateSlideClasses() {
     this.slides.forEach((slide, i) => {
       slide.classList.toggle("wphz-ugc-slide--active", i === this.current);
+    });
+  }
+
+  /* ── Index-Distance Video Reset ──────────────────────────────────────────
+   * Replaces per-slide IntersectionObserver which falsely reset videos
+   * during CSS transitions and snapback teleportation.
+   *
+   * Calculates each item's circular distance from the active item using
+   * item indices (data-index), not DOM position. Items beyond the visible
+   * threshold get reset (currentTime = 0). Nearby items keep their paused
+   * frame.
+   *
+   * Circular distance: the shorter path around the loop.
+   *   e.g. with 7 items, distance from item 0 to item 6 = 1 (not 6).
+   *
+   * This works perfectly through snapback because circular item distance
+   * never changes — only which DOM element (clone vs original) is displayed.
+   *
+   * Threshold = ceil(visibleCount / 2):
+   *   Desktop (4.0 visible): ceil(2.0) = 2 → items within 2 steps keep frame
+   *   Tablet  (3.3 visible): ceil(1.65) = 2
+   *   Mobile  (1.7 visible): ceil(0.85) = 1
+   */
+  _resetDistantVideos() {
+    const currentItemIndex = this._getItemIndexFromSlide(this.slides[this.current]);
+    if (currentItemIndex < 0) return;
+
+    const threshold = Math.ceil(this._getVisibleCount() / 2);
+
+    this.slides.forEach((slide, idx) => {
+      if (idx === this.current) return; // Never reset the active slide
+
+      const itemIndex = this._getItemIndexFromSlide(slide);
+      if (itemIndex < 0) return;
+
+      const diff = Math.abs(currentItemIndex - itemIndex);
+      const distance = Math.min(diff, this.totalOrig - diff);
+
+      if (distance > threshold) {
+        const video = slide.querySelector(".wphz-ugc-video");
+        if (video && video.currentTime !== 0) {
+          video.currentTime = 0;
+        }
+      }
     });
   }
 
@@ -380,7 +472,7 @@ class WPHZUGCCarousel {
     }
 
     video.onended = () => this._onVideoEnded();
-}
+  }
 
   _pauseCenter() {
     const slide = this.slides[this.current];
@@ -389,11 +481,13 @@ class WPHZUGCCarousel {
       const itemIndex = this._getItemIndexFromSlide(slide);
       this._setItemMuted(itemIndex, true);
 
+      // Just pause — do NOT reset currentTime. The native paused frame
+      // stays visible. Reset only happens via _resetDistantVideos when
+      // the item is far enough away in circular distance.
       if (this.posterEngine) {
         this.posterEngine.pause(video);
       } else {
         video.pause();
-        video.currentTime = 0;
       }
     }
   }
@@ -405,27 +499,12 @@ class WPHZUGCCarousel {
   }
 
   _resumeForViewport() {
-      const video = this.slides[this.current]?.querySelector(".wphz-ugc-video");
-      if (!video) return;
-      video.currentTime = 0;
-      this._playCenter();
+    const video = this.slides[this.current]?.querySelector(".wphz-ugc-video");
+    if (!video) return;
+    video.currentTime = 0;
+    this._playCenter();
   }
 
-  _bindSlideVisibilityObserver() {
-    this._slideVisibilityObserver = new IntersectionObserver((entries) => {
-        entries.forEach((entry) => {
-            if (entry.isIntersecting) return;
-            const video = entry.target.querySelector(".wphz-ugc-video");
-            if (video) {
-                video.currentTime = 0;
-            }
-          });
-      }, { threshold: 0 });
-
-      this.slides.forEach((slide) => {
-          this._slideVisibilityObserver.observe(slide);
-      });
-  }
   _onVideoEnded() {
     this.direction === "rtl" ? this.prev() : this.next();
   }
