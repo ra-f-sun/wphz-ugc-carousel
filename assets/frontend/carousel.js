@@ -68,7 +68,7 @@ class WPHZUGCCarousel {
     this.origSlides = Array.from(el.querySelectorAll(".wphz-ugc-slide"));
     this.totalOrig = this.origSlides.length;
     this.defaultMuted = el.dataset.muted === "1";
-    this.muteByItemIndex = {};
+    this.isMuted = this.defaultMuted;
     this.direction = el.dataset.direction || "ltr";
 
     // Cached slide width in px (set by _setSlideSizes)
@@ -440,7 +440,7 @@ class WPHZUGCCarousel {
     const lo = this.cloneCount;
     const hi = this.cloneCount + this.totalOrig;
     if (this.current < lo || this.current >= hi) {
-        this._muteAllNonActiveSlides();
+        this._applyMutedToAllSlides();
         if (this.posterEngine) {
             this.posterEngine.resetToPoster(video);
         }
@@ -448,9 +448,9 @@ class WPHZUGCCarousel {
     }
     // ─────────────────────────────────────────────────────────────────────
 
-    this._muteAllNonActiveSlides();
+    this._applyMutedToAllSlides();
 
-    const itemMuted = this._isItemMutedBySlide(slide);
+    const itemMuted = this._isMuted();
 
     const playPromise = this.posterEngine
         ? this.posterEngine.play(video, itemMuted)
@@ -461,8 +461,7 @@ class WPHZUGCCarousel {
 
     if (playPromise && typeof playPromise.catch === "function") {
         playPromise.catch(() => {
-            const itemIndex = this._getItemIndexFromSlide(slide);
-            this._setItemMuted(itemIndex, true);
+          this._setGlobalMuted(true);
             video.muted = true;
             const retryPromise = this.posterEngine
                 ? this.posterEngine.play(video, true)
@@ -478,9 +477,6 @@ class WPHZUGCCarousel {
     const slide = this.slides[this.current];
     const video = slide?.querySelector(".wphz-ugc-video");
     if (video) {
-      const itemIndex = this._getItemIndexFromSlide(slide);
-      this._setItemMuted(itemIndex, true);
-
       // Just pause — do NOT reset currentTime. The native paused frame
       // stays visible. Reset only happens via _resetDistantVideos when
       // the item is far enough away in circular distance.
@@ -506,6 +502,11 @@ class WPHZUGCCarousel {
   }
 
   _onVideoEnded() {
+    const endedVideo = this.slides[this.current]?.querySelector(".wphz-ugc-video");
+    if (endedVideo) {
+      endedVideo.currentTime = 0;
+    }
+
     this.direction === "rtl" ? this.prev() : this.next();
   }
 
@@ -575,12 +576,9 @@ class WPHZUGCCarousel {
       const video = slide?.querySelector(".wphz-ugc-video");
       if (!video) return;
 
-      const itemIndex = this._getItemIndexFromSlide(slide);
-      if (itemIndex < 0) return;
-
       const clickedIndex = this.slides.indexOf(slide);
-      const nextMuted = !this._isItemMutedBySlide(slide);
-      this._setItemMuted(itemIndex, nextMuted);
+      const nextMuted = !this._isMuted();
+      this._setGlobalMuted(nextMuted);
 
       if (clickedIndex !== -1 && clickedIndex !== this.current) {
         this.goTo(clickedIndex);
@@ -591,21 +589,14 @@ class WPHZUGCCarousel {
     });
   }
 
-  _setItemMuted(itemIndex, isMuted) {
-    if (itemIndex < 0) return;
-
-    this.muteByItemIndex[itemIndex] = !!isMuted;
-
-    this.slides.forEach((slide) => {
-      if (this._getItemIndexFromSlide(slide) !== itemIndex) return;
-      this._setSlideMuted(slide, !!isMuted);
-    });
+  _setGlobalMuted(isMuted) {
+    this.isMuted = !!isMuted;
+    this._applyMutedToAllSlides();
   }
 
-  _muteAllNonActiveSlides() {
-    this.slides.forEach((slide, index) => {
-      if (index === this.current) return;
-      this._setSlideMuted(slide, true);
+  _applyMutedToAllSlides() {
+    this.slides.forEach((slide) => {
+      this._setSlideMuted(slide, this.isMuted);
     });
   }
 
@@ -626,13 +617,8 @@ class WPHZUGCCarousel {
     if (unmuteIcon) unmuteIcon.style.display = isMuted ? "none" : "";
   }
 
-  _isItemMutedBySlide(slide) {
-    const itemIndex = this._getItemIndexFromSlide(slide);
-    if (itemIndex < 0) return this.defaultMuted;
-    if (Object.prototype.hasOwnProperty.call(this.muteByItemIndex, itemIndex)) {
-      return !!this.muteByItemIndex[itemIndex];
-    }
-    return this.defaultMuted;
+  _isMuted() {
+    return !!this.isMuted;
   }
 
   _getItemIndexFromSlide(slide) {
@@ -660,7 +646,12 @@ class WPHZProductCarousel {
 
     // Single item — no carousel behaviour needed, hide arrows and exit.
     if (this.totalOrig === 1) {
-      this._setArrowVisibility(false);
+      this.wrap
+        .querySelector(".wphz-product-arrow--next")
+        ?.style.setProperty("display", "none");
+      this.wrap
+        .querySelector(".wphz-product-arrow--prev")
+        ?.style.setProperty("display", "none");
       return;
     }
 
@@ -778,20 +769,16 @@ class WPHZProductCarousel {
   _bindArrows() {
     this.wrap
       .querySelector(".wphz-product-arrow--next")
-      ?.addEventListener("click", () => this._slide(1));
+      ?.addEventListener("click", (e) => {
+        e.currentTarget?.removeAttribute("disabled");
+        this._slide(1);
+      });
     this.wrap
       .querySelector(".wphz-product-arrow--prev")
-      ?.addEventListener("click", () => this._slide(-1));
-  }
-
-  _setArrowVisibility(visible) {
-    const display = visible ? "" : "none";
-    this.wrap
-      .querySelector(".wphz-product-arrow--next")
-      ?.style.setProperty("display", display);
-    this.wrap
-      .querySelector(".wphz-product-arrow--prev")
-      ?.style.setProperty("display", display);
+      ?.addEventListener("click", (e) => {
+        e.currentTarget?.removeAttribute("disabled");
+        this._slide(-1);
+      });
   }
 }
 
