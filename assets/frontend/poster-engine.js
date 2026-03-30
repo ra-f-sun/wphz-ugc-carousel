@@ -1,10 +1,19 @@
 /**
  * WPHZ UGC Poster Engine
- * - Keeps non-active slides in poster-only state
- * - Applies configured poster URLs natively via HTMLVideoElement.poster
- * - Attaches video src just-in-time for active slide playback
- * - Detaches src for inactive slides to reduce decoder/memory pressure
- * - Emits lightweight diagnostics for cross-origin media failures
+ *
+ * Strategy (inspired by Tolstoy's carousel):
+ *   Every <video> gets its src set at init time with preload="none".
+ *   preload="none" = zero network requests, identical to having no src.
+ *   When play() is called, the browser fetches on demand — no intermediate
+ *   attachSource → load() step, no black flash, no poster rewrite.
+ *
+ * Responsibilities:
+ *   - Apply configured poster URLs via HTMLVideoElement.poster
+ *   - Set src + preload="none" once (initSource) — called before cloning
+ *   - Play: just call video.play() — src is already there
+ *   - Pause: just call video.pause() — src stays, paused frame preserved
+ *   - Reset: pause + currentTime = 0 — poster shows natively when no frame decoded
+ *   - Diagnostics for cross-origin media failures
  */
 (function () {
   class WPHZUGCPosterEngine {
@@ -13,6 +22,10 @@
       this._diagnosed = new WeakSet();
     }
 
+    /**
+     * Apply the configured poster URL and crossorigin attribute.
+     * Called during init and safe to call multiple times.
+     */
     applyPoster(video) {
       if (!video) return;
 
@@ -21,9 +34,6 @@
         video.poster = posterUrl;
       }
 
-      // Keep cross-origin mode explicit for third-party hosts.
-      // If origin doesn't send proper CORS headers, playback/poster failures
-      // must be fixed on the media host side.
       if (!video.hasAttribute("crossorigin")) {
         video.setAttribute("crossorigin", "anonymous");
       }
@@ -31,27 +41,12 @@
       this._bindDiagnostics(video);
     }
 
-    resetToPoster(video) {
-      if (!video) return;
-
-      video.pause();
-      try {
-        video.currentTime = 0;
-      } catch (error) {
-        // Ignore non-seekable edge cases; poster remains primary fallback.
-      }
-
-      if (this._hasPoster(video)) {
-        this.detachSource(video);
-      } else {
-        // No explicit poster URL: keep metadata source attached so browser can
-        // show first-frame fallback instead of a black tile.
-        this.attachSource(video);
-      }
-      this.applyPoster(video);
-    }
-
-    attachSource(video) {
+    /**
+     * Set src + preload="none" on a video element.
+     * Called once per original slide BEFORE cloning so clones inherit it.
+     * preload="none" = browser makes zero network requests until play().
+     */
+    initSource(video) {
       if (!video) return;
 
       const selectedSrc = (video.dataset.selectedSrc || "").trim();
@@ -60,27 +55,35 @@
         return;
       }
 
-      if (video.getAttribute("src") !== selectedSrc) {
-        video.setAttribute("src", selectedSrc);
-        video.preload = "metadata";
-        video.load();
-      }
-
+      video.setAttribute("src", selectedSrc);
+      video.preload = "none";
       this.applyPoster(video);
     }
 
-    detachSource(video) {
+    /**
+     * Reset video to poster state.
+     * Pauses, resets time to 0. Does NOT remove src.
+     * With preload="none" and currentTime=0, the browser shows the poster
+     * natively if no frames are decoded yet.
+     */
+    resetToPoster(video) {
       if (!video) return;
-      if (!video.getAttribute("src")) return;
 
-      video.removeAttribute("src");
-      video.load();
+      video.pause();
+      try {
+        video.currentTime = 0;
+      } catch (_) {
+        // Ignore non-seekable edge cases
+      }
     }
 
+    /**
+     * Play a video. Since src is always set (from initSource), just play.
+     * Skip any re-initialization if video already has decoded frames.
+     */
     play(video, isMuted) {
       if (!video) return Promise.reject(new Error("Missing video element"));
 
-      this.attachSource(video);
       video.muted = !!isMuted;
 
       const playPromise = video.play();
@@ -91,11 +94,15 @@
       return Promise.resolve();
     }
 
+    /**
+     * Pause a video. src stays attached, paused frame preserved natively.
+     */
     pause(video) {
       if (!video) return;
       video.pause();
     }
 
+    /** Bind one-time error diagnostics per video element. */
     _bindDiagnostics(video) {
       if (!video || this._diagnosed.has(video)) return;
       this._diagnosed.add(video);
@@ -107,10 +114,6 @@
           src,
         );
       });
-    }
-
-    _hasPoster(video) {
-      return !!(video?.dataset?.posterUrl || "").trim();
     }
   }
 
