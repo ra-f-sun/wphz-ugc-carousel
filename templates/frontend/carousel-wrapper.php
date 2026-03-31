@@ -8,7 +8,7 @@ defined('ABSPATH') || exit;
  * @var bool   $is_muted
  */
 ?>
-<section class="wphz-ugc-carousel"
+<div class="wphz-ugc-carousel"
          data-carousel-id="<?php echo esc_attr($id); ?>"
          data-muted="<?php echo $is_muted ? '1' : '0'; ?>"
          data-direction="<?php echo esc_attr($slide); ?>">
@@ -26,4 +26,4 @@ defined('ABSPATH') || exit;
         </div>
     </div>
 
-</section>
+</div>

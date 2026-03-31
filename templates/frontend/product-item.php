@@ -37,7 +37,7 @@ $has_link    = !empty($product_url);
 
         <?php if (empty($hide_atc)): ?>
             <button type="button"
-                class="button wphz-ugc-atc-btn"
+                class="wphz-ugc-atc-btn"
                 data-product-id="<?php echo esc_attr($product->get_id()); ?>">
                 <?php esc_html_e('Add to Cart', 'wphz-ugc'); ?>
             </button>

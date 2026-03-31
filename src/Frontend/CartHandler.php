@@ -29,8 +29,12 @@ class CartHandler extends AbstractSingleton {
         $result = WC()->cart->add_to_cart($product_id, $quantity);
 
         if ($result) {
+            WC()->cart->calculate_totals();
+
             wp_send_json_success([
-                'message' => __('Added to cart.', 'wphz-ugc'),
+                'message'   => __('Added to cart.', 'wphz-ugc'),
+                'fragments' => apply_filters('woocommerce_add_to_cart_fragments', []),
+                'cart_hash' => WC()->cart->get_cart_hash(),
             ]);
         } else {
             wp_send_json_error(['message' => 'Could not add to cart.']);
