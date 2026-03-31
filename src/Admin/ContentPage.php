@@ -1,6 +1,6 @@
 <?php
-defined('ABSPATH') || exit;
 namespace WPHZ\UGC\Admin;
+defined('ABSPATH') || exit;
 
 use WPHZ\UGC\AbstractSingleton;
 use WPHZ\UGC\Repository\ItemRepository;

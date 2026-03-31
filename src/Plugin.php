@@ -1,7 +1,7 @@
 <?php
-defined('ABSPATH') || exit;
 
 namespace WPHZ\UGC;
+defined('ABSPATH') || exit;
 
 use WPHZ\UGC\Admin\AdminMenu;
 use WPHZ\UGC\Admin\AssetLoader as AdminAssets;

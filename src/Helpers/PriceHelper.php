@@ -1,6 +1,6 @@
 <?php
-defined('ABSPATH') || exit;
 namespace WPHZ\UGC\Helpers;
+defined('ABSPATH') || exit;
 
 class PriceHelper {
 

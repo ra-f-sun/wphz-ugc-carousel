@@ -1,6 +1,6 @@
 <?php
-defined('ABSPATH') || exit;
 namespace WPHZ\UGC\Frontend;
+defined('ABSPATH') || exit;
 
 use WPHZ\UGC\AbstractSingleton;
 

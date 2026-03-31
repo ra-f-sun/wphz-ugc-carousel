@@ -1,6 +1,6 @@
 <?php
-defined('ABSPATH') || exit;
 namespace WPHZ\UGC;
+defined('ABSPATH') || exit;
 
 abstract class AbstractSingleton {
     private static array $instances = [];

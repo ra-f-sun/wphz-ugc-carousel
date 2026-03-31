@@ -1,6 +1,6 @@
 <?php
-defined('ABSPATH') || exit;
 namespace WPHZ\UGC\Shortcode;
+defined('ABSPATH') || exit;
 
 use WPHZ\UGC\AbstractSingleton;
 use WPHZ\UGC\Repository\CarouselRepository;
