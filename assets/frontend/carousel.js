@@ -512,23 +512,35 @@ class WPHZUGCCarousel {
 
   _bindMuteButtons() {
     this.root.addEventListener("click", (e) => {
-      const btn = e.target.closest(".wphz-ugc-mute-btn");
-      if (!btn) return;
+      // Guard: ignore if this was actually a drag
+      if (Math.abs(this._drag.diffX) > 12) return;
 
-      const slide = btn.closest(".wphz-ugc-slide");
-      const video = slide?.querySelector(".wphz-ugc-video");
-      if (!video) return;
+      // Don't intercept ATC buttons or product links
+      if (e.target.closest(".wphz-ugc-atc-btn") || e.target.closest(".wphz-ugc-product-img-link") || e.target.closest(".wphz-ugc-product-name-link")) return;
+
+      const muteBtn = e.target.closest(".wphz-ugc-mute-btn");
+      const slide = e.target.closest(".wphz-ugc-slide");
+      if (!slide) return;
 
       const clickedIndex = this.slides.indexOf(slide);
-      const nextMuted = !this._isMuted();
-      this._setGlobalMuted(nextMuted);
+      if (clickedIndex === -1) return;
 
-      if (clickedIndex !== -1 && clickedIndex !== this.current) {
-        this.goTo(clickedIndex);
-        return;
+      if (muteBtn) {
+        // Sound icon: navigate (if not current) + always toggle mute
+        const nextMuted = !this._isMuted();
+        this._setGlobalMuted(nextMuted);
+        if (clickedIndex !== this.current) {
+          this.goTo(clickedIndex);
+        } else {
+          const video = slide.querySelector(".wphz-ugc-video");
+          if (video) video.muted = nextMuted;
+        }
+      } else {
+        // Anywhere else on the slide: navigate only (if not current)
+        if (clickedIndex !== this.current) {
+          this.goTo(clickedIndex);
+        }
       }
-
-      video.muted = nextMuted;
     });
   }
 

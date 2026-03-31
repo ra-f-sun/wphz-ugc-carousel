@@ -1,4 +1,5 @@
 <?php
+defined('ABSPATH') || exit;
 namespace WPHZ\UGC\Ajax;
 
 use WPHZ\UGC\AbstractSingleton;

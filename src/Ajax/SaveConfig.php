@@ -1,4 +1,5 @@
 <?php
+defined('ABSPATH') || exit;
 namespace WPHZ\UGC\Ajax;
 
 use WPHZ\UGC\AbstractSingleton;
@@ -14,6 +15,9 @@ class SaveConfig extends AbstractSingleton {
 
     public function handle(): void {
         NonceHelper::verify('wphz_ugc_admin');
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(['message' => 'Unauthorized.'], 403);
+        }
 
         $config = [
             'name'           => SanitizeHelper::text($_POST['name']       ?? 'New Carousel'),

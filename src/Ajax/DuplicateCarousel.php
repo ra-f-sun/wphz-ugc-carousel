@@ -1,4 +1,5 @@
 <?php
+defined('ABSPATH') || exit;
 
 namespace WPHZ\UGC\Ajax;
 
@@ -18,8 +19,10 @@ class DuplicateCarousel extends AbstractSingleton
 
     public function handle(): void
     {
-        // Specifically look for 'wphz_nonce' as provided by wp_nonce_url
-        NonceHelper::verify('wphz_ugc_admin', 'wphz_nonce');
+        NonceHelper::verify('wphz_ugc_admin');
+        if (!current_user_can('manage_options')) {
+            wp_die(esc_html__('Unauthorized.', 'wphz-ugc'));
+        }
 
         $carousel_id = (int) ($_GET['id'] ?? 0);
         if ($carousel_id <= 0) {

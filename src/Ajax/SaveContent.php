@@ -1,4 +1,5 @@
 <?php
+defined('ABSPATH') || exit;
 
 namespace WPHZ\UGC\Ajax;
 
@@ -18,6 +19,9 @@ class SaveContent extends AbstractSingleton
     public function handle(): void
     {
         NonceHelper::verify('wphz_ugc_admin');
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(['message' => 'Unauthorized.'], 403);
+        }
 
         $items_raw   = $_POST['items'] ?? [];
         $carousel_id = (int) ($_POST['carousel_id'] ?? 0);

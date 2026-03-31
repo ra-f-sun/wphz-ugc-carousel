@@ -1,4 +1,5 @@
 <?php
+defined('ABSPATH') || exit;
 namespace WPHZ\UGC\Helpers;
 
 class SanitizeHelper {
