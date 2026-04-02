@@ -50,6 +50,7 @@ class WPHZUGCCarousel {
     this._snapTimer = null;
     this._resizeObserver = null;
     this._viewportObserver = null;
+    this._inViewport = false;  // stays false until IntersectionObserver confirms visibility
 
     this.posterEngine =
       typeof window.WPHZUGCPosterEngine === "function"
@@ -86,7 +87,9 @@ class WPHZUGCCarousel {
 
       if (this.track.style.visibility === "hidden") {
         this.track.style.visibility = "";
-        this._playCenter();
+        // Only autoplay if the carousel is already in the viewport.
+        // If not, IntersectionObserver will trigger _resumeForViewport() when it scrolls in.
+        if (this._inViewport) this._playCenter();
       }
     });
     this._resizeObserver.observe(this.stage);
@@ -95,6 +98,7 @@ class WPHZUGCCarousel {
     this._viewportObserver = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
+          this._inViewport = entry.isIntersecting;
           if (entry.isIntersecting) {
             this._resumeForViewport();
           } else {

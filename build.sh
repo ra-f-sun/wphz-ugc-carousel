@@ -54,8 +54,31 @@ find "$BUILD_DIR/vendor" -name ".git" -type d -exec rm -rf {} + 2>/dev/null || t
 echo "▶ Creating zip: $ZIP_FILE"
 rm -f "$ZIP_FILE"
 
-cd "$DIST_DIR"
-zip -rq "$ZIP_FILE" "$PLUGIN_SLUG"
+if command -v zip &>/dev/null; then
+    cd "$DIST_DIR"
+    zip -rq "$ZIP_FILE" "$PLUGIN_SLUG"
+else
+    # Fallback: Python zipfile — always available on Windows, writes forward-slash
+    # paths so Linux servers extract correctly (Compress-Archive uses backslashes).
+    /c/Python313/python - <<PYEOF
+import zipfile, os, sys
+
+build_dir = r"$(cygpath -w "$BUILD_DIR")"
+zip_file  = r"$(cygpath -w "$ZIP_FILE")"
+slug      = "$PLUGIN_SLUG"
+
+with zipfile.ZipFile(zip_file, "w", zipfile.ZIP_DEFLATED) as zf:
+    for root, dirs, files in os.walk(build_dir):
+        for file in files:
+            abs_path  = os.path.join(root, file)
+            # Always forward-slash arcname so Linux servers extract correctly
+            rel_path  = os.path.relpath(abs_path, os.path.dirname(build_dir))
+            arc_name  = rel_path.replace(os.sep, "/")
+            zf.write(abs_path, arc_name)
+
+print(f"  written {zip_file}")
+PYEOF
+fi
 
 # ── Cleanup staging dir ──────────────────────────────────────
 rm -rf "$BUILD_DIR"

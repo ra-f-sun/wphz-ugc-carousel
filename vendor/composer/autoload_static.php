@@ -22,6 +22,32 @@ class ComposerStaticInit3873634f7214a095330e1acde8902ea6
 
     public static $classMap = array (
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
+        'WPHZ\\UGC\\AbstractSingleton' => __DIR__ . '/../..' . '/src/AbstractSingleton.php',
+        'WPHZ\\UGC\\Admin\\AdminMenu' => __DIR__ . '/../..' . '/src/Admin/AdminMenu.php',
+        'WPHZ\\UGC\\Admin\\AssetLoader' => __DIR__ . '/../..' . '/src/Admin/AssetLoader.php',
+        'WPHZ\\UGC\\Admin\\ConfigPage' => __DIR__ . '/../..' . '/src/Admin/ConfigPage.php',
+        'WPHZ\\UGC\\Admin\\ContentPage' => __DIR__ . '/../..' . '/src/Admin/ContentPage.php',
+        'WPHZ\\UGC\\Ajax\\CreateCarousel' => __DIR__ . '/../..' . '/src/Ajax/CreateCarousel.php',
+        'WPHZ\\UGC\\Ajax\\DeleteCarousel' => __DIR__ . '/../..' . '/src/Ajax/DeleteCarousel.php',
+        'WPHZ\\UGC\\Ajax\\DeleteItem' => __DIR__ . '/../..' . '/src/Ajax/DeleteItem.php',
+        'WPHZ\\UGC\\Ajax\\DuplicateCarousel' => __DIR__ . '/../..' . '/src/Ajax/DuplicateCarousel.php',
+        'WPHZ\\UGC\\Ajax\\ProductSearch' => __DIR__ . '/../..' . '/src/Ajax/ProductSearch.php',
+        'WPHZ\\UGC\\Ajax\\SaveConfig' => __DIR__ . '/../..' . '/src/Ajax/SaveConfig.php',
+        'WPHZ\\UGC\\Ajax\\SaveContent' => __DIR__ . '/../..' . '/src/Ajax/SaveContent.php',
+        'WPHZ\\UGC\\Ajax\\SaveCustomCss' => __DIR__ . '/../..' . '/src/Ajax/SaveCustomCss.php',
+        'WPHZ\\UGC\\Frontend\\AssetLoader' => __DIR__ . '/../..' . '/src/Frontend/AssetLoader.php',
+        'WPHZ\\UGC\\Frontend\\CartHandler' => __DIR__ . '/../..' . '/src/Frontend/CartHandler.php',
+        'WPHZ\\UGC\\Helpers\\NonceHelper' => __DIR__ . '/../..' . '/src/Helpers/NonceHelper.php',
+        'WPHZ\\UGC\\Helpers\\PriceHelper' => __DIR__ . '/../..' . '/src/Helpers/PriceHelper.php',
+        'WPHZ\\UGC\\Helpers\\SanitizeHelper' => __DIR__ . '/../..' . '/src/Helpers/SanitizeHelper.php',
+        'WPHZ\\UGC\\Helpers\\TemplateLoader' => __DIR__ . '/../..' . '/src/Helpers/TemplateLoader.php',
+        'WPHZ\\UGC\\Helpers\\TransientHelper' => __DIR__ . '/../..' . '/src/Helpers/TransientHelper.php',
+        'WPHZ\\UGC\\Installer\\Installer' => __DIR__ . '/../..' . '/src/Installer/Installer.php',
+        'WPHZ\\UGC\\Plugin' => __DIR__ . '/../..' . '/src/Plugin.php',
+        'WPHZ\\UGC\\Repository\\CarouselRepository' => __DIR__ . '/../..' . '/src/Repository/CarouselRepository.php',
+        'WPHZ\\UGC\\Repository\\ItemRepository' => __DIR__ . '/../..' . '/src/Repository/ItemRepository.php',
+        'WPHZ\\UGC\\Shortcode\\ShortcodeRegistrar' => __DIR__ . '/../..' . '/src/Shortcode/ShortcodeRegistrar.php',
+        'WPHZ\\UGC\\Shortcode\\ShortcodeRenderer' => __DIR__ . '/../..' . '/src/Shortcode/ShortcodeRenderer.php',
     );
 
     public static function getInitializer(ClassLoader $loader)
