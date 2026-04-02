@@ -11,7 +11,6 @@
 
   font-family: Montserrat, sans-serif;
   color: var(--wphz-text);
-  margin: 2rem 0;
   position: relative;
   box-sizing: border-box;
 }
@@ -91,7 +90,7 @@
 /* Individual Slide Container — ~4.5 visible so edges peek */
 .wphz-ugc-slide {
   flex: 0 0 calc(100% / 4.5);
-  padding: 0 4px;
+  padding: 0 6px;
   min-width: 0;
 }
 
@@ -291,6 +290,7 @@
 .wphz-ugc-product-name-link {
   color: var(--wphz-text) !important;
   text-decoration: none !important;
+  font-weight: 700 !important;
 }
 
 /* .wphz-ugc-product-name-link:hover {
