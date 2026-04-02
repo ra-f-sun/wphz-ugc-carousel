@@ -3,7 +3,7 @@
         'name' => 'wphz/ugc-carousel',
         'pretty_version' => 'dev-master',
         'version' => 'dev-master',
-        'reference' => 'b6149feb99c2f87ba1df9fc9906088ad70eb7318',
+        'reference' => 'b079549b804be34a496cb6602a8954e8edc15562',
         'type' => 'wordpress-plugin',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -13,7 +13,7 @@
         'wphz/ugc-carousel' => array(
             'pretty_version' => 'dev-master',
             'version' => 'dev-master',
-            'reference' => 'b6149feb99c2f87ba1df9fc9906088ad70eb7318',
+            'reference' => 'b079549b804be34a496cb6602a8954e8edc15562',
             'type' => 'wordpress-plugin',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
