@@ -41,12 +41,11 @@ class ProductSearch extends AbstractSingleton
         // Check if term is numeric (could be product ID)
         $is_numeric = is_numeric($term);
 
-        // Query WooCommerce products by name, slug, and optionally ID
+        // Query WooCommerce products by name and optionally ID
         $query = new \WC_Product_Query([
             'limit'   => 15,
             'status'  => 'publish',
             's'       => $term,
-            'name'    => $term,
             'orderby' => 'relevance',
             'return'  => 'objects',
         ]);
