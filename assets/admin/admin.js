@@ -19,6 +19,7 @@ jQuery(function ($) {
             name:           $form.find('[name="name"]').val(),
             mute:           $form.find('[name="mute"]:checked').val(),
             direction:      $form.find('[name="direction"]:checked').val(),
+            hide_atc:       $form.find('[name="hide_atc"]:checked').val(),
         })
         .done(function (res) {
             $status.text((res.data && res.data.message) ? res.data.message : 'Saved!')
@@ -110,16 +111,39 @@ jQuery(function ($) {
                     var thumb = product.thumbnail
                         ? '<img src="' + product.thumbnail + '" alt="">'
                         : '<span class="wphz-no-thumb"></span>';
-                    
+
                     var cleanName = $('<div>').text(product.name).html();
+
+                    var skuHtml = product.sku
+                        ? 'SKU: ' + $('<div>').text(product.sku).html()
+                        : '';
+
+                    var statusBadge = '';
+                    if (product.status && product.status !== 'publish') {
+                        var statusLabel = product.status.charAt(0).toUpperCase() + product.status.slice(1);
+                        statusBadge = '<span class="wphz-badge wphz-badge--' + product.status + '">' + statusLabel + '</span>';
+                    }
+
+                    var visibilityBadge = '';
+                    if (product.catalog_visibility === 'hidden') {
+                        visibilityBadge = '<span class="wphz-badge wphz-badge--hidden">Hidden from catalog</span>';
+                    } else if (product.catalog_visibility === 'search') {
+                        visibilityBadge = '<span class="wphz-badge wphz-badge--visibility">Search only</span>';
+                    } else if (product.catalog_visibility === 'catalog') {
+                        visibilityBadge = '<span class="wphz-badge wphz-badge--visibility">Catalog only</span>';
+                    }
+
                     var tmpl = $('#tmpl-wphz-product-suggestion').html();
-                    
+
                     tmpl = tmpl.replace(/\{\{productId\}\}/g, product.id)
                                .replace(/\{\{productNameRaw\}\}/g, cleanName)
                                .replace(/\{\{thumbHtml\}\}/g, thumb)
                                .replace(/\{\{productNameTxt\}\}/g, cleanName)
-                               .replace(/\{\{productPrice\}\}/g, product.price_html);
-                               
+                               .replace(/\{\{productPrice\}\}/g, product.price_html)
+                               .replace(/\{\{skuHtml\}\}/g, skuHtml)
+                               .replace(/\{\{statusBadge\}\}/g, statusBadge)
+                               .replace(/\{\{visibilityBadge\}\}/g, visibilityBadge);
+
                     $suggestions.append(tmpl);
                 });
                 $suggestions.show();
@@ -207,7 +231,9 @@ jQuery(function ($) {
             $row.find('.wphz-chip').each(function () {
                 var $chip   = $(this);
                 var pId     = $chip.find('input[type="hidden"][name$="[id]"]').val();
-                var hideAtc = $chip.find('input[type="checkbox"][name$="[hide_atc]"]').is(':checked') ? 1 : 0;
+                // 3-state select: '' = inherit global, '0' = force show, '1' = force hide
+                var hideAtcRaw = $chip.find('select.wphz-atc-override').val();
+                var hideAtc = (hideAtcRaw === '0' || hideAtcRaw === '1') ? parseInt(hideAtcRaw, 10) : '';
                 
                 if (pId) {
                     products[pId] = {
@@ -248,6 +274,50 @@ jQuery(function ($) {
         .always(function () {
             $btn.prop('disabled', false);
             setTimeout(function () { $status.text(''); }, 3000);
+        });
+    });
+
+    // ── CSV Import ────────────────────────────────────────────────
+    $('#wphz-import-file').on('change', function () {
+        var file = this.files[0];
+        if (!file) return;
+
+        var carouselId = $('#wphz-carousel-id').val();
+        var $status    = $('#wphz-import-status');
+
+        var formData = new FormData();
+        formData.append('action',      'wphz_ugc_import_csv');
+        formData.append('nonce',       wphzUGC.nonce);
+        formData.append('carousel_id', carouselId);
+        formData.append('csv_file',    file);
+
+        $status.text('Importing...').css('color', '#888');
+
+        $.ajax({
+            url:         wphzUGC.ajaxurl,
+            type:        'POST',
+            data:        formData,
+            processData: false,
+            contentType: false,
+        })
+        .done(function (res) {
+            if (res.success) {
+                var msg = res.data.message;
+                if (res.data.errors && res.data.errors.length) {
+                    msg += ' (' + res.data.errors.length + ' warning(s))';
+                }
+                $status.text(msg).css('color', 'green');
+                setTimeout(function () { location.reload(); }, 1500);
+            } else {
+                $status.text((res.data && res.data.message) || 'Import failed.').css('color', 'red');
+            }
+        })
+        .fail(function () {
+            $status.text('Import request failed.').css('color', 'red');
+        })
+        .always(function () {
+            // Reset so re-importing the same file fires change again
+            $('#wphz-import-file').val('');
         });
     });
 

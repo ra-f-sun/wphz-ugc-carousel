@@ -53,11 +53,12 @@ class ShortcodeRenderer extends AbstractSingleton {
         }
 
         return $custom_css_output . TemplateLoader::render_return('frontend/carousel-wrapper', [
-            'id'       => $id,
-            'items'    => $items,
-            'sound'    => !empty($config['mute']) ? 'mute' : 'unmute',
-            'slide'    => $config['direction'] ?? 'ltr',
-            'is_muted' => !empty($config['mute']),
+            'id'              => $id,
+            'items'           => $items,
+            'sound'           => !empty($config['mute']) ? 'mute' : 'unmute',
+            'slide'           => $config['direction'] ?? 'ltr',
+            'is_muted'        => !empty($config['mute']),
+            'global_hide_atc' => (int) ($config['hide_atc'] ?? 0),
         ]);
     }
 
@@ -85,7 +86,10 @@ class ShortcodeRenderer extends AbstractSingleton {
         $products = [];
         foreach ($pids as $p_data) {
             $product_id = is_array($p_data) ? (int) ($p_data['id'] ?? 0) : (int) $p_data;
-            $hide_atc   = is_array($p_data) && !empty($p_data['hide_atc']);
+            // Preserve null (inherit global) vs 0 (force show) vs 1 (force hide)
+            $hide_atc   = is_array($p_data) && array_key_exists('hide_atc', $p_data)
+                          ? $p_data['hide_atc']
+                          : null;
 
             $product = wc_get_product($product_id);
             if ($product) {

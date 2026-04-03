@@ -25,6 +25,7 @@ class SaveConfig extends AbstractSingleton {
             'direction'      => in_array($_POST['direction'] ?? '', ['ltr', 'rtl'], true)
                                     ? $_POST['direction']
                                     : 'ltr',
+            'hide_atc'       => isset($_POST['hide_atc']) ? (int) $_POST['hide_atc'] : 0,
         ];
 
         $carousel_id = (int) ($_POST['carousel_id'] ?? 0);

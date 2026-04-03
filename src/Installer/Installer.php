@@ -13,6 +13,13 @@ class Installer
         return (bool) $wpdb->get_var("SHOW COLUMNS FROM {$table_items} LIKE 'poster_url'");
     }
 
+    public static function carousels_has_hide_atc_column(): bool
+    {
+        global $wpdb;
+        $table_carousels = $wpdb->prefix . 'wphz_ugc_carousels';
+        return (bool) $wpdb->get_var("SHOW COLUMNS FROM {$table_carousels} LIKE 'hide_atc'");
+    }
+
     public static function activate(): void
     {
         self::create_tables();
@@ -57,6 +64,7 @@ class Installer
             subheading varchar(255),
             mute tinyint(1) DEFAULT 1,
             direction varchar(10) DEFAULT 'ltr',
+            hide_atc tinyint(1) DEFAULT 0,
             on_arrow_right varchar(255),
             on_arrow_left varchar(255),
             custom_css longtext DEFAULT NULL,
@@ -82,6 +90,11 @@ class Installer
         // Safe migration: add poster_url column to existing installs
         if (! $wpdb->get_var("SHOW COLUMNS FROM {$table_items} LIKE 'poster_url'")) {
             $wpdb->query("ALTER TABLE {$table_items} ADD COLUMN poster_url text DEFAULT NULL");
+        }
+
+        // Safe migration: add hide_atc column to carousels table on existing installs
+        if (! $wpdb->get_var("SHOW COLUMNS FROM {$table_carousels} LIKE 'hide_atc'")) {
+            $wpdb->query("ALTER TABLE {$table_carousels} ADD COLUMN hide_atc tinyint(1) DEFAULT 0");
         }
 
         update_option('wphz_ugc_db_version', WPHZ_UGC_VERSION);

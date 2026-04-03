@@ -1,11 +1,15 @@
 /* WPHZ UGC Carousel — Admin Styles */
 
-/* ── Page Layout ──────────────────────────────────── */
+/* ─────────────────────────────────────────────────────
+   PAGE LAYOUT
+───────────────────────────────────────────────────── */
 .wphz-ugc-admin .tab-content {
-    margin-top: 16px;
+    margin-top: 20px;
 }
 
-/* ── Save Status Indicator ────────────────────────── */
+/* ─────────────────────────────────────────────────────
+   SAVE STATUS
+───────────────────────────────────────────────────── */
 .wphz-save-status {
     display: inline-block;
     margin-left: 12px;
@@ -13,27 +17,16 @@
     vertical-align: middle;
 }
 
-/* ── Danger Zone ──────────────────────────────────── */
-.wphz-danger-zone {
-    background: #fff8f8;
-    border: 1px solid #f5c6cb;
-    border-radius: 4px;
-    padding: 16px 20px;
-    margin-top: 16px;
-}
-
-.wphz-danger-zone h2 {
-    margin-top: 0;
-}
-
-/* ── Shortcode Box (Phase 4) ──────────────────────── */
+/* ─────────────────────────────────────────────────────
+   SHORTCODE BOX
+───────────────────────────────────────────────────── */
 .wphz-shortcode-box {
     display: flex;
     align-items: center;
     gap: 12px;
     background: #f0f0f1;
     border: 1px solid #c3c4c7;
-    border-radius: 4px;
+    border-radius: 6px;
     padding: 10px 14px;
     margin-bottom: 16px;
 }
@@ -45,117 +38,165 @@
     padding: 0;
 }
 
-/* ── Items List (Phase 4) ─────────────────────────── */
+/* ─────────────────────────────────────────────────────
+   INTEGRATION BOX
+───────────────────────────────────────────────────── */
+.wphz-integration-box {
+    margin-top: 20px;
+    padding: 16px 20px;
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 6px;
+}
+
+.wphz-integration-box h3 { margin-top: 0; }
+
+.wphz-integration-box code {
+    display: inline-block;
+    background: #f0f0f1;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    word-break: break-all;
+}
+
+/* ─────────────────────────────────────────────────────
+   ITEMS LIST
+───────────────────────────────────────────────────── */
 .wphz-items-list {
     list-style: none;
     margin: 0;
     padding: 0;
 }
 
+/* ─────────────────────────────────────────────────────
+   ITEM ROW  (vertical card layout)
+───────────────────────────────────────────────────── */
 .wphz-item-row {
     display: flex;
-    align-items: flex-start;
-    gap: 12px;
+    flex-direction: column;
     background: #fff;
-    border: 1px solid #c3c4c7;
-    border-radius: 8px;
-    padding: 14px;
-    margin-bottom: 8px;
-    cursor: grab;
+    border: 1px solid #dde1e7;
+    border-radius: 10px;
+    margin-bottom: 12px;
+    overflow: hidden; /* clips child bg colours to border-radius */
+    cursor: default;
 }
 
-.wphz-item-row:active {
+/* ── Row header strip (drag + remove) */
+.wphz-item-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #f6f7f9;
+    border-bottom: 1px solid #dde1e7;
+    padding: 8px 14px;
+    cursor: grab;
+    user-select: none;
+}
+
+.wphz-item-header:active {
     cursor: grabbing;
 }
 
-.wphz-item-row .wphz-drag-handle {
-    color: #999;
+.wphz-drag-handle {
+    color: #aaa;
     font-size: 18px;
     line-height: 1;
-    padding-top: 2px;
-    cursor: grab;
 }
 
-.wphz-item-row .wphz-item-thumb {
-    width: 80px;
-    height: 56px;
-    object-fit: cover;
-    border-radius: 2px;
-    flex-shrink: 0;
+/* ── Section base */
+.wphz-item-section {
+    padding: 16px;
 }
 
-.wphz-item-row .wphz-item-meta {
+/* ── Video section — white */
+.wphz-item-section--video {
+    background: #fff;
+}
+
+/* ── Products section — tinted, visually separated */
+.wphz-item-section--products {
+    background: #f4f6f9;
+    border-top: 1px solid #dde1e7;
+}
+
+/* ─────────────────────────────────────────────────────
+   VIDEO SOURCES
+───────────────────────────────────────────────────── */
+.wphz-video-sources {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.wphz-source-group {
+    padding: 10px 12px;
+    border-radius: 6px;
+    border: 1px solid transparent;
+}
+
+.wphz-source-group--hd {
+    background: #eef3ff;
+    border-color: #ccd8f5;
+}
+
+.wphz-source-group--sd {
+    background: #f5f5f6;
+    border-color: #e0e2e5;
+}
+
+.wphz-source-group--poster {
+    background: #edf7f1;
+    border-color: #c6e3cf;
+}
+
+.wphz-source-group label {
+    font-weight: 600;
+    font-size: 12px;
+    display: block;
+    margin-bottom: 6px;
+    color: #3c434a;
+}
+
+.wphz-source-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.wphz-url-input {
     flex: 1;
     min-width: 0;
 }
 
-.wphz-item-row .wphz-item-url {
-    font-size: 12px;
-    color: #555;
-    word-break: break-all;
-    margin-bottom: 6px;
-}
-
-/* Product chips */
-.wphz-product-chips {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin-top: 6px;
-}
-
-.wphz-chip {
+/* ─────────────────────────────────────────────────────
+   PRODUCT PANEL
+───────────────────────────────────────────────────── */
+.wphz-item-products {
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
-    gap: 4px;
-    background: #e0e0e0;
-    border-radius: 8px;
-    padding: 6px 10px;
-    font-size: 12px;
+    gap: 8px;
 }
 
-.wphz-chip-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-}
-
-.wphz-chip-name {
+.wphz-section-label {
     font-weight: 600;
-    margin-right: 8px;
-    word-break: break-word;
-    overflow-wrap: break-word;
+    font-size: 12px;
+    color: #3c434a;
+    display: block;
+    margin-bottom: 2px;
 }
 
-.wphz-chip .wphz-remove-product {
-    cursor: pointer;
-    color: #c0392b;
-    font-weight: bold;
-    line-height: 1;
-    background: none;
-    border: none;
-    padding: 0;
-}
-
-.wphz-chip-option {
-    font-size: 11px;
-    color: #444;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    margin-top: 2px;
-}
-
-.wphz-chip-option input[type="checkbox"] {
-    margin: 0;
-}
-
-/* Product search autocomplete */
+/* ─────────────────────────────────────────────────────
+   PRODUCT SEARCH AUTOCOMPLETE
+───────────────────────────────────────────────────── */
 .wphz-product-search-wrap {
     position: relative;
-    margin-top: 8px;
+}
+
+.wphz-product-search-wrap input[type="text"] {
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .wphz-product-suggestions {
@@ -165,24 +206,27 @@
     z-index: 9999;
     background: #fff;
     border: 1px solid #c3c4c7;
-    border-radius: 0 0 4px 4px;
+    border-top: none;
+    border-radius: 0 0 6px 6px;
     width: 100%;
-    max-height: 220px;
+    max-height: 240px;
     overflow-y: auto;
     margin: 0;
     padding: 0;
     list-style: none;
-    box-shadow: 0 4px 8px rgba(0,0,0,.1);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, .10);
 }
 
 .wphz-product-suggestions li {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 8px 10px;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 8px 12px;
     cursor: pointer;
-    font-size: 13px;
-    border-bottom: 1px solid #f0f0f0;
+    font-size: 12px;
+    border-bottom: 1px solid #f0f0f1;
+    line-height: 1.4;
 }
 
 .wphz-product-suggestions li:last-child {
@@ -194,88 +238,157 @@
 }
 
 .wphz-product-suggestions img {
-    width: 32px;
-    height: 32px;
+    width: 30px;
+    height: 30px;
     object-fit: cover;
-    border-radius: 2px;
+    border-radius: 3px;
     flex-shrink: 0;
 }
 
-/* Products panel — fixed width so long titles wrap, not stretch */
-.wphz-item-products {
-    width: 220px;
-    flex-shrink: 0;
-    align-self: flex-start;
+.wphz-product-sku {
+    display: block;
+    width: 100%;
+    color: #888;
+    font-size: 11px;
 }
 
-/* Delete button */
-.wphz-delete-item {
-    flex-shrink: 0;
-    align-self: flex-start;
+/* ─────────────────────────────────────────────────────
+   SELECTED PRODUCT CHIPS
+───────────────────────────────────────────────────── */
+.wphz-selected-products {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
 }
 
-/* ── Phase 13: UI Layout & Decoupled Inline Styles ───────── */
-.wphz-integration-box {
-    margin-top: 20px;
-    padding: 15px;
+.wphz-chip {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
     background: #fff;
-    border: 1px solid #ccd0d4;
-    box-shadow: 0 1px 1px rgba(0,0,0,.04);
+    border: 1px solid #c8cdd4;
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 12px;
+    min-width: 140px;
+    max-width: 220px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, .06);
 }
 
-.wphz-integration-box h3 {
+.wphz-chip-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 6px;
+}
+
+.wphz-chip-name {
+    font-weight: 600;
+    font-size: 12px;
+    color: #1d2327;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    line-height: 1.3;
+}
+
+.wphz-remove-product {
+    cursor: pointer;
+    color: #c0392b;
+    font-weight: bold;
+    font-size: 14px;
+    line-height: 1;
+    background: none;
+    border: none;
+    padding: 0;
+    flex-shrink: 0;
+}
+
+.wphz-remove-product:hover {
+    color: #922b21;
+}
+
+.wphz-chip-option {
+    display: block;
+    margin-top: 2px;
+}
+
+.wphz-atc-override {
+    font-size: 11px;
+    width: 100%;
+    padding: 2px 4px;
+}
+
+/* ─────────────────────────────────────────────────────
+   STATUS / VISIBILITY BADGES
+───────────────────────────────────────────────────── */
+.wphz-badge {
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 600;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+.wphz-badge--draft      { background: #f0ad4e; color: #fff; }
+.wphz-badge--private    { background: #999;    color: #fff; }
+.wphz-badge--pending    { background: #5bc0de; color: #fff; }
+.wphz-badge--hidden     { background: #d9534f; color: #fff; }
+.wphz-badge--visibility { background: #6c757d; color: #fff; }
+
+/* ─────────────────────────────────────────────────────
+   CSV ACTIONS
+───────────────────────────────────────────────────── */
+.wphz-csv-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 16px 0 8px;
+}
+
+/* ─────────────────────────────────────────────────────
+   DELETE ITEM BUTTON (in header)
+───────────────────────────────────────────────────── */
+.wphz-delete-item {
+    font-size: 12px !important;
+    padding: 2px 8px !important;
+    height: auto !important;
+    line-height: 1.6 !important;
+    color: #b32d2e !important;
+    border-color: #b32d2e !important;
+}
+
+.wphz-delete-item:hover {
+    background: #b32d2e !important;
+    color: #fff !important;
+}
+
+/* ─────────────────────────────────────────────────────
+   DANGER ZONE
+───────────────────────────────────────────────────── */
+.wphz-danger-zone {
+    background: #fff8f8;
+    border: 1px solid #f5c6cb;
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin-top: 16px;
+}
+
+.wphz-danger-zone h2 {
     margin-top: 0;
 }
 
-.wphz-integration-box p {
-    margin-bottom: 10px;
-}
-
-.wphz-integration-box pre {
-    background: #f0f0f1;
-    padding: 15px;
-    overflow-x: auto;
-    border-radius: 4px;
-    font-size: 13px;
-}
-
-.wphz-video-sources {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-right: 15px;
-}
-
-.wphz-source-group {
-    padding: 10px;
-    border-radius: 4px;
-}
-
-.wphz-source-group--hd {
-    background: #f0f0f1;
-}
-
-.wphz-source-group--sd {
-    background: #ebebeb;
-}
-
-.wphz-source-group label {
-    font-weight: 600;
-    display: block;
-    margin-bottom: 5px;
-}
-
-.wphz-source-group--sd label {
-    color: #555;
-}
-
-.wphz-source-row {
-    display: flex;
-    gap: 10px;
-}
-
-.wphz-source-row input {
-    flex: 1;
+/* ─────────────────────────────────────────────────────
+   SORTABLE DRAG PLACEHOLDER
+───────────────────────────────────────────────────── */
+.wphz-sortable-placeholder {
+    background: #eef3ff;
+    border: 2px dashed #7c9ef0;
+    border-radius: 10px;
+    height: 60px;
+    margin-bottom: 12px;
 }

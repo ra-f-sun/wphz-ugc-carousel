@@ -25,69 +25,90 @@ class ProductSearch extends AbstractSingleton
 
         $term = sanitize_text_field($_GET['term'] ?? '');
 
-        // Require at least 2 characters to search
         if (strlen($term) < 2) {
             wp_send_json_success([]);
         }
 
-        // Check transient cache first (5-minute TTL)
-        $key    = TransientHelper::product_key($term);
+        // 'v2_' prefix busts caches from the old format (no status/sku fields)
+        $key    = TransientHelper::product_key('v2_' . $term);
         $cached = TransientHelper::get($key);
 
         if ($cached !== null) {
             wp_send_json_success($cached);
         }
 
-        // Check if term is numeric (could be product ID)
-        $is_numeric = is_numeric($term);
+        global $wpdb;
 
-        // Query WooCommerce products by name and optionally ID
-        $query = new \WC_Product_Query([
-            'limit'   => 15,
-            'status'  => 'publish',
+        $ordered_ids = [];
+
+        // 1. Exact SKU match (case-insensitive)
+        $exact_sku_ids = $wpdb->get_col(
+            $wpdb->prepare(
+                "SELECT DISTINCT post_id FROM {$wpdb->postmeta}
+                 WHERE meta_key = '_sku' AND LOWER(meta_value) = LOWER(%s)
+                 LIMIT 5",
+                $term
+            )
+        );
+        foreach ($exact_sku_ids as $id) {
+            $ordered_ids[] = (int) $id;
+        }
+
+        // 2. Partial SKU match
+        $partial_sku_ids = $wpdb->get_col(
+            $wpdb->prepare(
+                "SELECT DISTINCT post_id FROM {$wpdb->postmeta}
+                 WHERE meta_key = '_sku' AND LOWER(meta_value) LIKE LOWER(%s)
+                 LIMIT 10",
+                '%' . $wpdb->esc_like($term) . '%'
+            )
+        );
+        foreach ($partial_sku_ids as $id) {
+            $id = (int) $id;
+            if (!in_array($id, $ordered_ids, true)) {
+                $ordered_ids[] = $id;
+            }
+        }
+
+        // 3. Name search — include all statuses so drafts/private products are found
+        $name_query = new \WC_Product_Query([
+            'limit'   => 10,
             's'       => $term,
             'orderby' => 'relevance',
-            'return'  => 'objects',
+            'return'  => 'ids',
+            'status'  => ['publish', 'draft', 'private', 'pending'],
         ]);
-
-        $products = $query->get_products();
-        $product_ids = wp_list_pluck($products, 'id');
-
-        // Search by SKU using direct SQL query
-        global $wpdb;
-        $sku_query = $wpdb->prepare(
-            "SELECT DISTINCT post_id FROM {$wpdb->postmeta}
-             WHERE meta_key = '_sku' AND meta_value LIKE %s
-             LIMIT 15",
-            '%' . $wpdb->esc_like($term) . '%'
-        );
-        $sku_product_ids = $wpdb->get_col($sku_query);
-
-        // If numeric, also search by product ID
-        if ($is_numeric) {
-            $product_id = (int) $term;
-            if (!in_array($product_id, $product_ids)) {
-                $sku_product_ids[] = $product_id;
+        foreach ($name_query->get_products() as $id) {
+            $id = (int) $id;
+            if (!in_array($id, $ordered_ids, true)) {
+                $ordered_ids[] = $id;
             }
         }
 
-        // Merge all found product IDs and deduplicate
-        $all_ids = array_unique(array_merge($product_ids, (array) $sku_product_ids));
+        // 4. Numeric ID lookup
+        if (is_numeric($term)) {
+            $numeric_id = (int) $term;
+            if (!in_array($numeric_id, $ordered_ids, true)) {
+                $ordered_ids[] = $numeric_id;
+            }
+        }
 
-        // Fetch the final products
-        $products = [];
-        foreach (array_slice($all_ids, 0, 15) as $product_id) {
+        // Build result set — no publish-only filter; show all valid products with status info
+        $results = [];
+        foreach (array_slice($ordered_ids, 0, 15) as $product_id) {
             $product = wc_get_product($product_id);
-            if ($product && $product->get_status() === 'publish') {
-                $products[] = $product;
-            }
+            if (!$product) continue;
+
+            $results[] = [
+                'id'                 => $product->get_id(),
+                'name'               => $product->get_name(),
+                'sku'                => $product->get_sku(),
+                'price_html'         => wp_strip_all_tags(\WPHZ\UGC\Helpers\PriceHelper::get_clean_price($product)),
+                'thumbnail'          => wp_get_attachment_image_url($product->get_image_id(), 'thumbnail'),
+                'status'             => $product->get_status(),
+                'catalog_visibility' => $product->get_catalog_visibility(),
+            ];
         }
-        $results  = array_map(fn($p) => [
-            'id'         => $p->get_id(),
-            'name'       => $p->get_name(),
-            'price_html' => wp_strip_all_tags(\WPHZ\UGC\Helpers\PriceHelper::get_clean_price($p)),
-            'thumbnail'  => wp_get_attachment_image_url($p->get_image_id(), 'thumbnail'),
-        ], $products);
 
         TransientHelper::set($key, $results);
         wp_send_json_success($results);

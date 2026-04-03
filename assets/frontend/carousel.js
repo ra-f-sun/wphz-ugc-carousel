@@ -51,6 +51,9 @@ class WPHZUGCCarousel {
     this._resizeObserver = null;
     this._viewportObserver = null;
     this._inViewport = false;  // stays false until IntersectionObserver confirms visibility
+    this._isShifting = false;  // re-entrancy guard for goTo()
+    this._shiftQueue = null;   // stores { index } of last blocked navigation request
+    this._playEpoch  = 0;      // incremented each goTo(); guards stale play() callbacks
 
     this.posterEngine =
       typeof window.WPHZUGCPosterEngine === "function"
@@ -192,6 +195,16 @@ class WPHZUGCCarousel {
    * ═══════════════════════════════════════════════════════════════════════ */
 
   goTo(index) {
+    if (this._isShifting) {
+      // Queue only the most recent request; earlier queued requests are discarded.
+      this._shiftQueue = { index };
+      return;
+    }
+
+    this._isShifting = true;
+    this._shiftQueue = null;
+    this._playEpoch++;
+
     this._pauseCenter();
     this._syncClonePosters();
     this.current = index;
@@ -200,6 +213,18 @@ class WPHZUGCCarousel {
     this._applyTransform(true);
     this._playCenter();
     this._scheduleSnapback();
+
+    // Release lock after CSS transition completes (500ms).
+    // _scheduleSnapback fires at 550ms; it calls clearTimeout(_snapTimer) on
+    // entry, so a queued goTo firing here correctly replaces the pending snapback.
+    setTimeout(() => {
+      this._isShifting = false;
+      if (this._shiftQueue !== null) {
+        const queued = this._shiftQueue;
+        this._shiftQueue = null;
+        this.goTo(queued.index);
+      }
+    }, 500);
   }
 
   next() {
@@ -396,6 +421,7 @@ class WPHZUGCCarousel {
     this._applyMutedToAllSlides();
 
     const itemMuted = this._isMuted();
+    const epoch = this._playEpoch; // capture before async boundary
 
     const playPromise = this.posterEngine
       ? this.posterEngine.play(video, itemMuted)
@@ -406,6 +432,7 @@ class WPHZUGCCarousel {
 
     if (playPromise && typeof playPromise.catch === "function") {
       playPromise.catch(() => {
+        if (this._playEpoch !== epoch) return; // stale — a newer navigation fired
         this._setGlobalMuted(true);
         video.muted = true;
         const retry = this.posterEngine
@@ -451,6 +478,8 @@ class WPHZUGCCarousel {
     if (endedVideo) {
       endedVideo.currentTime = 0;
     }
+    // Don't auto-advance if a manual navigation is already in progress.
+    if (this._isShifting) return;
     this.direction === "rtl" ? this.prev() : this.next();
   }
 
@@ -598,6 +627,7 @@ class WPHZProductCarousel {
     this._itemWidth = 0;
     this._snapTimer = null;
     this._resizeObserver = null;
+    this._isSliding = false; // re-entrancy guard for _slide()
 
     if (this.totalOrig === 0) return;
 
@@ -670,9 +700,12 @@ class WPHZProductCarousel {
   }
 
   _slide(dir) {
+    if (this._isSliding) return;
+    this._isSliding = true;
     this.current += dir;
     this._applyTransform(true);
     this._scheduleSnapback();
+    setTimeout(() => { this._isSliding = false; }, 350);
   }
 
   _scheduleSnapback() {

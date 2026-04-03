@@ -31,6 +31,8 @@ class ComposerStaticInit3873634f7214a095330e1acde8902ea6
         'WPHZ\\UGC\\Ajax\\DeleteCarousel' => __DIR__ . '/../..' . '/src/Ajax/DeleteCarousel.php',
         'WPHZ\\UGC\\Ajax\\DeleteItem' => __DIR__ . '/../..' . '/src/Ajax/DeleteItem.php',
         'WPHZ\\UGC\\Ajax\\DuplicateCarousel' => __DIR__ . '/../..' . '/src/Ajax/DuplicateCarousel.php',
+        'WPHZ\\UGC\\Ajax\\ExportCsv' => __DIR__ . '/../..' . '/src/Ajax/ExportCsv.php',
+        'WPHZ\\UGC\\Ajax\\ImportCsv' => __DIR__ . '/../..' . '/src/Ajax/ImportCsv.php',
         'WPHZ\\UGC\\Ajax\\ProductSearch' => __DIR__ . '/../..' . '/src/Ajax/ProductSearch.php',
         'WPHZ\\UGC\\Ajax\\SaveConfig' => __DIR__ . '/../..' . '/src/Ajax/SaveConfig.php',
         'WPHZ\\UGC\\Ajax\\SaveContent' => __DIR__ . '/../..' . '/src/Ajax/SaveContent.php',

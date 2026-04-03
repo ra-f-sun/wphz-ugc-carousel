@@ -2,7 +2,14 @@
 defined('ABSPATH') || exit;
 /**
  * @var \WC_Product $product
+ * @var mixed       $hide_atc        null = inherit global, 0 = force show, 1 = force hide
+ * @var int         $global_hide_atc 0 = show (default), 1 = hide
  */
+
+// Resolve effective ATC visibility: per-product overrides global default.
+$effective_hide_atc = ($hide_atc === null || $hide_atc === false)
+    ? (int) ($global_hide_atc ?? 0)
+    : (int) $hide_atc;
 
 $product_url = $product->get_permalink();
 $has_link    = !empty($product_url);
@@ -35,7 +42,7 @@ $has_link    = !empty($product_url);
             <?php echo wp_kses_post(\WPHZ\UGC\Helpers\PriceHelper::get_clean_price($product)); ?>
         </div>
 
-        <?php if (empty($hide_atc)): ?>
+        <?php if (!$effective_hide_atc): ?>
             <button type="button"
                 class="wphz-ugc-atc-btn"
                 data-product-id="<?php echo esc_attr($product->get_id()); ?>">

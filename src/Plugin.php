@@ -12,6 +12,8 @@ use WPHZ\UGC\Ajax\ProductSearch;
 use WPHZ\UGC\Ajax\DeleteItem;
 use WPHZ\UGC\Ajax\CreateCarousel;
 use WPHZ\UGC\Ajax\DeleteCarousel;
+use WPHZ\UGC\Ajax\ExportCsv;
+use WPHZ\UGC\Ajax\ImportCsv;
 use WPHZ\UGC\Frontend\CartHandler;
 
 final class Plugin extends AbstractSingleton
@@ -33,6 +35,7 @@ final class Plugin extends AbstractSingleton
             if (
                 get_option('wphz_ugc_db_version') !== WPHZ_UGC_VERSION
                 || !\WPHZ\UGC\Installer\Installer::items_has_poster_column()
+                || !\WPHZ\UGC\Installer\Installer::carousels_has_hide_atc_column()
             ) {
                 \WPHZ\UGC\Installer\Installer::activate();
             }
@@ -52,6 +55,8 @@ final class Plugin extends AbstractSingleton
         CreateCarousel::instance()->init();
         DeleteCarousel::instance()->init();
         \WPHZ\UGC\Ajax\DuplicateCarousel::instance()->init();
+        ExportCsv::instance()->init();
+        ImportCsv::instance()->init();
     }
 
     private function is_woocommerce_active(): bool

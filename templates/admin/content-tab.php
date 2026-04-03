@@ -58,43 +58,66 @@
         <span class="wphz-save-status"></span>
     </p>
 
+    <!-- CSV Export / Import -->
+    <div class="wphz-csv-actions">
+        <a href="<?php echo esc_url(add_query_arg([
+            'action'      => 'wphz_ugc_export_csv',
+            'carousel_id' => $id,
+            'nonce'       => wp_create_nonce('wphz_ugc_admin'),
+        ], admin_url('admin-ajax.php'))); ?>"
+           class="button button-secondary">
+            <?php esc_html_e('Export CSV', 'wphz-ugc'); ?>
+        </a>
+        <label class="button button-secondary" for="wphz-import-file" style="cursor:pointer; margin:0;">
+            <?php esc_html_e('Import CSV', 'wphz-ugc'); ?>
+        </label>
+        <input type="file" id="wphz-import-file" accept=".csv" style="display:none;">
+        <span id="wphz-import-status"></span>
+    </div>
+
     <!-- JavaScript HTML Templates -->
     <script type="text/html" id="tmpl-wphz-item-row">
         <li class="wphz-item-row" data-id="{{rowId}}">
-            <span class="dashicons dashicons-move wphz-drag-handle"></span>
-            <div class="wphz-video-sources">
-                <div class="wphz-source-group wphz-source-group--hd">
-                    <label><?php esc_html_e('HD Video (1080p, Broadband)', 'wphz-ugc'); ?></label>
-                    <div class="wphz-source-row">
-                        <input type="url" name="items[{{rowId}}][video_url_hd]" value="" placeholder="https://..." class="wphz-url-input regular-text">
-                        <button type="button" class="button wphz-media-btn" data-media-type="video"><?php esc_html_e('Media Library', 'wphz-ugc'); ?></button>
+            <div class="wphz-item-header">
+                <span class="dashicons dashicons-move wphz-drag-handle"></span>
+                <button type="button" class="button button-link-delete wphz-delete-item" data-id="{{rowId}}"><?php esc_html_e('Remove', 'wphz-ugc'); ?></button>
+            </div>
+            <div class="wphz-item-section wphz-item-section--video">
+                <div class="wphz-video-sources">
+                    <div class="wphz-source-group wphz-source-group--hd">
+                        <label><?php esc_html_e('HD Video (1080p, Broadband)', 'wphz-ugc'); ?></label>
+                        <div class="wphz-source-row">
+                            <input type="url" name="items[{{rowId}}][video_url_hd]" value="" placeholder="https://..." class="wphz-url-input">
+                            <button type="button" class="button wphz-media-btn" data-media-type="video"><?php esc_html_e('Media Library', 'wphz-ugc'); ?></button>
+                        </div>
+                        <input type="hidden" name="items[{{rowId}}][video_id]" value="0">
                     </div>
-                    <input type="hidden" name="items[{{rowId}}][video_id]" value="0">
-                </div>
-                <div class="wphz-source-group wphz-source-group--sd">
-                    <label><?php esc_html_e('SD Video (480p, Mobile Fallback)', 'wphz-ugc'); ?></label>
-                    <div class="wphz-source-row">
-                        <input type="url" name="items[{{rowId}}][video_url_sd]" value="" placeholder="https://..." class="wphz-url-input regular-text">
-                        <button type="button" class="button wphz-media-btn" data-media-type="video"><?php esc_html_e('Media Library', 'wphz-ugc'); ?></button>
+                    <div class="wphz-source-group wphz-source-group--sd">
+                        <label><?php esc_html_e('SD Video (480p, Mobile Fallback)', 'wphz-ugc'); ?></label>
+                        <div class="wphz-source-row">
+                            <input type="url" name="items[{{rowId}}][video_url_sd]" value="" placeholder="https://..." class="wphz-url-input">
+                            <button type="button" class="button wphz-media-btn" data-media-type="video"><?php esc_html_e('Media Library', 'wphz-ugc'); ?></button>
+                        </div>
                     </div>
-                </div>
-                <div class="wphz-source-group wphz-source-group--poster">
-                    <label><?php esc_html_e('Poster Image (shown while video is not playing)', 'wphz-ugc'); ?></label>
-                    <div class="wphz-source-row">
-                        <input type="url" name="items[{{rowId}}][poster_url]" value="" placeholder="https://..." class="wphz-url-input regular-text">
-                        <button type="button" class="button wphz-media-btn" data-media-type="image"><?php esc_html_e('Media Library', 'wphz-ugc'); ?></button>
+                    <div class="wphz-source-group wphz-source-group--poster">
+                        <label><?php esc_html_e('Poster Image', 'wphz-ugc'); ?></label>
+                        <div class="wphz-source-row">
+                            <input type="url" name="items[{{rowId}}][poster_url]" value="" placeholder="https://..." class="wphz-url-input">
+                            <button type="button" class="button wphz-media-btn" data-media-type="image"><?php esc_html_e('Media Library', 'wphz-ugc'); ?></button>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="wphz-item-products">
-                <label><?php esc_html_e('Attached Products', 'wphz-ugc'); ?></label>
-                <div class="wphz-product-search-wrap">
-                    <input type="text" class="wphz-product-search" placeholder="<?php esc_attr_e('Search products…', 'wphz-ugc'); ?>" data-row="{{rowId}}" autocomplete="off">
-                    <ul class="wphz-product-suggestions" style="display:none;"></ul>
+            <div class="wphz-item-section wphz-item-section--products">
+                <div class="wphz-item-products">
+                    <label class="wphz-section-label"><?php esc_html_e('Attached Products', 'wphz-ugc'); ?></label>
+                    <div class="wphz-product-search-wrap">
+                        <input type="text" class="wphz-product-search" placeholder="<?php esc_attr_e('Search by name, SKU or ID…', 'wphz-ugc'); ?>" data-row="{{rowId}}" autocomplete="off">
+                        <ul class="wphz-product-suggestions" style="display:none;"></ul>
+                    </div>
+                    <ul class="wphz-selected-products"></ul>
                 </div>
-                <ul class="wphz-selected-products"></ul>
             </div>
-            <button type="button" class="button wphz-delete-item" data-id="{{rowId}}"><?php esc_html_e('Remove', 'wphz-ugc'); ?></button>
         </li>
     </script>
 
@@ -105,8 +128,11 @@
                 <button type="button" class="wphz-remove-product" title="Remove">×</button>
             </div>
             <label class="wphz-chip-option">
-                <input type="checkbox" name="items[{{rowId}}][products][{{productId}}][hide_atc]" value="1">
-                <?php esc_html_e('Hide Add to Cart', 'wphz-ugc'); ?>
+                <select name="items[{{rowId}}][products][{{productId}}][hide_atc]" class="wphz-atc-override">
+                    <option value=""><?php esc_html_e('Global default', 'wphz-ugc'); ?></option>
+                    <option value="0"><?php esc_html_e('Force show ATC', 'wphz-ugc'); ?></option>
+                    <option value="1"><?php esc_html_e('Force hide ATC', 'wphz-ugc'); ?></option>
+                </select>
             </label>
             <input type="hidden" name="items[{{rowId}}][products][{{productId}}][id]" value="{{productId}}">
         </li>
@@ -116,7 +142,10 @@
         <li data-id="{{productId}}" data-name="{{productNameRaw}}">
             {{thumbHtml}}
             <span>{{productNameTxt}}</span>
+            <small class="wphz-product-sku">{{skuHtml}}</small>
             <small>{{productPrice}}</small>
+            {{statusBadge}}
+            {{visibilityBadge}}
         </li>
     </script>
 

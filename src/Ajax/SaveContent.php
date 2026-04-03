@@ -52,9 +52,12 @@ class SaveContent extends AbstractSingleton
             $product_ids  = [];
             foreach ($products_raw as $pdata) {
                 if (empty($pdata['id'])) continue;
+                // 3-state: null = inherit global, 0 = force show, 1 = force hide.
+                // Empty string means "inherit" (sent by the select "Use global default" option).
+                $hide_raw = $pdata['hide_atc'] ?? '';
                 $product_ids[] = [
                     'id'       => (int) $pdata['id'],
-                    'hide_atc' => !empty($pdata['hide_atc']) ? 1 : 0,
+                    'hide_atc' => ($hide_raw !== '' && $hide_raw !== null) ? (int) $hide_raw : null,
                 ];
             }
 

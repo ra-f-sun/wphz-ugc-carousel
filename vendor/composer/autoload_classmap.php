@@ -16,6 +16,8 @@ return array(
     'WPHZ\\UGC\\Ajax\\DeleteCarousel' => $baseDir . '/src/Ajax/DeleteCarousel.php',
     'WPHZ\\UGC\\Ajax\\DeleteItem' => $baseDir . '/src/Ajax/DeleteItem.php',
     'WPHZ\\UGC\\Ajax\\DuplicateCarousel' => $baseDir . '/src/Ajax/DuplicateCarousel.php',
+    'WPHZ\\UGC\\Ajax\\ExportCsv' => $baseDir . '/src/Ajax/ExportCsv.php',
+    'WPHZ\\UGC\\Ajax\\ImportCsv' => $baseDir . '/src/Ajax/ImportCsv.php',
     'WPHZ\\UGC\\Ajax\\ProductSearch' => $baseDir . '/src/Ajax/ProductSearch.php',
     'WPHZ\\UGC\\Ajax\\SaveConfig' => $baseDir . '/src/Ajax/SaveConfig.php',
     'WPHZ\\UGC\\Ajax\\SaveContent' => $baseDir . '/src/Ajax/SaveContent.php',

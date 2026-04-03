@@ -5,6 +5,7 @@ defined('ABSPATH') || exit;
  * @var int   $index
  * @var bool  $is_muted
  * @var bool  $active
+ * @var int   $global_hide_atc
  */
 
 $products     = $item['products'] ?? [];
@@ -63,8 +64,9 @@ if ($primary_video_url) {
             <div class="wphz-ugc-products-track">
                 <?php foreach ($products as $p_data): ?>
                     <?php \WPHZ\UGC\Helpers\TemplateLoader::render('frontend/product-item', [
-                        'product'  => $p_data['model'],
-                        'hide_atc' => $p_data['hide_atc'],
+                        'product'         => $p_data['model'],
+                        'hide_atc'        => $p_data['hide_atc'],
+                        'global_hide_atc' => $global_hide_atc,
                     ]); ?>
                 <?php endforeach; ?>
             </div>

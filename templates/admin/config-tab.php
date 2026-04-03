@@ -42,6 +42,20 @@
                 </label>
             </td>
         </tr>
+        <tr>
+            <th><?php esc_html_e('Default Add to Cart', 'wphz-ugc'); ?></th>
+            <td>
+                <label>
+                    <input type="radio" name="hide_atc" value="0" <?php checked((int) ($hide_atc ?? 0), 0); ?>>
+                    <?php esc_html_e('Show Add to Cart', 'wphz-ugc'); ?>
+                </label>
+                <label style="margin-left:16px">
+                    <input type="radio" name="hide_atc" value="1" <?php checked((int) ($hide_atc ?? 0), 1); ?>>
+                    <?php esc_html_e('Hide Add to Cart', 'wphz-ugc'); ?>
+                </label>
+                <p class="description"><?php esc_html_e('Per-product settings on each video row can override this default.', 'wphz-ugc'); ?></p>
+            </td>
+        </tr>
     </table>
 
     <p class="submit">
