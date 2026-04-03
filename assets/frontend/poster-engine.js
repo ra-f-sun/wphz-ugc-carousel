@@ -32,6 +32,8 @@
       const posterUrl = (video.dataset.posterUrl || "").trim();
       if (posterUrl) {
         video.poster = posterUrl;
+        const img = this._getPosterImg(video);
+        if (img) img.src = posterUrl;
       }
 
       if (!video.hasAttribute("crossorigin")) {
@@ -75,23 +77,40 @@
       } catch (_) {
         // Ignore non-seekable edge cases
       }
+      video.classList.remove("wphz-video--revealed");
+      const img = this._getPosterImg(video);
+      img?.classList.remove("wphz-poster--hidden");
     }
 
     /**
      * Play a video. Since src is always set (from initSource), just play.
-     * Skip any re-initialization if video already has decoded frames.
+     * Uses a persistent <img> overlay + CSS crossfade to avoid the black
+     * flash on Safari iOS when the native poster drops before canplay fires.
      */
     play(video, isMuted) {
       if (!video) return Promise.reject(new Error("Missing video element"));
 
       video.muted = !!isMuted;
+      const img = this._getPosterImg(video);
 
-      const playPromise = video.play();
-      if (playPromise && typeof playPromise.then === "function") {
-        return playPromise;
+      const revealVideo = () => {
+        video.classList.add("wphz-video--revealed");
+        img?.classList.add("wphz-poster--hidden");
+      };
+
+      if (video.readyState >= 2) {
+        // Frames already decoded (e.g. navigated back to this slide)
+        revealVideo();
+      } else {
+        video.addEventListener("canplay", revealVideo, { once: true });
       }
 
-      return Promise.resolve();
+      return video.play();
+    }
+
+    /** Return the <img> overlay sibling of the given video element, or null. */
+    _getPosterImg(video) {
+      return video.parentElement?.querySelector(".wphz-ugc-poster-img") || null;
     }
 
     /**

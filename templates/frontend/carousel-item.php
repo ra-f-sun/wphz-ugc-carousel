@@ -38,6 +38,12 @@ if ($primary_video_url) {
             <?php if ($is_muted) echo 'muted'; ?>
             preload="none"></video>
 
+        <img class="wphz-ugc-poster-img"
+            src="<?php echo esc_url($poster_url); ?>"
+            alt=""
+            aria-hidden="true"
+            draggable="false">
+
         <button type="button" class="wphz-ugc-mute-btn" aria-label="<?php esc_attr_e('Toggle sound', 'wphz-ugc'); ?>">
             <!-- Muted icon -->
             <span class="wphz-icon-mute" style="display: <?php echo $is_muted ? 'flex' : 'none'; ?>;">

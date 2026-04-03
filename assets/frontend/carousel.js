@@ -387,7 +387,11 @@ class WPHZUGCCarousel {
         if (idx >= lo && idx < hi) return;
         if (this._getItemIndexFromSlide(s) !== itemIndex) return;
         const v = s.querySelector(".wphz-ugc-video");
-        if (v) v.poster = frameUrl;
+        if (v) {
+          v.poster = frameUrl;
+          const img = v.parentElement?.querySelector(".wphz-ugc-poster-img");
+          if (img) img.src = frameUrl;
+        }
       });
     }
   }
@@ -468,6 +472,7 @@ class WPHZUGCCarousel {
   _resumeForViewport() {
     const video = this.slides[this.current]?.querySelector(".wphz-ugc-video");
     if (!video) return;
+    if (this.posterEngine) this.posterEngine.resetToPoster(video);
     video.currentTime = 0;
     this._playCenter();
   }
