@@ -71,6 +71,7 @@
     resetToPoster(video) {
       if (!video) return;
 
+      video.dataset.shouldPlay = "false";
       video.pause();
       try {
         video.currentTime = 0;
@@ -91,15 +92,16 @@
       if (!video) return Promise.reject(new Error("Missing video element"));
 
       video.muted = !!isMuted;
+      video.dataset.shouldPlay = "true";
       const img = this._getPosterImg(video);
 
       const revealVideo = () => {
+        if (video.dataset.shouldPlay !== "true") return;
         video.classList.add("wphz-video--revealed");
         img?.classList.add("wphz-poster--hidden");
       };
 
       if (video.readyState >= 2) {
-        // Frames already decoded (e.g. navigated back to this slide)
         revealVideo();
       } else {
         video.addEventListener("canplay", revealVideo, { once: true });
@@ -118,6 +120,7 @@
      */
     pause(video) {
       if (!video) return;
+      video.dataset.shouldPlay = "false";
       video.pause();
     }
 
