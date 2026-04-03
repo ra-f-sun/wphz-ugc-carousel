@@ -35,16 +35,13 @@ $has_link    = !empty($product_url);
             <?php echo wp_kses_post(\WPHZ\UGC\Helpers\PriceHelper::get_clean_price($product)); ?>
         </div>
 
-        <?php //if (empty($hide_atc)): 
-        ?>
-        <!-- <button type="button"
+        <?php if (empty($hide_atc)): ?>
+            <button type="button"
                 class="wphz-ugc-atc-btn"
-                data-product-id="<?php //echo esc_attr($product->get_id()); 
-                                    ?>">
-                <?php //esc_html_e('Add to Cart', 'wphz-ugc'); 
-                ?>
-            </button> -->
-        <?php //endif; 
+                data-product-id="<?php echo esc_attr($product->get_id()); ?>">
+                <?php esc_html_e('Add to Cart', 'wphz-ugc'); ?>
+            </button>
+        <?php endif;
         ?>
     </div>
 

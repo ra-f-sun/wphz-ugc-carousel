@@ -1,5 +1,5 @@
 /**
- * WPHZ UGC Carousel — Frontend Styles
+ * WPHZ UGC Carousel Frontend Styles
  * Phase 6: Core layout, animations, and typography
  * Pure CSS (No JS logic here, Phase 7 JS adds/removes modifier classes)
  */
@@ -19,7 +19,7 @@
   box-sizing: border-box;
 }
 
-/* ── Header Area ────────────────────────────── */
+/* Header Area */
 .wphz-ugc-header {
   display: flex;
   align-items: flex-end;
@@ -39,7 +39,7 @@
   color: #666;
 }
 
-/* ── Arrow Navigation (Header & Carousel) ─── */
+/* Arrow Navigation (Header & Carousel) */
 .wphz-ugc-arrows {
   display: flex;
   gap: 8px;
@@ -74,7 +74,7 @@
   cursor: not-allowed;
 }
 
-/* ── Stage & Track (Desktop: ~5 slides visible) ── */
+/* Stage & Track (Desktop: ~5 slides visible) */
 .wphz-ugc-stage {
   overflow: hidden;
   position: relative;
@@ -94,7 +94,7 @@
   min-width: 0;
 }
 
-/* ── Video Wrap & Element ───────────────────── */
+/* Video Wrap & Element */
 .wphz-ugc-video-wrap {
   position: relative;
   border-radius: 12px;
@@ -105,7 +105,7 @@
     transform 0.4s ease,
     box-shadow 0.4s ease;
   cursor: pointer;
-  aspect-ratio: 3.25/4.5;
+  aspect-ratio: 13/18;
 }
 
 /* Scale up the center/active video */
@@ -124,7 +124,7 @@
   display: block;
 }
 
-/* ── Mute Button ────────────────────────────── */
+/* Mute Button */
 .wphz-ugc-mute-btn {
   position: absolute;
   bottom: 12px;
@@ -174,7 +174,8 @@
   outline: none;
   box-shadow: none;
 }
-/* ── Product Strip (Under Video) ────────────── */
+
+/* Product Strip (Under Video) */
 .wphz-ugc-products {
   display: flex;
   align-items: center;
@@ -228,7 +229,7 @@
   right: -8px;
 }
 
-/* ── Single Product Card ────────────────────── */
+/* Single Product Card */
 .wphz-ugc-product-item {
   flex: 0 0 100%; /* Match exactly the width of the video wrapper */
   min-width: 0;
@@ -345,14 +346,14 @@
   cursor: wait;
 }
 
-/* ── Tablet Responsive ──────────────────────── */
+/* Tablet Responsive */
 @media (max-width: 1024px) {
   .wphz-ugc-slide {
     flex: 0 0 calc(100% / 3.3);
   }
 }
 
-/* ── Mobile Responsive ──────────────────────── */
+/* Mobile Responsive */
 @media (max-width: 768px) {
   /* Break out of container padding so carousel touches viewport edges */
   .wphz-ugc-carousel {
@@ -380,6 +381,6 @@
 
   /* ~10% taller than 3/5: increase height denominator from 5 to 5.5 */
   .wphz-ugc-video-wrap {
-    aspect-ratio: 3/5.25;
+    aspect-ratio: 12/21;
   }
 }
