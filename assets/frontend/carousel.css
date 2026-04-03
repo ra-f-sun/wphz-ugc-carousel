@@ -376,11 +376,11 @@
   /* Show ~1.3 slides to hint there's more */
   .wphz-ugc-slide {
     flex: 0 0 75%;
-    padding: 0 3px;
+    padding: 0 8px;
   }
 
   /* ~10% taller than 3/5: increase height denominator from 5 to 5.5 */
   .wphz-ugc-video-wrap {
-    aspect-ratio: 12/21;
+    aspect-ratio: 13/20;
   }
 }
