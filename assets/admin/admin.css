@@ -79,7 +79,7 @@
     border: 1px solid #dde1e7;
     border-radius: 10px;
     margin-bottom: 12px;
-    overflow: hidden; /* clips child bg colours to border-radius */
+    overflow: visible; /* allow absolutely-positioned children (e.g. dropdowns) to escape */
     cursor: default;
 }
 
@@ -113,12 +113,15 @@
 /* ── Video section — white */
 .wphz-item-section--video {
     background: #fff;
+    border-radius: 10px 10px 0 0;
 }
 
 /* ── Products section — tinted, visually separated */
 .wphz-item-section--products {
     background: #f4f6f9;
     border-top: 1px solid #dde1e7;
+    border-radius: 0 0 10px 10px;
+    overflow: visible;
 }
 
 /* ─────────────────────────────────────────────────────
@@ -209,7 +212,8 @@
     border-top: none;
     border-radius: 0 0 6px 6px;
     width: 100%;
-    max-height: 240px;
+    min-height: 47px;
+    max-height: 165px;
     overflow-y: auto;
     margin: 0;
     padding: 0;

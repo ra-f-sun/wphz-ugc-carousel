@@ -1,9 +1,9 @@
 <?php return array(
     'root' => array(
         'name' => 'wphz/ugc-carousel',
-        'pretty_version' => 'dev-master',
-        'version' => 'dev-master',
-        'reference' => 'ca58e46b51bd73c9b2dfaf722a1a44d492bb2778',
+        'pretty_version' => 'dev-dev',
+        'version' => 'dev-dev',
+        'reference' => '0f9d56fbe543aff0130769ff0bde9bcdd8cb18ce',
         'type' => 'wordpress-plugin',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -11,9 +11,9 @@
     ),
     'versions' => array(
         'wphz/ugc-carousel' => array(
-            'pretty_version' => 'dev-master',
-            'version' => 'dev-master',
-            'reference' => 'ca58e46b51bd73c9b2dfaf722a1a44d492bb2778',
+            'pretty_version' => 'dev-dev',
+            'version' => 'dev-dev',
+            'reference' => '0f9d56fbe543aff0130769ff0bde9bcdd8cb18ce',
             'type' => 'wordpress-plugin',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
