@@ -1,4 +1,12 @@
-<?php defined( 'ABSPATH' ) || exit; ?>
+<?php
+/**
+ * Admin custom CSS tab template.
+ *
+ * @package WPHZ\UGC
+ */
+
+defined( 'ABSPATH' ) || exit;
+?>
 <form id="wphz-ugc-custom-css-form" data-action="wphz_ugc_save_custom_css">
 	<?php wp_nonce_field( 'wphz_ugc_admin', 'wphz_nonce' ); ?>
 	<input type="hidden" name="carousel_id" value="<?php echo esc_attr( $id ); ?>">
@@ -6,7 +14,7 @@
 	<p style="margin-top: 1.5rem; color: #555;">
 		<?php
 		/**
-		 * custom-css-tab.
+		 * Custom CSS tab instructions.
 		 *
 		 * @package WPHZ\\UGC
 		 */

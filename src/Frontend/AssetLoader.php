@@ -7,7 +7,9 @@
 
 namespace WPHZ\UGC\Frontend;
 
-defined( 'ABSPATH' ) || exit;
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 
 use WPHZ\UGC\AbstractSingleton;
 

@@ -7,7 +7,9 @@
 
 namespace WPHZ\UGC\Helpers;
 
-defined( 'ABSPATH' ) || exit;
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 
 /**
  * SanitizeHelper.

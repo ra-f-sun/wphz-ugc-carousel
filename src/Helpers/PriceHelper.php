@@ -1,8 +1,15 @@
 <?php
+/**
+ * Price formatting helpers for WooCommerce products.
+ *
+ * @package WPHZ\UGC
+ */
 
 namespace WPHZ\UGC\Helpers;
 
-defined( 'ABSPATH' ) || exit;
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 
 /**
  * PriceHelper.
@@ -14,7 +21,7 @@ class PriceHelper {
 	 * This explicitly circumvents `$product->get_price_html()` to prevent
 	 * 3rd-party plugins from appending promotional strings like "Subscribe & Save".
 	 *
-	 * @param \WC_Product $product
+	 * @param \WC_Product $product Product to format.
 	 * @return string
 	 */
 	public static function get_clean_price( \WC_Product $product ): string {

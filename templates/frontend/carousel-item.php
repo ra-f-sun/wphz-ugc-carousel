@@ -1,12 +1,14 @@
 <?php
 /**
- * carousel-item.
+ * Frontend carousel item template.
  *
  * @package WPHZ\\UGC
  */
 
 defined( 'ABSPATH' ) || exit;
 /**
+ * Carousel item context.
+ *
  * @var array $item
  * @var int   $index
  * @var bool  $is_muted
@@ -24,7 +26,9 @@ $poster_url   = $item['poster_url'] ?? '';
 $primary_video_url = ! empty( $item['video_url_hd'] ) ? $item['video_url_hd'] : ( ! empty( $item['video_url_sd'] ) ? $item['video_url_sd'] : '' );
 $video_class       = 'wphz-ugc-video';
 if ( $primary_video_url ) {
-	$video_filename = pathinfo( (string) parse_url( $primary_video_url, PHP_URL_PATH ), PATHINFO_FILENAME );
+	$video_url      = wp_parse_url( $primary_video_url );
+	$video_path     = is_array( $video_url ) ? ( $video_url['path'] ?? '' ) : '';
+	$video_filename = pathinfo( (string) $video_path, PATHINFO_FILENAME );
 	if ( $video_filename ) {
 		$video_class .= ' wphz-ugc-video-' . sanitize_html_class( $video_filename );
 	}

@@ -1,19 +1,21 @@
 <?php
 /**
- * product-item.
+ * Frontend product item template.
  *
  * @package WPHZ\\UGC
  */
 
 defined( 'ABSPATH' ) || exit;
 /**
+ * Product item context.
+ *
  * @var \WC_Product $product
  * @var mixed       $hide_atc        null = inherit global, 0 = force show, 1 = force hide
  * @var int         $global_hide_atc 0 = show (default), 1 = hide
  */
 
 // Resolve effective ATC visibility: per-product overrides global default.
-$effective_hide_atc = ( $hide_atc === null || $hide_atc === false )
+	$effective_hide_atc = ( null === $hide_atc || false === $hide_atc )
 	? (int) ( $global_hide_atc ?? 0 )
 	: (int) $hide_atc;
 

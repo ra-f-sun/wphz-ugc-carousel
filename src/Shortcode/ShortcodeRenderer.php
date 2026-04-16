@@ -1,4 +1,9 @@
 <?php
+/**
+ * Frontend shortcode rendering for the plugin.
+ *
+ * @package WPHZ\UGC
+ */
 
 namespace WPHZ\UGC\Shortcode;
 
@@ -21,7 +26,7 @@ class ShortcodeRenderer extends AbstractSingleton {
 	/**
 	 * Main shortcode callback. Returns rendered HTML string (never echoes).
 	 *
-	 * @param  array<string, string>|string $atts  Shortcode attributes.
+	 * @param array<string, string>|string $atts Shortcode attributes.
 	 * @return string
 	 */
 	public function render( array|string $atts ): string {
@@ -53,7 +58,7 @@ class ShortcodeRenderer extends AbstractSingleton {
 		// A <style> tag inline in the output is the correct approach.
 		$custom_css_output = '';
 		$raw_css           = trim( $carousel_config['custom_css'] ?? '' );
-		if ( $raw_css !== '' ) {
+		if ( '' !== $raw_css ) {
 			$custom_css_output = sprintf(
 				'<style id="wphz-carousel-css-%d">%s</style>',
 				$carousel_id,
@@ -77,13 +82,16 @@ class ShortcodeRenderer extends AbstractSingleton {
 	/**
 	 * Decode product_ids JSON and attach WC product objects to each item.
 	 *
-	 * @param  array<int, array> $items
+	 * @param array<int, array> $items Carousel items.
 	 * @return array<int, array>
 	 */
 	private function hydrate_items( array $items ): array {
 		return array_map(
 			function ( array $item ): array {
-				$product_ids      = json_decode( $item['product_ids'], true ) ?: array();
+				$product_ids = json_decode( $item['product_ids'], true );
+				if ( ! is_array( $product_ids ) ) {
+					$product_ids = array();
+				}
 				$item['products'] = $this->fetch_products( $product_ids );
 				return $item;
 			},
@@ -94,8 +102,8 @@ class ShortcodeRenderer extends AbstractSingleton {
 	/**
 	 * Resolve WC product objects, filtering out non-visible / non-existent products.
 	 *
-	 * @param  array $product_ids
-	 * @return array[] Associative array containing the WC_Product model and custom flags
+	 * @param array $product_ids Product IDs and product metadata.
+	 * @return array[] Associative array containing the WC_Product model and custom flags.
 	 */
 	private function fetch_products( array $product_ids ): array {
 		$products = array();

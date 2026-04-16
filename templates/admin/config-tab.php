@@ -1,3 +1,11 @@
+<?php
+/**
+ * Admin configuration tab template.
+ *
+ * @package WPHZ\UGC
+ */
+
+defined( 'ABSPATH' ) || exit; ?>
 <?php defined( 'ABSPATH' ) || exit; ?>
 <form id="wphz-ugc-config-form" data-action="wphz_ugc_save_config">
 	<?php wp_nonce_field( 'wphz_ugc_admin', 'wphz_nonce' ); ?>

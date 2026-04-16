@@ -1,3 +1,11 @@
+<?php
+/**
+ * Admin content tab template.
+ *
+ * @package WPHZ\UGC
+ */
+
+defined( 'ABSPATH' ) || exit; ?>
 <?php defined( 'ABSPATH' ) || exit; ?>
 <div class="wphz-content-manager">
 
@@ -36,7 +44,7 @@
 		<?php foreach ( $items as $item ) : ?>
 			<?php
 			/**
-			 * content-tab.
+			 * Content tab item row.
 			 *
 			 * @package WPHZ\\UGC
 			 */

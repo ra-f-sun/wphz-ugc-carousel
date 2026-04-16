@@ -1,12 +1,14 @@
 <?php
 /**
- * carousel-wrapper.
+ * Frontend carousel wrapper template.
  *
  * @package WPHZ\\UGC
  */
 
 defined( 'ABSPATH' ) || exit;
 /**
+ * Carousel wrapper context.
+ *
  * @var string $id
  * @var array  $items
  * @var string $sound
@@ -30,7 +32,7 @@ defined( 'ABSPATH' ) || exit;
 						'item'            => $item,
 						'index'           => $index,
 						'is_muted'        => $is_muted,
-						'active'          => $index === 0, // First item is active by default.
+						'active'          => 0 === $index, // First item is active by default.
 						'global_hide_atc' => $global_hide_atc,
 					)
 				);

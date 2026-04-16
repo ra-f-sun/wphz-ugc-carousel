@@ -1,4 +1,9 @@
 <?php
+/**
+ * Installer.
+ *
+ * @package WPHZ\UGC
+ */
 
 namespace WPHZ\UGC\Installer;
 
@@ -13,29 +18,31 @@ class Installer {
 
 
 	/**
-	 * items_has_poster_column.
+	 * Items_has_poster_column.
 	 *
 	 * @return bool Return value.
 	 */
 	public static function items_has_poster_column(): bool {
 		global $wpdb;
 		$table_items = $wpdb->prefix . 'wphz_ugc_items';
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table_items is derived from $wpdb->prefix; table names cannot use prepare() placeholders.
 		return (bool) $wpdb->get_var( "SHOW COLUMNS FROM {$table_items} LIKE 'poster_url'" );
 	}
 
 	/**
-	 * carousels_has_hide_atc_column.
+	 * Carousels_has_hide_atc_column.
 	 *
 	 * @return bool Return value.
 	 */
 	public static function carousels_has_hide_atc_column(): bool {
 		global $wpdb;
 		$table_carousels = $wpdb->prefix . 'wphz_ugc_carousels';
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table_carousels is derived from $wpdb->prefix; table names cannot use prepare() placeholders.
 		return (bool) $wpdb->get_var( "SHOW COLUMNS FROM {$table_carousels} LIKE 'hide_atc'" );
 	}
 
 	/**
-	 * activate.
+	 * Activate.
 	 *
 	 * @return void Return value.
 	 */
@@ -46,7 +53,7 @@ class Installer {
 	}
 
 	/**
-	 * deactivate.
+	 * Deactivate.
 	 *
 	 * @return void Return value.
 	 */
@@ -55,7 +62,7 @@ class Installer {
 	}
 
 	/**
-	 * create_tables.
+	 * Create_tables.
 	 *
 	 * @return void Return value.
 	 */
@@ -103,23 +110,32 @@ class Installer {
 		dbDelta( $sql_carousels );
 
 		// Safe migration: add custom_css column to existing installs.
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table names cannot use prepare() placeholders; $table_carousels is derived from $wpdb->prefix.
 		if ( ! $wpdb->get_var( "SHOW COLUMNS FROM {$table_carousels} LIKE 'custom_css'" ) ) {
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table names cannot use prepare() placeholders; $table_carousels is derived from $wpdb->prefix.
 			$wpdb->query( "ALTER TABLE {$table_carousels} ADD COLUMN custom_css longtext DEFAULT NULL" );
 		}
 
 		// Safe migration: Port old `video_url` data to `video_url_hd` and explicitly drop the old column.
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table names cannot use prepare() placeholders; $table_items is derived from $wpdb->prefix.
 		if ( $wpdb->get_var( "SHOW COLUMNS FROM {$table_items} LIKE 'video_url'" ) ) {
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table names cannot use prepare() placeholders; $table_items is derived from $wpdb->prefix.
 			$wpdb->query( "UPDATE {$table_items} SET video_url_hd = video_url WHERE video_url_hd IS NULL OR video_url_hd = ''" );
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table names cannot use prepare() placeholders; $table_items is derived from $wpdb->prefix.
 			$wpdb->query( "ALTER TABLE {$table_items} DROP COLUMN video_url" );
 		}
 
 		// Safe migration: add poster_url column to existing installs.
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table names cannot use prepare() placeholders; $table_items is derived from $wpdb->prefix.
 		if ( ! $wpdb->get_var( "SHOW COLUMNS FROM {$table_items} LIKE 'poster_url'" ) ) {
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table names cannot use prepare() placeholders; $table_items is derived from $wpdb->prefix.
 			$wpdb->query( "ALTER TABLE {$table_items} ADD COLUMN poster_url text DEFAULT NULL" );
 		}
 
 		// Safe migration: add hide_atc column to carousels table on existing installs.
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table names cannot use prepare() placeholders; $table_carousels is derived from $wpdb->prefix.
 		if ( ! $wpdb->get_var( "SHOW COLUMNS FROM {$table_carousels} LIKE 'hide_atc'" ) ) {
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table names cannot use prepare() placeholders; $table_carousels is derived from $wpdb->prefix.
 			$wpdb->query( "ALTER TABLE {$table_carousels} ADD COLUMN hide_atc tinyint(1) DEFAULT 0" );
 		}
 
@@ -127,7 +143,7 @@ class Installer {
 	}
 
 	/**
-	 * migrate_to_multi_carousel.
+	 * Migrate_to_multi_carousel.
 	 *
 	 * @return void Return value.
 	 */
@@ -137,6 +153,7 @@ class Installer {
 		$table_carousels = $wpdb->prefix . 'wphz_ugc_carousels';
 
 		// Check if carousels table is empty.
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table names cannot use prepare() placeholders; $table_carousels is derived from $wpdb->prefix.
 		$count = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$table_carousels}" );
 		if ( $count > 0 ) {
 			return; // Already migrated or populated.
@@ -148,8 +165,12 @@ class Installer {
 			return; // New install, nothing to migrate.
 		}
 
-		$config = json_decode( $old_config, true ) ?: array();
-		$danger = json_decode( get_option( 'wphz_ugc_danger_config' ) ?: '{}', true ) ?: array();
+		$decoded_config = json_decode( $old_config, true );
+		$config         = $decoded_config ? $decoded_config : array();
+		$danger_option  = get_option( 'wphz_ugc_danger_config' );
+		$danger_json    = $danger_option ? $danger_option : '{}';
+		$decoded_danger = json_decode( $danger_json, true );
+		$danger         = $decoded_danger ? $decoded_danger : array();
 
 		// Insert default carousel.
 		$wpdb->insert(

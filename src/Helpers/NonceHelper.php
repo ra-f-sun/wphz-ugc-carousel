@@ -1,8 +1,15 @@
 <?php
+/**
+ * Nonce verification helpers for the plugin.
+ *
+ * @package WPHZ\UGC
+ */
 
 namespace WPHZ\UGC\Helpers;
 
-defined( 'ABSPATH' ) || exit;
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 
 /**
  * NonceHelper.
@@ -12,6 +19,8 @@ class NonceHelper {
 	/**
 	 * Verify a WordPress nonce. Checks both $_REQUEST['nonce'] and $_REQUEST['wphz_nonce'].
 	 * Sends 403 JSON error and exits on failure.
+	 *
+	 * @param string $action Nonce action name.
 	 */
 	public static function verify( string $action ): void {
 		$nonce = sanitize_text_field(

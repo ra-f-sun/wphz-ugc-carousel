@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Plugin Name: WPHZ UGC Carousel
  * Plugin URI:  https:// wphelpzone.com.
@@ -10,9 +9,13 @@
  * Requires at least: 6.0
  * Requires PHP: 8.0
  * WC requires at least: 7.0
+ *
+ * @package WPHZ\UGC
  */
 
-defined( 'ABSPATH' ) || exit;
+if ( ! defined( 'ABSPATH' ) ) {
+    exit;
+}
 
 define( 'WPHZ_UGC_VERSION', '1.0.7' );
 define( 'WPHZ_UGC_FILE', __FILE__ );

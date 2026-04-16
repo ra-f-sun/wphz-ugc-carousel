@@ -7,7 +7,9 @@
 
 namespace WPHZ\UGC\Admin;
 
-defined( 'ABSPATH' ) || exit;
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 
 use WPHZ\UGC\AbstractSingleton;
 use WPHZ\UGC\Repository\CarouselRepository;

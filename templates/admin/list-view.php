@@ -1,4 +1,12 @@
-<?php defined( 'ABSPATH' ) || exit; ?>
+<?php
+/**
+ * Admin carousel list view template.
+ *
+ * @package WPHZ\UGC
+ */
+
+defined( 'ABSPATH' ) || exit;
+?>
 <div class="wrap wphz-ugc-admin">
 	<h1 class="wp-heading-inline"><?php esc_html_e( 'WPHZ UGC Carousels', 'wphz-ugc' ); ?></h1>
 	
@@ -7,7 +15,8 @@
 		<?php wp_nonce_field( 'wphz_ugc_admin', 'wphz_nonce' ); ?>
 		<input type="text" name="name" placeholder="New Carousel Name..." required>
 		<button type="submit" class="page-title-action">Add New</button>
-		<?php if ( isset( $_GET['wphz_msg'] ) && $_GET['wphz_msg'] === 'deleted' ) : ?>
+		<?php $wphz_msg = filter_input( INPUT_GET, 'wphz_msg', FILTER_SANITIZE_FULL_SPECIAL_CHARS ); ?>
+		<?php if ( 'deleted' === $wphz_msg ) : ?>
 			<span style="color:red; margin-left: 10px;">Carousel deleted.</span>
 		<?php endif; ?>
 	</form>
@@ -36,7 +45,7 @@
 								<span class="edit"><a href="?page=wphz-ugc-carousel&action=edit&id=<?php echo esc_attr( $c['id'] ); ?>">Edit</a> | </span>
 								<?php
 								/**
-								 * list-view.
+								 * List view row actions.
 								 *
 								 * @package WPHZ\\UGC
 								 */

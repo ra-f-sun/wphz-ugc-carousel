@@ -1,8 +1,15 @@
 <?php
+/**
+ * CarouselRepository.
+ *
+ * @package WPHZ\UGC
+ */
 
 namespace WPHZ\UGC\Repository;
 
-defined( 'ABSPATH' ) || exit;
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 
 use WPHZ\UGC\AbstractSingleton;
 
@@ -12,7 +19,7 @@ use WPHZ\UGC\AbstractSingleton;
 class CarouselRepository extends AbstractSingleton {
 
 	/**
-	 * table.
+	 * Table.
 	 *
 	 * @return string Return value.
 	 */
@@ -21,39 +28,40 @@ class CarouselRepository extends AbstractSingleton {
 		return $wpdb->prefix . 'wphz_ugc_carousels';
 	}
 
-	/** @return array<int, array> */
 	/**
-	 * get_all.
+	 * Get_all.
 	 *
-	 * @return array Return value.
+	 * @return array<int, array> Return value.
 	 */
 	public function get_all(): array {
 		global $wpdb;
 		$table = $this->table();
-		$rows  = $wpdb->get_results( "SELECT * FROM {$table} ORDER BY id DESC", ARRAY_A );
-		return $rows ?: array();
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table is derived from $wpdb->prefix; table names cannot use prepare() placeholders.
+		$rows = $wpdb->get_results( "SELECT * FROM {$table} ORDER BY id DESC", ARRAY_A );
+		return ! empty( $rows ) ? $rows : array();
 	}
 
 	/**
-	 * get_by_id.
+	 * Get_by_id.
 	 *
-	 * @param mixed $id Parameter value.
+	 * @param int $id Parameter value.
 	 * @return ?array Return value.
 	 */
 	public function get_by_id( int $id ): ?array {
 		global $wpdb;
-		$table = $this->table();
-        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared.
-		return $wpdb->get_row(
+		$table  = $this->table();
+		$result = $wpdb->get_row(
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table is derived from $wpdb->prefix; table names cannot use prepare() placeholders.
 			$wpdb->prepare( "SELECT * FROM {$table} WHERE id = %d", $id ),
 			ARRAY_A
-		) ?: null;
+		);
+		return $result ? $result : null;
 	}
 
 	/**
-	 * insert.
+	 * Insert.
 	 *
-	 * @param mixed $data Parameter value.
+	 * @param array $data Parameter value.
 	 * @return int|false Return value.
 	 */
 	public function insert( array $data ): int|false {
@@ -80,10 +88,10 @@ class CarouselRepository extends AbstractSingleton {
 	}
 
 	/**
-	 * update.
+	 * Update.
 	 *
-	 * @param mixed $id Parameter value.
-	 * @param mixed $data Parameter value.
+	 * @param int   $id   Parameter value.
+	 * @param array $data Parameter value.
 	 * @return bool Return value.
 	 */
 	public function update( int $id, array $data ): bool {
@@ -127,14 +135,14 @@ class CarouselRepository extends AbstractSingleton {
 		}
 
 		// $wpdb->update returns int|false. 0 means "matched but nothing changed".
-		// which is still a success â€” hence !== false rather than (bool).
+		// which is still a success â€" hence !== false rather than (bool).
 		return $wpdb->update( $this->table(), $fields, array( 'id' => $id ) ) !== false;
 	}
 
 	/**
-	 * delete.
+	 * Delete.
 	 *
-	 * @param mixed $id Parameter value.
+	 * @param int $id Parameter value.
 	 * @return bool Return value.
 	 */
 	public function delete( int $id ): bool {

@@ -1,4 +1,9 @@
 <?php
+/**
+ * Shortcode registration for the plugin.
+ *
+ * @package WPHZ\UGC
+ */
 
 namespace WPHZ\UGC\Shortcode;
 
@@ -15,7 +20,7 @@ class ShortcodeRegistrar extends AbstractSingleton {
 
 
 	/**
-	 * init.
+	 * Initialize shortcode hooks.
 	 *
 	 * @return void Return value.
 	 */

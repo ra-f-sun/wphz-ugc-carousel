@@ -1,6 +1,6 @@
 <?php
 /**
- * item-row.
+ * Admin item row template.
  *
  * @package WPHZ\\UGC
  */

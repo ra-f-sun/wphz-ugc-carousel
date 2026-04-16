@@ -1,4 +1,9 @@
 <?php
+/**
+ * Core plugin bootstrap.
+ *
+ * @package WPHZ\UGC
+ */
 
 namespace WPHZ\UGC;
 
@@ -30,14 +35,14 @@ final class Plugin extends AbstractSingleton {
 
 
 	/**
-	 * __construct.
+	 * Construct the plugin instance.
 	 */
 	protected function __construct() {
 		$this->init_hooks();
 	}
 
 	/**
-	 * init_hooks.
+	 * Initialize plugin hooks.
 	 *
 	 * @return void Return value.
 	 */
@@ -86,7 +91,7 @@ final class Plugin extends AbstractSingleton {
 	}
 
 	/**
-	 * get_woocommerce_status.
+	 * Get the WooCommerce status.
 	 *
 	 * @return array Return value.
 	 */
@@ -114,7 +119,7 @@ final class Plugin extends AbstractSingleton {
 	}
 
 	/**
-	 * notice_wc_not_installed.
+	 * Notify when WooCommerce is not installed.
 	 *
 	 * @return void Return value.
 	 */
@@ -125,7 +130,7 @@ final class Plugin extends AbstractSingleton {
 	}
 
 	/**
-	 * notice_wc_inactive.
+	 * Notify when WooCommerce is inactive.
 	 *
 	 * @return void Return value.
 	 */

@@ -7,7 +7,9 @@
 
 namespace WPHZ\UGC\Ajax;
 
-defined( 'ABSPATH' ) || exit;
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 
 use WPHZ\UGC\AbstractSingleton;
 use WPHZ\UGC\Helpers\NonceHelper;

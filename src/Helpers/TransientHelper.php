@@ -1,8 +1,15 @@
 <?php
+/**
+ * Transient caching helpers for the plugin.
+ *
+ * @package WPHZ\UGC
+ */
 
 namespace WPHZ\UGC\Helpers;
 
-defined( 'ABSPATH' ) || exit;
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 
 /**
  * TransientHelper.
@@ -13,42 +20,42 @@ class TransientHelper {
 	private const PRODUCT_TTL = 300; // 5 minutes.
 
 	/**
-	 * product_key.
+	 * Build a transient key for product searches.
 	 *
-	 * @param mixed $search_term Parameter value.
-	 * @return string Return value.
+	 * @param string $search_term Search term.
+	 * @return string Transient key.
 	 */
 	public static function product_key( string $search_term ): string {
 		return self::PREFIX . 'product_' . md5( strtolower( trim( $search_term ) ) );
 	}
 
 	/**
-	 * get.
+	 * Get a transient value.
 	 *
-	 * @param mixed $key Parameter value.
-	 * @return mixed Return value.
+	 * @param string $key Transient key.
+	 * @return mixed Transient value or null when missing.
 	 */
 	public static function get( string $key ): mixed {
 		$value = get_transient( $key );
-		return ( $value === false ) ? null : $value;
+		return ( false === $value ) ? null : $value;
 	}
 
 	/**
-	 * set.
+	 * Set a transient value.
 	 *
-	 * @param mixed $key Parameter value.
-	 * @param mixed $value Parameter value.
-	 * @param mixed $expiry Parameter value.
-	 * @return void Return value.
+	 * @param string $key Transient key.
+	 * @param mixed  $value Transient value.
+	 * @param int    $expiry Expiration in seconds.
+	 * @return void
 	 */
 	public static function set( string $key, mixed $value, int $expiry = self::PRODUCT_TTL ): void {
 		set_transient( $key, $value, $expiry );
 	}
 
 	/**
-	 * flush_products.
+	 * Flush product-related transients.
 	 *
-	 * @return void Return value.
+	 * @return void
 	 */
 	public static function flush_products(): void {
 		// WooCommerce helper to clear product transients.

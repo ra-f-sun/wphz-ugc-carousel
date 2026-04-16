@@ -1,8 +1,15 @@
 <?php
+/**
+ * ItemRepository.
+ *
+ * @package WPHZ\UGC
+ */
 
 namespace WPHZ\UGC\Repository;
 
-defined( 'ABSPATH' ) || exit;
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 
 use WPHZ\UGC\AbstractSingleton;
 
@@ -12,7 +19,7 @@ use WPHZ\UGC\AbstractSingleton;
 class ItemRepository extends AbstractSingleton {
 
 	/**
-	 * table.
+	 * Table.
 	 *
 	 * @return string Return value.
 	 */
@@ -21,44 +28,44 @@ class ItemRepository extends AbstractSingleton {
 		return $wpdb->prefix . 'wphz_ugc_items';
 	}
 
-	/** @return array<int, array> */
 	/**
-	 * get_all.
+	 * Get_all.
 	 *
-	 * @param mixed $carousel_id Parameter value.
-	 * @return array Return value.
+	 * @param string $carousel_id Parameter value.
+	 * @return array<int, array> Return value.
 	 */
 	public function get_all( string $carousel_id = '1' ): array {
 		global $wpdb;
 		$table = $this->table();
-        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared.
-		$rows = $wpdb->get_results(
+		$rows  = $wpdb->get_results(
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table is derived from $wpdb->prefix; table names cannot use prepare() placeholders.
 			$wpdb->prepare( "SELECT * FROM {$table} WHERE carousel_id = %s ORDER BY sort_order ASC", $carousel_id ),
 			ARRAY_A
 		);
-		return $rows ?: array();
+		return ! empty( $rows ) ? $rows : array();
 	}
 
 	/**
-	 * get_by_id.
+	 * Get_by_id.
 	 *
-	 * @param mixed $id Parameter value.
+	 * @param int $id Parameter value.
 	 * @return ?array Return value.
 	 */
 	public function get_by_id( int $id ): ?array {
 		global $wpdb;
-		$table = $this->table();
-        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared.
-		return $wpdb->get_row(
+		$table  = $this->table();
+		$result = $wpdb->get_row(
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table is derived from $wpdb->prefix; table names cannot use prepare() placeholders.
 			$wpdb->prepare( "SELECT * FROM {$table} WHERE id = %d", $id ),
 			ARRAY_A
-		) ?: null;
+		);
+		return $result ? $result : null;
 	}
 
 	/**
-	 * insert.
+	 * Insert.
 	 *
-	 * @param mixed $data Parameter value.
+	 * @param array $data Parameter value.
 	 * @return int|false Return value.
 	 */
 	public function insert( array $data ): int|false {
@@ -79,10 +86,10 @@ class ItemRepository extends AbstractSingleton {
 	}
 
 	/**
-	 * update.
+	 * Update.
 	 *
-	 * @param mixed $id Parameter value.
-	 * @param mixed $data Parameter value.
+	 * @param int   $id   Parameter value.
+	 * @param array $data Parameter value.
 	 * @return bool Return value.
 	 */
 	public function update( int $id, array $data ): bool {
@@ -110,9 +117,9 @@ class ItemRepository extends AbstractSingleton {
 	}
 
 	/**
-	 * delete.
+	 * Delete.
 	 *
-	 * @param mixed $id Parameter value.
+	 * @param int $id Parameter value.
 	 * @return bool Return value.
 	 */
 	public function delete( int $id ): bool {
@@ -123,7 +130,7 @@ class ItemRepository extends AbstractSingleton {
 	/**
 	 * Bulk-update sort_order.
 	 *
-	 * @param array<int, int> $order  [item_id => new_sort_order, ...]
+	 * @param array<int, int> $order [item_id => new_sort_order, ...].
 	 */
 	public function reorder( array $order ): void {
 		foreach ( $order as $id => $sort ) {
