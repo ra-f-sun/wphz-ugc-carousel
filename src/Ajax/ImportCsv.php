@@ -1,131 +1,172 @@
 <?php
+/**
+ * Ajax handler for importing CSV data.
+ *
+ * @package WPHZ\UGC
+ */
+
 namespace WPHZ\UGC\Ajax;
-defined('ABSPATH') || exit;
+
+defined( 'ABSPATH' ) || exit;
 
 use WPHZ\UGC\AbstractSingleton;
-use WPHZ\UGC\Helpers\NonceHelper;
 use WPHZ\UGC\Repository\ItemRepository;
 
+/**
+ * ImportCsv.
+ */
 class ImportCsv extends AbstractSingleton {
 
-    public function init(): void {
-        add_action('wp_ajax_wphz_ugc_import_csv', [$this, 'handle']);
-    }
+	/**
+	 * Initialize hooks.
+	 *
+	 * @return void Return value.
+	 */
+	public function init(): void {
+		add_action( 'wp_ajax_wphz_ugc_import_csv', array( $this, 'handle' ) );
+	}
 
-    public function handle(): void {
-        NonceHelper::verify('wphz_ugc_admin');
-        if (!current_user_can('manage_options')) {
-            wp_send_json_error(['message' => 'Unauthorized.'], 403);
-        }
+	/**
+	 * Handle CSV import action.
+	 *
+	 * @return void Return value.
+	 */
+	public function handle(): void {
+		$nonce = filter_input( INPUT_POST, 'wphz_nonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+		if ( ! is_string( $nonce ) || '' === $nonce ) {
+			$nonce = filter_input( INPUT_POST, 'nonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+		}
 
-        $carousel_id = (int) ($_POST['carousel_id'] ?? 0);
-        if ($carousel_id <= 0) {
-            wp_send_json_error(['message' => 'Invalid carousel ID.']);
-        }
+		if ( ! is_string( $nonce ) || ! wp_verify_nonce( $nonce, 'wphz_ugc_admin' ) ) {
+			wp_send_json_error( array( 'message' => 'Nonce verification failed.' ), 403 );
+		}
 
-        if (empty($_FILES['csv_file']['tmp_name']) || !is_uploaded_file($_FILES['csv_file']['tmp_name'])) {
-            wp_send_json_error(['message' => 'No valid file uploaded.']);
-        }
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => 'Unauthorized.' ), 403 );
+		}
 
-        $handle = fopen($_FILES['csv_file']['tmp_name'], 'r');
-        if (!$handle) {
-            wp_send_json_error(['message' => 'Cannot read uploaded file.']);
-        }
+		$carousel_id_input = filter_input( INPUT_POST, 'carousel_id', FILTER_VALIDATE_INT );
+		$carousel_id       = is_int( $carousel_id_input ) ? $carousel_id_input : 0;
+		if ( $carousel_id <= 0 ) {
+			wp_send_json_error( array( 'message' => 'Invalid carousel ID.' ) );
+		}
 
-        $header   = fgetcsv($handle);
-        $expected = ['sort_order', 'video_url_hd', 'video_url_sd', 'poster_url', 'products'];
-        if ($header !== $expected) {
-            fclose($handle);
-            wp_send_json_error([
-                'message' => 'Invalid CSV format. Expected columns: ' . implode(', ', $expected),
-            ]);
-        }
+		if ( empty( $_FILES['csv_file']['tmp_name'] ) || ! is_uploaded_file( $_FILES['csv_file']['tmp_name'] ) ) {
+			wp_send_json_error( array( 'message' => 'No valid file uploaded.' ) );
+		}
 
-        // Delete all existing items for this carousel (same pattern as SaveContent)
-        global $wpdb;
-        $table = $wpdb->prefix . 'wphz_ugc_items';
-        $wpdb->delete($table, ['carousel_id' => (string) $carousel_id]);
+		$csv_path = (string) $_FILES['csv_file']['tmp_name'];
+		try {
+			$csv = new \SplFileObject( $csv_path, 'r' );
+		} catch ( \RuntimeException $exception ) {
+			wp_send_json_error( array( 'message' => 'Cannot read uploaded file.' ) );
+		}
 
-        $repo     = ItemRepository::instance();
-        $sort     = 0;
-        $imported = 0;
-        $errors   = [];
+		$header   = $csv->fgetcsv();
+		$expected = array( 'sort_order', 'video_url_hd', 'video_url_sd', 'poster_url', 'products' );
+		if ( $header !== $expected ) {
+			wp_send_json_error(
+				array(
+					'message' => 'Invalid CSV format. Expected columns: ' . implode( ', ', $expected ),
+				)
+			);
+		}
 
-        while (($row = fgetcsv($handle)) !== false) {
-            // Pad to 5 columns in case products column is missing
-            $row = array_pad($row, 5, '');
+		// Delete all existing items for this carousel (same pattern as SaveContent).
+		global $wpdb;
+		$table = $wpdb->prefix . 'wphz_ugc_items';
+		$wpdb->delete( $table, array( 'carousel_id' => (string) $carousel_id ) );
 
-            [, $video_url_hd, $video_url_sd, $poster_url, $products_json] = $row;
+		$repo     = ItemRepository::instance();
+		$sort     = 0;
+		$imported = 0;
+		$errors   = array();
 
-            $video_url_hd = esc_url_raw(trim($video_url_hd));
-            $video_url_sd = esc_url_raw(trim($video_url_sd));
-            $poster_url   = esc_url_raw(trim($poster_url));
+		while ( ! $csv->eof() ) {
+			$row = $csv->fgetcsv();
+			if ( false === $row || array( null ) === $row ) {
+				continue;
+			}
 
-            // Skip rows with no video at all
-            if (!$video_url_hd && !$video_url_sd) {
-                continue;
-            }
+			// Pad to 5 columns in case products column is missing.
+			$row = array_pad( $row, 5, '' );
 
-            $product_ids = [];
-            $row_errors  = [];
+			[, $video_url_hd, $video_url_sd, $poster_url, $products_json] = $row;
 
-            if (!empty(trim($products_json))) {
-                $parsed = json_decode(trim($products_json), true);
-                if (is_array($parsed)) {
-                    foreach ($parsed as $entry) {
-                        $sku     = trim($entry['sku'] ?? '');
-                        $id_hint = (int) ($entry['id'] ?? 0);
+			$video_url_hd = esc_url_raw( trim( $video_url_hd ) );
+			$video_url_sd = esc_url_raw( trim( $video_url_sd ) );
+			$poster_url   = esc_url_raw( trim( $poster_url ) );
 
-                        // Prefer SKU lookup; fall back to ID for products with no SKU
-                        $resolved_id = 0;
-                        if ($sku !== '') {
-                            $resolved_id = (int) wc_get_product_id_by_sku($sku);
-                        }
-                        if (!$resolved_id && $id_hint > 0) {
-                            $resolved_id = $id_hint;
-                        }
+			// Skip rows with no video at all.
+			if ( ! $video_url_hd && ! $video_url_sd ) {
+				continue;
+			}
 
-                        if (!$resolved_id) {
-                            $row_errors[] = 'Product SKU "' . esc_html($sku) . '" (id hint: ' . $id_hint . ') not found, skipped.';
-                            continue;
-                        }
+			$product_ids = array();
+			$row_errors  = array();
 
-                        // hide_atc: null = inherit, 0 = force show, 1 = force hide
-                        $hide_raw = array_key_exists('hide_atc', $entry) ? $entry['hide_atc'] : null;
-                        $hide_atc = ($hide_raw !== null) ? (int) $hide_raw : null;
+			if ( ! empty( trim( $products_json ) ) ) {
+				$parsed = json_decode( trim( $products_json ), true );
+				if ( is_array( $parsed ) ) {
+					foreach ( $parsed as $entry ) {
+						$sku     = trim( $entry['sku'] ?? '' );
+						$id_hint = (int) ( $entry['id'] ?? 0 );
 
-                        $product_ids[] = ['id' => $resolved_id, 'hide_atc' => $hide_atc];
-                    }
-                }
-            }
+						// Prefer SKU lookup; fall back to ID for products with no SKU.
+						$resolved_id = 0;
+						if ( '' !== $sku ) {
+							$resolved_id = (int) wc_get_product_id_by_sku( $sku );
+						}
+						if ( ! $resolved_id && $id_hint > 0 ) {
+							$resolved_id = $id_hint;
+						}
 
-            if (!empty($row_errors)) {
-                foreach ($row_errors as $err) {
-                    $errors[] = 'Row ' . ($sort + 1) . ': ' . $err;
-                }
-            }
+						if ( ! $resolved_id ) {
+							$row_errors[] = 'Product SKU "' . esc_html( $sku ) . '" (id hint: ' . $id_hint . ') not found, skipped.';
+							continue;
+						}
 
-            if ($repo->insert([
-                'carousel_id'  => (string) $carousel_id,
-                'sort_order'   => $sort++,
-                'video_id'     => 0,
-                'video_url_hd' => $video_url_hd,
-                'video_url_sd' => $video_url_sd,
-                'poster_url'   => $poster_url,
-                'product_ids'  => $product_ids,
-            ])) {
-                $imported++;
-            } else {
-                $errors[] = 'Row ' . $sort . ': database insert failed.';
-            }
-        }
+						// hide_atc: null = inherit, 0 = force show, 1 = force hide.
+						$hide_raw = array_key_exists( 'hide_atc', $entry ) ? $entry['hide_atc'] : null;
+						$hide_atc = ( null !== $hide_raw ) ? (int) $hide_raw : null;
 
-        fclose($handle);
+						$product_ids[] = array(
+							'id'       => $resolved_id,
+							'hide_atc' => $hide_atc,
+						);
+					}
+				}
+			}
 
-        wp_send_json_success([
-            'message'  => sprintf('%d item(s) imported successfully.', $imported),
-            'imported' => $imported,
-            'errors'   => $errors,
-        ]);
-    }
+			if ( ! empty( $row_errors ) ) {
+				foreach ( $row_errors as $err ) {
+					$errors[] = 'Row ' . ( $sort + 1 ) . ': ' . $err;
+				}
+			}
+
+			if ( $repo->insert(
+				array(
+					'carousel_id'  => (string) $carousel_id,
+					'sort_order'   => $sort++,
+					'video_id'     => 0,
+					'video_url_hd' => $video_url_hd,
+					'video_url_sd' => $video_url_sd,
+					'poster_url'   => $poster_url,
+					'product_ids'  => $product_ids,
+				)
+			) ) {
+				++$imported;
+			} else {
+				$errors[] = 'Row ' . $sort . ': database insert failed.';
+			}
+		}
+
+		wp_send_json_success(
+			array(
+				'message'  => sprintf( '%d item(s) imported successfully.', $imported ),
+				'imported' => $imported,
+				'errors'   => $errors,
+			)
+		);
+	}
 }

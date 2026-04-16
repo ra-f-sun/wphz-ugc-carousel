@@ -1,35 +1,60 @@
 <?php
-namespace WPHZ\UGC\Helpers;
-defined('ABSPATH') || exit;
+/**
+ * Template loading helpers for the plugin.
+ *
+ * @package WPHZ\UGC
+ */
 
+namespace WPHZ\UGC\Helpers;
+
+defined( 'ABSPATH' ) || exit;
+
+/**
+ * Template loading helpers.
+ */
 class TemplateLoader {
 
-    /**
-     * Render a template by name, extracting $data into local scope. Outputs directly.
-     *
-     * @param string       $template  Template path relative to the templates/ dir, without .php extension.
-     * @param array<mixed> $data      Variables to extract into template scope.
-     */
-    public static function render(string $template, array $data = []): void {
-        $file = WPHZ_UGC_TEMPLATES . ltrim($template, '/') . '.php';
-        if (!file_exists($file)) {
-            // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_trigger_error
-            trigger_error("WPHZ UGC: Template not found: {$file}", E_USER_WARNING);
-            return;
-        }
-        extract($data, EXTR_SKIP); // EXTR_SKIP: never overwrite existing vars
-        include $file;
-    }
+	/**
+	 * Render a template by name using local variables from the provided data.
+	 *
+	 * @param string       $template Template path relative to the templates/ dir, without .php extension.
+	 * @param array<mixed> $data Variables to expose to the template scope.
+	 */
+	public static function render( string $template, array $data = array() ): void {
+		$file = WPHZ_UGC_TEMPLATES . ltrim( $template, '/' ) . '.php';
+		if ( ! file_exists( $file ) ) {
+			return;
+		}
 
-    /**
-     * Same as render() but captures and returns output as a string.
-     *
-     * @param string       $template
-     * @param array<mixed> $data
-     */
-    public static function render_return(string $template, array $data = []): string {
-        ob_start();
-        self::render($template, $data);
-        return (string) ob_get_clean();
-    }
+		foreach ( $data as $key => $value ) {
+			if ( ! is_string( $key ) || '' === $key ) {
+				continue;
+			}
+
+			if ( 1 !== preg_match( '/^[A-Za-z_][A-Za-z0-9_]*$/', $key ) ) {
+				continue;
+			}
+
+			if ( isset( ${$key} ) ) {
+				continue;
+			}
+
+			${$key} = $value;
+		}
+
+		include $file;
+	}
+
+	/**
+	 * Same as render() but captures and returns output as a string.
+	 *
+	 * @param string       $template Template path relative to the templates/ dir, without .php extension.
+	 * @param array<mixed> $data Variables to expose to the template scope.
+	 * @return string Rendered template output.
+	 */
+	public static function render_return( string $template, array $data = array() ): string {
+		ob_start();
+		self::render( $template, $data );
+		return (string) ob_get_clean();
+	}
 }

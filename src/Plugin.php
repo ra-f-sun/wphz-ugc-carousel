@@ -2,6 +2,10 @@
 
 namespace WPHZ\UGC;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 use WPHZ\UGC\Admin\AdminMenu;
 use WPHZ\UGC\Admin\AssetLoader as AdminAssets;
 use WPHZ\UGC\Shortcode\ShortcodeRegistrar;
@@ -15,59 +19,119 @@ use WPHZ\UGC\Ajax\DeleteCarousel;
 use WPHZ\UGC\Ajax\ExportCsv;
 use WPHZ\UGC\Ajax\ImportCsv;
 use WPHZ\UGC\Frontend\CartHandler;
+use WPHZ\UGC\Ajax\SaveCustomCss;
+use WPHZ\UGC\Ajax\DuplicateCarousel;
+use WPHZ\UGC\Installer\Installer;
 
-final class Plugin extends AbstractSingleton
-{
+/**
+ * Plugin.
+ */
+final class Plugin extends AbstractSingleton {
 
-    protected function __construct()
-    {
-        $this->init_hooks();
-    }
 
-    private function init_hooks(): void
-    {
-        if (!$this->is_woocommerce_active()) {
-            add_action('admin_notices', [$this, 'notice_wc_missing']);
-            return;
-        }
+	/**
+	 * __construct.
+	 */
+	protected function __construct() {
+		$this->init_hooks();
+	}
 
-        add_action('init', function () {
-            if (
-                get_option('wphz_ugc_db_version') !== WPHZ_UGC_VERSION
-                || !\WPHZ\UGC\Installer\Installer::items_has_poster_column()
-                || !\WPHZ\UGC\Installer\Installer::carousels_has_hide_atc_column()
-            ) {
-                \WPHZ\UGC\Installer\Installer::activate();
-            }
-        });
+	/**
+	 * init_hooks.
+	 *
+	 * @return void Return value.
+	 */
+	private function init_hooks(): void {
+		$woo_status = $this->get_woocommerce_status();
 
-        AdminMenu::instance()->init();
-        AdminAssets::instance()->init();
-        ShortcodeRegistrar::instance()->init();
-        FrontendAssets::instance()->init();
-        CartHandler::instance()->init();
+		if ( ! $woo_status['installed'] ) {
+			add_action( 'admin_notices', array( $this, 'notice_wc_not_installed' ) );
+			return;
+		}
 
-        SaveConfig::instance()->init();
-        SaveContent::instance()->init();
-        \WPHZ\UGC\Ajax\SaveCustomCss::instance()->init();
-        ProductSearch::instance()->init();
-        DeleteItem::instance()->init();
-        CreateCarousel::instance()->init();
-        DeleteCarousel::instance()->init();
-        \WPHZ\UGC\Ajax\DuplicateCarousel::instance()->init();
-        ExportCsv::instance()->init();
-        ImportCsv::instance()->init();
-    }
+		if ( ! $woo_status['active'] ) {
+			add_action( 'admin_notices', array( $this, 'notice_wc_inactive' ) );
+			return;
+		}
 
-    private function is_woocommerce_active(): bool
-    {
-        return class_exists('WooCommerce');
-    }
+		add_action(
+			'init',
+			function () {
+				if (
+				get_option( 'wphz_ugc_db_version' ) !== WPHZ_UGC_VERSION
+				|| ! Installer::items_has_poster_column()
+				|| ! Installer::carousels_has_hide_atc_column()
+				) {
+					Installer::activate();
+				}
+			}
+		);
 
-    public function notice_wc_missing(): void
-    {
-        echo '<div class="notice notice-error"><p>'
-            . esc_html__('WPHZ UGC Carousel requires WooCommerce to be active.', 'wphz-ugc')
-            . '</p></div>';
-    }
+		AdminMenu::instance()->init();
+		AdminAssets::instance()->init();
+		ShortcodeRegistrar::instance()->init();
+		FrontendAssets::instance()->init();
+		CartHandler::instance()->init();
+
+		SaveConfig::instance()->init();
+		SaveContent::instance()->init();
+		SaveCustomCss::instance()->init();
+		ProductSearch::instance()->init();
+		DeleteItem::instance()->init();
+		CreateCarousel::instance()->init();
+		DeleteCarousel::instance()->init();
+		DuplicateCarousel::instance()->init();
+		ExportCsv::instance()->init();
+		ImportCsv::instance()->init();
+	}
+
+	/**
+	 * get_woocommerce_status.
+	 *
+	 * @return array Return value.
+	 */
+	private function get_woocommerce_status(): array {
+		if ( ! function_exists( 'is_plugin_active' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		}
+
+		$plugin    = 'woocommerce/woocommerce.php';
+		$installed = file_exists( WP_PLUGIN_DIR . '/' . $plugin );
+
+		$active = false;
+		if ( $installed && function_exists( 'is_plugin_active' ) ) {
+			$active = is_plugin_active( $plugin );
+
+			if ( is_multisite() && function_exists( 'is_plugin_active_for_network' ) ) {
+				$active = $active || is_plugin_active_for_network( $plugin );
+			}
+		}
+
+		return array(
+			'installed' => $installed,
+			'active'    => $active,
+		);
+	}
+
+	/**
+	 * notice_wc_not_installed.
+	 *
+	 * @return void Return value.
+	 */
+	public function notice_wc_not_installed(): void {
+		echo '<div class="notice notice-error"><p>'
+			. esc_html__( 'WPHZ UGC Carousel requires WooCommerce to be installed.', 'wphz-ugc' )
+			. '</p></div>';
+	}
+
+	/**
+	 * notice_wc_inactive.
+	 *
+	 * @return void Return value.
+	 */
+	public function notice_wc_inactive(): void {
+		echo '<div class="notice notice-error"><p>'
+			. esc_html__( 'WPHZ UGC Carousel requires WooCommerce to be active.', 'wphz-ugc' )
+			. '</p></div>';
+	}
 }

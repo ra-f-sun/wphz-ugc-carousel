@@ -1,44 +1,77 @@
 <?php
+/**
+ * Frontend cart handling for the plugin.
+ *
+ * @package WPHZ\UGC
+ */
+
 namespace WPHZ\UGC\Frontend;
-defined('ABSPATH') || exit;
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 
 use WPHZ\UGC\AbstractSingleton;
 
+/**
+ * CartHandler.
+ */
 class CartHandler extends AbstractSingleton {
 
-    public function init(): void {
-        add_action('wp_ajax_wphz_ugc_add_to_cart',        [$this, 'handle']);
-        add_action('wp_ajax_nopriv_wphz_ugc_add_to_cart', [$this, 'handle']);
-    }
 
-    public function handle(): void {
-        // C6 Contract: Nonce verification. Dies with 403 if invalid.
-        \WPHZ\UGC\Helpers\NonceHelper::verify('wphz_ugc_atc');
+	/**
+	 * Initialize hooks.
+	 *
+	 * @return void Return value.
+	 */
+	public function init(): void {
+		add_action( 'wp_ajax_wphz_ugc_add_to_cart', array( $this, 'handle' ) );
+		add_action( 'wp_ajax_nopriv_wphz_ugc_add_to_cart', array( $this, 'handle' ) );
+	}
 
-        $product_id = (int) ($_POST['product_id'] ?? 0);
-        $quantity   = (int) ($_POST['quantity']   ?? 1);
+	/**
+	 * Handle add to cart action.
+	 *
+	 * @return void Return value.
+	 */
+	public function handle(): void {
+		$nonce = filter_input( INPUT_POST, 'nonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+		if ( ! is_string( $nonce ) || '' === $nonce ) {
+			$nonce = filter_input( INPUT_POST, 'wphz_nonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+		}
 
-        if (!$product_id) {
-            wp_send_json_error(['message' => 'Invalid product.']);
-        }
+		if ( ! is_string( $nonce ) || ! wp_verify_nonce( $nonce, 'wphz_ugc_atc' ) ) {
+			wp_send_json_error( array( 'message' => 'Nonce verification failed.' ), 403 );
+		}
 
-        $product = wc_get_product($product_id);
-        if (!$product || !$product->is_purchasable()) {
-            wp_send_json_error(['message' => 'Product not purchasable.']);
-        }
+		$product_id_input = filter_input( INPUT_POST, 'product_id', FILTER_VALIDATE_INT );
+		$product_id       = is_int( $product_id_input ) ? $product_id_input : 0;
+		$quantity_input   = filter_input( INPUT_POST, 'quantity', FILTER_VALIDATE_INT );
+		$quantity         = is_int( $quantity_input ) ? $quantity_input : 1;
 
-        $result = WC()->cart->add_to_cart($product_id, $quantity);
+		if ( ! $product_id ) {
+			wp_send_json_error( array( 'message' => 'Invalid product.' ) );
+		}
 
-        if ($result) {
-            WC()->cart->calculate_totals();
+		$product = wc_get_product( $product_id );
+		if ( ! $product || ! $product->is_purchasable() ) {
+			wp_send_json_error( array( 'message' => 'Product not purchasable.' ) );
+		}
 
-            wp_send_json_success([
-                'message'   => __('Added to cart.', 'wphz-ugc'),
-                'fragments' => apply_filters('woocommerce_add_to_cart_fragments', []),
-                'cart_hash' => WC()->cart->get_cart_hash(),
-            ]);
-        } else {
-            wp_send_json_error(['message' => 'Could not add to cart.']);
-        }
-    }
+		$result = WC()->cart->add_to_cart( $product_id, $quantity );
+
+		if ( $result ) {
+			WC()->cart->calculate_totals();
+
+			wp_send_json_success(
+				array(
+					'message'   => __( 'Added to cart.', 'wphz-ugc' ),
+					'fragments' => apply_filters( 'woocommerce_add_to_cart_fragments', array() ),
+					'cart_hash' => WC()->cart->get_cart_hash(),
+				)
+			);
+		} else {
+			wp_send_json_error( array( 'message' => 'Could not add to cart.' ) );
+		}
+	}
 }

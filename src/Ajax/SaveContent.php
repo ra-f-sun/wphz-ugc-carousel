@@ -1,99 +1,143 @@
 <?php
+/**
+ * Ajax handler for saving carousel content.
+ *
+ * @package WPHZ\UGC
+ */
 
 namespace WPHZ\UGC\Ajax;
-defined('ABSPATH') || exit;
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 
 use WPHZ\UGC\AbstractSingleton;
-use WPHZ\UGC\Helpers\NonceHelper;
 use WPHZ\UGC\Installer\Installer;
 use WPHZ\UGC\Repository\ItemRepository;
 
-class SaveContent extends AbstractSingleton
-{
+/**
+ * SaveContent.
+ */
+class SaveContent extends AbstractSingleton {
 
-    public function init(): void
-    {
-        add_action('wp_ajax_wphz_ugc_save_content', [$this, 'handle']);
-    }
 
-    public function handle(): void
-    {
-        NonceHelper::verify('wphz_ugc_admin');
-        if (!current_user_can('manage_options')) {
-            wp_send_json_error(['message' => 'Unauthorized.'], 403);
-        }
+	/**
+	 * Initialize hooks.
+	 *
+	 * @return void Return value.
+	 */
+	public function init(): void {
+		add_action( 'wp_ajax_wphz_ugc_save_content', array( $this, 'handle' ) );
+	}
 
-        $items_raw   = $_POST['items'] ?? [];
-        $carousel_id = (int) ($_POST['carousel_id'] ?? 0);
+	/**
+	 * Handle save content action.
+	 *
+	 * @return void Return value.
+	 */
+	public function handle(): void {
+		$nonce = filter_input( INPUT_POST, 'nonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+		if ( ! is_string( $nonce ) || '' === $nonce ) {
+			$nonce = filter_input( INPUT_POST, 'wphz_nonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+		}
 
-        if ($carousel_id <= 0) {
-            wp_send_json_error(['message' => __('Invalid Carousel ID.', 'wphz-ugc')]);
-        }
+		if ( ! is_string( $nonce ) || ! wp_verify_nonce( $nonce, 'wphz_ugc_admin' ) ) {
+			wp_send_json_error( array( 'message' => 'Nonce verification failed.' ), 403 );
+		}
 
-        if (!Installer::items_has_poster_column()) {
-            wp_send_json_error([
-                'message' => __('Database schema is outdated. Please reload the page and try again.', 'wphz-ugc')
-            ]);
-        }
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => 'Unauthorized.' ), 403 );
+		}
 
-        $repo = ItemRepository::instance();
+		$items_raw_input = filter_input( INPUT_POST, 'items', FILTER_DEFAULT, FILTER_REQUIRE_ARRAY );
+		$items_raw       = is_array( $items_raw_input ) ? $items_raw_input : array();
 
-        // Delete-all then re-insert: simple replace-all strategy scoped to parent ID.
-        $this->clear_existing($carousel_id);
+		$carousel_id_input = filter_input( INPUT_POST, 'carousel_id', FILTER_VALIDATE_INT );
+		$carousel_id       = is_int( $carousel_id_input ) ? $carousel_id_input : 0;
 
-        $sort = 0;
-        foreach ($items_raw as $data) {
-            $video_id     = (int) ($data['video_id']   ?? 0);
-            $video_url_hd = esc_url_raw($data['video_url_hd'] ?? '');
-            $video_url_sd = esc_url_raw($data['video_url_sd'] ?? '');
-            $poster_url   = esc_url_raw($data['poster_url'] ?? '');
+		if ( $carousel_id <= 0 ) {
+			wp_send_json_error( array( 'message' => __( 'Invalid Carousel ID.', 'wphz-ugc' ) ) );
+		}
 
-            $products_raw = (array) ($data['products'] ?? []);
-            $product_ids  = [];
-            foreach ($products_raw as $pdata) {
-                if (empty($pdata['id'])) continue;
-                // 3-state: null = inherit global, 0 = force show, 1 = force hide.
-                // Empty string means "inherit" (sent by the select "Use global default" option).
-                $hide_raw = $pdata['hide_atc'] ?? '';
-                $product_ids[] = [
-                    'id'       => (int) $pdata['id'],
-                    'hide_atc' => ($hide_raw !== '' && $hide_raw !== null) ? (int) $hide_raw : null,
-                ];
-            }
+		if ( ! Installer::items_has_poster_column() ) {
+			wp_send_json_error(
+				array(
+					'message' => __( 'Database schema is outdated. Please reload the page and try again.', 'wphz-ugc' ),
+				)
+			);
+		}
 
-            // Skip row if both URLs are missing. 
-            // If one is missing, it will be skipped by the frontend dynamic engine fallback.
-            if (!$video_url_hd && !$video_url_sd) {
-                continue;
-            }
+		$item_repository = ItemRepository::instance();
 
-            if (!$repo->insert([
-                'carousel_id'  => (string) $carousel_id,
-                'sort_order'   => $sort++,
-                'video_id'     => $video_id,
-                'video_url_hd' => $video_url_hd,
-                'video_url_sd' => $video_url_sd,
-                'poster_url'   => $poster_url,
-                'product_ids'  => $product_ids,
-            ])) {
-                global $wpdb;
-                wp_send_json_error([
-                    'message' => __('Failed to save carousel content. Please retry after refreshing the page.', 'wphz-ugc'),
-                    'debug'   => $wpdb->last_error,
-                ]);
-            }
-        }
+		// Delete-all then re-insert: simple replace-all strategy scoped to parent ID.
+		$this->clear_existing( $carousel_id );
 
-        wp_send_json_success([
-            'message'   => __('Content saved.', 'wphz-ugc'),
-            'shortcode' => sprintf('[wphz_ugc_carousel id="%d"]', $carousel_id)
-        ]);
-    }
+		$sort = 0;
+		foreach ( $items_raw as $data ) {
+			$video_id     = (int) ( $data['video_id'] ?? 0 );
+			$video_url_hd = esc_url_raw( $data['video_url_hd'] ?? '' );
+			$video_url_sd = esc_url_raw( $data['video_url_sd'] ?? '' );
+			$poster_url   = esc_url_raw( $data['poster_url'] ?? '' );
 
-    private function clear_existing(int $carousel_id): void
-    {
-        global $wpdb;
-        $table = $wpdb->prefix . 'wphz_ugc_items';
-        $wpdb->delete($table, ['carousel_id' => (string) $carousel_id]);
-    }
+			$products_raw = (array) ( $data['products'] ?? array() );
+			$product_ids  = array();
+			foreach ( $products_raw as $product_data ) {
+				if ( empty( $product_data['id'] ) ) {
+					continue;
+				}
+				// 3-state: null = inherit global, 0 = force show, 1 = force hide.
+				// Empty string means "inherit" (sent by the select "Use global default" option).
+				$hide_raw      = $product_data['hide_atc'] ?? '';
+				$product_ids[] = array(
+					'id'       => (int) $product_data['id'],
+					'hide_atc' => ( '' !== $hide_raw && null !== $hide_raw ) ? (int) $hide_raw : null,
+				);
+			}
+
+			// Skip row if both URLs are missing.
+			// If one is missing, it will be skipped by the frontend dynamic engine fallback.
+			if ( ! $video_url_hd && ! $video_url_sd ) {
+				continue;
+			}
+
+			if ( ! $item_repository->insert(
+				array(
+					'carousel_id'  => (string) $carousel_id,
+					'sort_order'   => $sort++,
+					'video_id'     => $video_id,
+					'video_url_hd' => $video_url_hd,
+					'video_url_sd' => $video_url_sd,
+					'poster_url'   => $poster_url,
+					'product_ids'  => $product_ids,
+				)
+			) ) {
+				global $wpdb;
+				wp_send_json_error(
+					array(
+						'message' => __( 'Failed to save carousel content. Please retry after refreshing the page.', 'wphz-ugc' ),
+						'debug'   => $wpdb->last_error,
+					)
+				);
+			}
+		}
+
+		wp_send_json_success(
+			array(
+				'message'   => __( 'Content saved.', 'wphz-ugc' ),
+				'shortcode' => sprintf( '[wphz_ugc_carousel id="%d"]', $carousel_id ),
+			)
+		);
+	}
+
+	/**
+	 * Clear existing carousel items.
+	 *
+	 * @param int $carousel_id Carousel ID.
+	 * @return void Return value.
+	 */
+	private function clear_existing( int $carousel_id ): void {
+		global $wpdb;
+		$table = $wpdb->prefix . 'wphz_ugc_items';
+		$wpdb->delete( $table, array( 'carousel_id' => (string) $carousel_id ) );
+	}
 }

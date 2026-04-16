@@ -1,47 +1,73 @@
 <?php
 
 namespace WPHZ\UGC\Installer;
-defined('ABSPATH') || exit;
 
-class Installer
-{
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 
-    public static function items_has_poster_column(): bool
-    {
-        global $wpdb;
-        $table_items = $wpdb->prefix . 'wphz_ugc_items';
-        return (bool) $wpdb->get_var("SHOW COLUMNS FROM {$table_items} LIKE 'poster_url'");
-    }
+/**
+ * Installer.
+ */
+class Installer {
 
-    public static function carousels_has_hide_atc_column(): bool
-    {
-        global $wpdb;
-        $table_carousels = $wpdb->prefix . 'wphz_ugc_carousels';
-        return (bool) $wpdb->get_var("SHOW COLUMNS FROM {$table_carousels} LIKE 'hide_atc'");
-    }
 
-    public static function activate(): void
-    {
-        self::create_tables();
-        self::migrate_to_multi_carousel();
-        flush_rewrite_rules();
-    }
+	/**
+	 * items_has_poster_column.
+	 *
+	 * @return bool Return value.
+	 */
+	public static function items_has_poster_column(): bool {
+		global $wpdb;
+		$table_items = $wpdb->prefix . 'wphz_ugc_items';
+		return (bool) $wpdb->get_var( "SHOW COLUMNS FROM {$table_items} LIKE 'poster_url'" );
+	}
 
-    public static function deactivate(): void
-    {
-        flush_rewrite_rules();
-    }
+	/**
+	 * carousels_has_hide_atc_column.
+	 *
+	 * @return bool Return value.
+	 */
+	public static function carousels_has_hide_atc_column(): bool {
+		global $wpdb;
+		$table_carousels = $wpdb->prefix . 'wphz_ugc_carousels';
+		return (bool) $wpdb->get_var( "SHOW COLUMNS FROM {$table_carousels} LIKE 'hide_atc'" );
+	}
 
-    private static function create_tables(): void
-    {
-        global $wpdb;
-        $table_items     = $wpdb->prefix . 'wphz_ugc_items';
-        $table_carousels = $wpdb->prefix . 'wphz_ugc_carousels';
-        $charset         = $wpdb->get_charset_collate();
+	/**
+	 * activate.
+	 *
+	 * @return void Return value.
+	 */
+	public static function activate(): void {
+		self::create_tables();
+		self::migrate_to_multi_carousel();
+		flush_rewrite_rules();
+	}
 
-        require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+	/**
+	 * deactivate.
+	 *
+	 * @return void Return value.
+	 */
+	public static function deactivate(): void {
+		flush_rewrite_rules();
+	}
 
-        $sql_items = "CREATE TABLE {$table_items} (
+	/**
+	 * create_tables.
+	 *
+	 * @return void Return value.
+	 */
+	private static function create_tables(): void {
+		global $wpdb;
+		$table_items     = $wpdb->prefix . 'wphz_ugc_items';
+		$table_carousels = $wpdb->prefix . 'wphz_ugc_carousels';
+		$charset         = $wpdb->get_charset_collate();
+
+		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+
+		$sql_items = "CREATE TABLE {$table_items} (
             id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
             carousel_id varchar(64) NOT NULL DEFAULT 'default',
             sort_order int(11) NOT NULL DEFAULT 0,
@@ -57,7 +83,7 @@ class Installer
             KEY sort_order (sort_order)
         ) {$charset};";
 
-        $sql_carousels = "CREATE TABLE {$table_carousels} (
+		$sql_carousels = "CREATE TABLE {$table_carousels} (
             id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
             name varchar(255) NOT NULL,
             heading varchar(255),
@@ -73,71 +99,78 @@ class Installer
             PRIMARY KEY  (id)
         ) {$charset};";
 
-        dbDelta($sql_items);
-        dbDelta($sql_carousels);
+		dbDelta( $sql_items );
+		dbDelta( $sql_carousels );
 
-        // Safe migration: add custom_css column to existing installs
-        if (! $wpdb->get_var("SHOW COLUMNS FROM {$table_carousels} LIKE 'custom_css'")) {
-            $wpdb->query("ALTER TABLE {$table_carousels} ADD COLUMN custom_css longtext DEFAULT NULL");
-        }
+		// Safe migration: add custom_css column to existing installs.
+		if ( ! $wpdb->get_var( "SHOW COLUMNS FROM {$table_carousels} LIKE 'custom_css'" ) ) {
+			$wpdb->query( "ALTER TABLE {$table_carousels} ADD COLUMN custom_css longtext DEFAULT NULL" );
+		}
 
-        // Safe migration: Port old `video_url` data to `video_url_hd` and explicitly drop the old column
-        if ($wpdb->get_var("SHOW COLUMNS FROM {$table_items} LIKE 'video_url'")) {
-            $wpdb->query("UPDATE {$table_items} SET video_url_hd = video_url WHERE video_url_hd IS NULL OR video_url_hd = ''");
-            $wpdb->query("ALTER TABLE {$table_items} DROP COLUMN video_url");
-        }
+		// Safe migration: Port old `video_url` data to `video_url_hd` and explicitly drop the old column.
+		if ( $wpdb->get_var( "SHOW COLUMNS FROM {$table_items} LIKE 'video_url'" ) ) {
+			$wpdb->query( "UPDATE {$table_items} SET video_url_hd = video_url WHERE video_url_hd IS NULL OR video_url_hd = ''" );
+			$wpdb->query( "ALTER TABLE {$table_items} DROP COLUMN video_url" );
+		}
 
-        // Safe migration: add poster_url column to existing installs
-        if (! $wpdb->get_var("SHOW COLUMNS FROM {$table_items} LIKE 'poster_url'")) {
-            $wpdb->query("ALTER TABLE {$table_items} ADD COLUMN poster_url text DEFAULT NULL");
-        }
+		// Safe migration: add poster_url column to existing installs.
+		if ( ! $wpdb->get_var( "SHOW COLUMNS FROM {$table_items} LIKE 'poster_url'" ) ) {
+			$wpdb->query( "ALTER TABLE {$table_items} ADD COLUMN poster_url text DEFAULT NULL" );
+		}
 
-        // Safe migration: add hide_atc column to carousels table on existing installs
-        if (! $wpdb->get_var("SHOW COLUMNS FROM {$table_carousels} LIKE 'hide_atc'")) {
-            $wpdb->query("ALTER TABLE {$table_carousels} ADD COLUMN hide_atc tinyint(1) DEFAULT 0");
-        }
+		// Safe migration: add hide_atc column to carousels table on existing installs.
+		if ( ! $wpdb->get_var( "SHOW COLUMNS FROM {$table_carousels} LIKE 'hide_atc'" ) ) {
+			$wpdb->query( "ALTER TABLE {$table_carousels} ADD COLUMN hide_atc tinyint(1) DEFAULT 0" );
+		}
 
-        update_option('wphz_ugc_db_version', WPHZ_UGC_VERSION);
-    }
+		update_option( 'wphz_ugc_db_version', WPHZ_UGC_VERSION );
+	}
 
-    private static function migrate_to_multi_carousel(): void
-    {
-        global $wpdb;
-        $table_items     = $wpdb->prefix . 'wphz_ugc_items';
-        $table_carousels = $wpdb->prefix . 'wphz_ugc_carousels';
+	/**
+	 * migrate_to_multi_carousel.
+	 *
+	 * @return void Return value.
+	 */
+	private static function migrate_to_multi_carousel(): void {
+		global $wpdb;
+		$table_items     = $wpdb->prefix . 'wphz_ugc_items';
+		$table_carousels = $wpdb->prefix . 'wphz_ugc_carousels';
 
-        // Check if carousels table is empty
-        $count = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$table_carousels}");
-        if ($count > 0) {
-            return; // Already migrated or populated
-        }
+		// Check if carousels table is empty.
+		$count = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$table_carousels}" );
+		if ( $count > 0 ) {
+			return; // Already migrated or populated.
+		}
 
-        // Read old config
-        $old_config = get_option('wphz_ugc_config');
-        if (!$old_config) {
-            return; // New install, nothing to migrate
-        }
+		// Read old config.
+		$old_config = get_option( 'wphz_ugc_config' );
+		if ( ! $old_config ) {
+			return; // New install, nothing to migrate.
+		}
 
-        $config = json_decode($old_config, true) ?: [];
-        $danger = json_decode(get_option('wphz_ugc_danger_config') ?: '{}', true) ?: [];
+		$config = json_decode( $old_config, true ) ?: array();
+		$danger = json_decode( get_option( 'wphz_ugc_danger_config' ) ?: '{}', true ) ?: array();
 
-        // Insert default carousel
-        $wpdb->insert($table_carousels, [
-            'id'             => 1,
-            'name'           => 'Default Carousel',
-            'heading'        => $config['heading'] ?? '',
-            'subheading'     => $config['subheading'] ?? '',
-            'mute'           => isset($config['mute']) ? (int) $config['mute'] : 1,
-            'direction'      => $config['direction'] ?? 'ltr',
-            'on_arrow_right' => $danger['on_arrow_right'] ?? '',
-            'on_arrow_left'  => $danger['on_arrow_left'] ?? '',
-        ]);
+		// Insert default carousel.
+		$wpdb->insert(
+			$table_carousels,
+			array(
+				'id'             => 1,
+				'name'           => 'Default Carousel',
+				'heading'        => $config['heading'] ?? '',
+				'subheading'     => $config['subheading'] ?? '',
+				'mute'           => isset( $config['mute'] ) ? (int) $config['mute'] : 1,
+				'direction'      => $config['direction'] ?? 'ltr',
+				'on_arrow_right' => $danger['on_arrow_right'] ?? '',
+				'on_arrow_left'  => $danger['on_arrow_left'] ?? '',
+			)
+		);
 
-        // Update old items to point to id '1'
-        $wpdb->update($table_items, ['carousel_id' => '1'], ['carousel_id' => 'default']);
+		// Update old items to point to id '1'.
+		$wpdb->update( $table_items, array( 'carousel_id' => '1' ), array( 'carousel_id' => 'default' ) );
 
-        // Clean up old options
-        delete_option('wphz_ugc_config');
-        delete_option('wphz_ugc_danger_config');
-    }
+		// Clean up old options.
+		delete_option( 'wphz_ugc_config' );
+		delete_option( 'wphz_ugc_danger_config' );
+	}
 }

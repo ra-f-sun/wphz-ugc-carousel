@@ -4,3 +4,11 @@ build.sh
 /build.sh
 tolstoy.js
 FEATURES.md
+
+# Dev-only Composer tooling pulled in for PHPCS/PHPCBF.
+/vendor/bin/
+/vendor/dealerdirect/
+/vendor/phpcompatibility/
+/vendor/phpcsstandards/
+/vendor/squizlabs/
+/vendor/wp-coding-standards/

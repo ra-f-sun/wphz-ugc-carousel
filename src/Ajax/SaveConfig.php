@@ -1,40 +1,73 @@
 <?php
+/**
+ * Ajax handler for saving carousel configuration.
+ *
+ * @package WPHZ\UGC
+ */
+
 namespace WPHZ\UGC\Ajax;
-defined('ABSPATH') || exit;
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 
 use WPHZ\UGC\AbstractSingleton;
 use WPHZ\UGC\Helpers\NonceHelper;
 use WPHZ\UGC\Helpers\SanitizeHelper;
 use WPHZ\UGC\Repository\CarouselRepository;
 
+/**
+ * SaveConfig.
+ */
 class SaveConfig extends AbstractSingleton {
 
-    public function init(): void {
-        add_action('wp_ajax_wphz_ugc_save_config', [$this, 'handle']);
-    }
 
-    public function handle(): void {
-        NonceHelper::verify('wphz_ugc_admin');
-        if (!current_user_can('manage_options')) {
-            wp_send_json_error(['message' => 'Unauthorized.'], 403);
-        }
+	/**
+	 * Initialize hooks.
+	 *
+	 * @return void Return value.
+	 */
+	public function init(): void {
+		add_action( 'wp_ajax_wphz_ugc_save_config', array( $this, 'handle' ) );
+	}
 
-        $config = [
-            'name'           => SanitizeHelper::text($_POST['name']       ?? 'New Carousel'),
-            'mute'           => !empty($_POST['mute']) && $_POST['mute'] === '1',
-            'direction'      => in_array($_POST['direction'] ?? '', ['ltr', 'rtl'], true)
-                                    ? $_POST['direction']
-                                    : 'ltr',
-            'hide_atc'       => isset($_POST['hide_atc']) ? (int) $_POST['hide_atc'] : 0,
-        ];
+	/**
+	 * Handle save configuration action.
+	 *
+	 * @return void Return value.
+	 */
+	public function handle(): void {
+		NonceHelper::verify( 'wphz_ugc_admin' );
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => 'Unauthorized.' ), 403 );
+		}
 
-        $carousel_id = (int) ($_POST['carousel_id'] ?? 0);
+		$name_input      = filter_input( INPUT_POST, 'name', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+		$mute_input      = filter_input( INPUT_POST, 'mute', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+		$direction_input = filter_input( INPUT_POST, 'direction', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+		$hide_atc_input  = filter_input( INPUT_POST, 'hide_atc', FILTER_VALIDATE_INT );
+		$carousel_id_in  = filter_input( INPUT_POST, 'carousel_id', FILTER_VALIDATE_INT );
 
-        if ($carousel_id > 0) {
-            CarouselRepository::instance()->update($carousel_id, $config);
-            wp_send_json_success(['message' => __('Configuration saved.', 'wphz-ugc')]);
-        } else {
-            wp_send_json_error(['message' => __('Invalid Carousel ID.', 'wphz-ugc')]);
-        }
-    }
+		$name        = is_string( $name_input ) ? $name_input : 'New Carousel';
+		$mute        = is_string( $mute_input ) && '1' === $mute_input;
+		$direction   = is_string( $direction_input ) ? $direction_input : '';
+		$hide_atc    = is_int( $hide_atc_input ) ? $hide_atc_input : 1;
+		$carousel_id = is_int( $carousel_id_in ) ? $carousel_id_in : 0;
+
+		$carousel_config = array(
+			'name'      => SanitizeHelper::text( $name ),
+			'mute'      => $mute,
+			'direction' => in_array( $direction, array( 'ltr', 'rtl' ), true )
+				? $direction
+				: 'ltr',
+			'hide_atc'  => $hide_atc,
+		);
+
+		if ( $carousel_id > 0 ) {
+			CarouselRepository::instance()->update( $carousel_id, $carousel_config );
+			wp_send_json_success( array( 'message' => __( 'Configuration saved.', 'wphz-ugc' ) ) );
+		} else {
+			wp_send_json_error( array( 'message' => __( 'Invalid Carousel ID.', 'wphz-ugc' ) ) );
+		}
+	}
 }

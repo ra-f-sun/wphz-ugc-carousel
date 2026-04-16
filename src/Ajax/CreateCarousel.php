@@ -1,39 +1,60 @@
 <?php
+/**
+ * Ajax handler for creating a carousel.
+ *
+ * @package WPHZ\UGC
+ */
 
 namespace WPHZ\UGC\Ajax;
 
-defined('ABSPATH') || exit;
+defined( 'ABSPATH' ) || exit;
 
 use WPHZ\UGC\AbstractSingleton;
 use WPHZ\UGC\Helpers\NonceHelper;
 use WPHZ\UGC\Helpers\SanitizeHelper;
 use WPHZ\UGC\Repository\CarouselRepository;
 
-class CreateCarousel extends AbstractSingleton
-{
+/**
+ * CreateCarousel.
+ */
+class CreateCarousel extends AbstractSingleton {
 
-    public function init(): void
-    {
-        add_action('admin_action_wphz_ugc_create_carousel', [$this, 'handle']);
-    }
 
-    public function handle(): void
-    {
-        NonceHelper::verify('wphz_ugc_admin');
+	/**
+	 * Initialize hooks.
+	 *
+	 * @return void Return value.
+	 */
+	public function init(): void {
+		add_action( 'admin_action_wphz_ugc_create_carousel', array( $this, 'handle' ) );
+	}
 
-        if (!current_user_can('manage_options')) {
-            wp_die('Unauthorized');
-        }
+	/**
+	 * Handle create carousel action.
+	 *
+	 * @return void Return value.
+	 */
+	public function handle(): void {
+		NonceHelper::verify( 'wphz_ugc_admin' );
 
-        $name = SanitizeHelper::text($_POST['name'] ?? 'New Carousel');
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( 'Unauthorized' );
+		}
 
-        $id = CarouselRepository::instance()->insert(['name' => $name]);
+		$name_input = filter_input( INPUT_POST, 'name', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+		if ( ! is_string( $name_input ) || '' === $name_input ) {
+			$name_input = 'New Carousel';
+		}
 
-        if ($id) {
-            wp_redirect(admin_url('admin.php?page=wphz-ugc-carousel&action=edit&id=' . $id . '&tab=config'));
-            exit;
-        }
+		$carousel_name = SanitizeHelper::text( $name_input );
 
-        wp_die('Failed to create carousel.');
-    }
+		$carousel_id = CarouselRepository::instance()->insert( array( 'name' => $carousel_name ) );
+
+		if ( $carousel_id ) {
+			wp_safe_redirect( admin_url( 'admin.php?page=wphz-ugc-carousel&action=edit&id=' . $carousel_id . '&tab=config' ) );
+			exit;
+		}
+
+		wp_die( 'Failed to create carousel.' );
+	}
 }

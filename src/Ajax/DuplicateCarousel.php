@@ -1,78 +1,103 @@
 <?php
+/**
+ * Ajax handler for duplicating a carousel.
+ *
+ * @package WPHZ\UGC
+ */
 
 namespace WPHZ\UGC\Ajax;
-defined('ABSPATH') || exit;
+
+defined( 'ABSPATH' ) || exit;
 
 use WPHZ\UGC\AbstractSingleton;
 use WPHZ\UGC\Helpers\NonceHelper;
 use WPHZ\UGC\Repository\CarouselRepository;
 use WPHZ\UGC\Repository\ItemRepository;
 
-class DuplicateCarousel extends AbstractSingleton
-{
+/**
+ * DuplicateCarousel.
+ */
+class DuplicateCarousel extends AbstractSingleton {
 
-    public function init(): void
-    {
-        // We use admin-ajax.php but it's fundamentally a GET redirect hook
-        add_action('wp_ajax_wphz_ugc_duplicate_carousel', [$this, 'handle']);
-    }
 
-    public function handle(): void
-    {
-        NonceHelper::verify('wphz_ugc_admin');
-        if (!current_user_can('manage_options')) {
-            wp_die(esc_html__('Unauthorized.', 'wphz-ugc'));
-        }
+	/**
+	 * Initialize hooks.
+	 *
+	 * @return void Return value.
+	 */
+	public function init(): void {
+		// We use admin-ajax.php but it's fundamentally a GET redirect hook.
+		add_action( 'wp_ajax_wphz_ugc_duplicate_carousel', array( $this, 'handle' ) );
+	}
 
-        $carousel_id = (int) ($_GET['id'] ?? 0);
-        if ($carousel_id <= 0) {
-            wp_die(esc_html__('Invalid Carousel ID.', 'wphz-ugc'));
-        }
+	/**
+	 * Handle duplicate carousel action.
+	 *
+	 * @return void Return value.
+	 */
+	public function handle(): void {
+		NonceHelper::verify( 'wphz_ugc_admin' );
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'Unauthorized.', 'wphz-ugc' ) );
+		}
 
-        $repo     = CarouselRepository::instance();
-        $carousel = $repo->get_by_id($carousel_id);
+		$carousel_id_input = filter_input( INPUT_GET, 'id', FILTER_VALIDATE_INT );
+		$carousel_id       = is_int( $carousel_id_input ) ? $carousel_id_input : 0;
+		if ( $carousel_id <= 0 ) {
+			wp_die( esc_html__( 'Invalid Carousel ID.', 'wphz-ugc' ) );
+		}
 
-        if (!$carousel) {
-            wp_die(esc_html__('Carousel not found.', 'wphz-ugc'));
-        }
+		$carousel_repository = CarouselRepository::instance();
+		$carousel            = $carousel_repository->get_by_id( $carousel_id );
 
-        // Duplicate the parent carousel configuration exactly
-        $new_id = $repo->insert([
-            'name'           => $carousel['name'] . ' (Copy)',
-            'heading'        => $carousel['heading'],
-            'subheading'     => $carousel['subheading'],
-            'mute'           => $carousel['mute'],
-            'direction'      => $carousel['direction'],
-            'on_arrow_right' => $carousel['on_arrow_right'],
-            'on_arrow_left'  => $carousel['on_arrow_left'],
-            'custom_css'     => $carousel['custom_css'],
-        ]);
+		if ( ! $carousel ) {
+			wp_die( esc_html__( 'Carousel not found.', 'wphz-ugc' ) );
+		}
 
-        if (!$new_id) {
-            wp_die(esc_html__('Failed to duplicate carousel.', 'wphz-ugc'));
-        }
+		// Duplicate the parent carousel configuration exactly.
+		$duplicate_carousel_id = $carousel_repository->insert(
+			array(
+				'name'           => $carousel['name'] . ' (duplicate)',
+				'heading'        => $carousel['heading'],
+				'subheading'     => $carousel['subheading'],
+				'mute'           => $carousel['mute'],
+				'direction'      => $carousel['direction'],
+				'on_arrow_right' => $carousel['on_arrow_right'],
+				'on_arrow_left'  => $carousel['on_arrow_left'],
+				'custom_css'     => $carousel['custom_css'],
+			)
+		);
 
-        // Deep clone the nested video/product item arrays
-        $item_repo = ItemRepository::instance();
-        $items     = $item_repo->get_all((string) $carousel_id);
+		if ( ! $duplicate_carousel_id ) {
+			wp_die( esc_html__( 'Failed to duplicate carousel.', 'wphz-ugc' ) );
+		}
 
-        foreach ($items as $item) {
-            // Data maps back cleanly because product_ids encodes into a JSON string natively within get_all
-            $product_ids = json_decode($item['product_ids'], true) ?: [];
+		// Deep clone the nested video/product item arrays.
+		$item_repository = ItemRepository::instance();
+		$items           = $item_repository->get_all( (string) $carousel_id );
 
-            $item_repo->insert([
-                'carousel_id'  => (string) $new_id, // Map it cleanly back directly to the new parent
-                'sort_order'   => $item['sort_order'],
-                'video_id'     => $item['video_id'],
-                'video_url_hd' => $item['video_url_hd'],
-                'video_url_sd' => $item['video_url_sd'],
-                'poster_url'   => $item['poster_url'] ?? '',
-                'product_ids'  => $product_ids,
-            ]);
-        }
+		foreach ( $items as $item ) {
+			// Data maps back cleanly because product_ids encodes into a JSON string natively within get_all.
+			$product_ids = json_decode( $item['product_ids'], true );
+			if ( ! is_array( $product_ids ) ) {
+				$product_ids = array();
+			}
 
-        // Redirect immediately seamlessly into the newly cloned configuration environment
-        wp_redirect(admin_url('admin.php?page=wphz-ugc-carousel&action=edit&id=' . $new_id));
-        exit;
-    }
+			$item_repository->insert(
+				array(
+					'carousel_id'  => (string) $duplicate_carousel_id, // Map it cleanly back directly to the new parent.
+					'sort_order'   => $item['sort_order'],
+					'video_id'     => $item['video_id'],
+					'video_url_hd' => $item['video_url_hd'],
+					'video_url_sd' => $item['video_url_sd'],
+					'poster_url'   => $item['poster_url'] ?? '',
+					'product_ids'  => $product_ids,
+				)
+			);
+		}
+
+		// Redirect immediately seamlessly into the newly cloned configuration environment.
+		wp_safe_redirect( admin_url( 'admin.php?page=wphz-ugc-carousel&action=edit&id=' . $duplicate_carousel_id ) );
+		exit;
+	}
 }
