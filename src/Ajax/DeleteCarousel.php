@@ -2,18 +2,18 @@
 /**
  * Ajax handler for deleting a carousel.
  *
- * @package WPHZ\UGC
+ * @package WPHZ\UGCCarousels
  */
 
-namespace WPHZ\UGC\Ajax;
+namespace WPHZ\UGCCarousels\Ajax;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-use WPHZ\UGC\AbstractSingleton;
-use WPHZ\UGC\Repository\CarouselRepository;
-use WPHZ\UGC\Repository\ItemRepository;
+use WPHZ\UGCCarousels\AbstractSingleton;
+use WPHZ\UGCCarousels\Repository\CarouselRepository;
+use WPHZ\UGCCarousels\Repository\ItemRepository;
 
 /**
  * DeleteCarousel.
@@ -28,22 +28,22 @@ class DeleteCarousel extends AbstractSingleton {
 	 * @return void
 	 */
 	public function init(): void {
-		add_action( 'wp_ajax_wphz_ugc_delete_carousel', array( $this, 'handle' ) );
+		add_action( 'wp_ajax_ugcc_delete_carousel', array( $this, 'handle' ) );
 	}
 
 	/**
 	 * Handle delete-carousel action including cascading item deletion.
 	 *
 	 * Expects GET fields:
-	 *  - wphz_nonce  string  WordPress nonce for 'wphz_ugc_admin'.
+	 *  - ugcc_nonce  string  WordPress nonce for 'ugcc_admin'.
 	 *  - id          int     Carousel ID to delete.
 	 *
 	 * @since  1.0.0
 	 * @return void  Redirects to the carousel list and exits.
 	 */
 	public function handle(): void {
-		$nonce = filter_input( INPUT_GET, 'wphz_nonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ) ?? '';
-		if ( ! wp_verify_nonce( $nonce, 'wphz_ugc_admin' ) ) {
+		$nonce = filter_input( INPUT_GET, 'ugcc_nonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ) ?? '';
+		if ( ! wp_verify_nonce( $nonce, 'ugcc_admin' ) ) {
 			wp_die( 'Nonce verification failed.' );
 		}
 
@@ -58,7 +58,7 @@ class DeleteCarousel extends AbstractSingleton {
 			ItemRepository::instance()->delete_by_carousel( $carousel_id );
 		}
 
-		wp_safe_redirect( admin_url( 'admin.php?page=wphz-ugc-carousel&wphz_msg=deleted' ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=ugc-carousels-for-woo&ugcc_msg=deleted' ) );
 		exit;
 	}
 }

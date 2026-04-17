@@ -2,10 +2,10 @@
 /**
  * Template loading helpers for the plugin.
  *
- * @package WPHZ\UGC
+ * @package WPHZ\UGCCarousels
  */
 
-namespace WPHZ\UGC\Helpers;
+namespace WPHZ\UGCCarousels\Helpers;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -25,7 +25,7 @@ class TemplateLoader {
 	 * @return void
 	 */
 	public static function render( string $template, array $data = array() ): void {
-		$file = WPHZ_UGC_TEMPLATES . ltrim( $template, '/' ) . '.php';
+		$file = WPHZ_UGCC_TEMPLATES . ltrim( $template, '/' ) . '.php';
 		if ( ! file_exists( $file ) ) {
 			return;
 		}

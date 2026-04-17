@@ -2,16 +2,16 @@
 /**
  * CarouselRepository.
  *
- * @package WPHZ\UGC
+ * @package WPHZ\UGCCarousels
  */
 
-namespace WPHZ\UGC\Repository;
+namespace WPHZ\UGCCarousels\Repository;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-use WPHZ\UGC\AbstractSingleton;
+use WPHZ\UGCCarousels\AbstractSingleton;
 
 /**
  * CarouselRepository.
@@ -26,7 +26,7 @@ class CarouselRepository extends AbstractSingleton {
 	 */
 	private function table(): string {
 		global $wpdb;
-		return $wpdb->prefix . 'wphz_ugc_carousels';
+		return $wpdb->prefix . 'ugcc_carousels';
 	}
 
 	/**
@@ -143,7 +143,7 @@ class CarouselRepository extends AbstractSingleton {
 		}
 
 		// $wpdb->update returns int|false. 0 means "matched but nothing changed".
-		// which is still a success â€" hence !== false rather than (bool).
+		// which is still a success — hence !== false rather than (bool).
 		return $wpdb->update( $this->table(), $fields, array( 'id' => $id ) ) !== false;
 	}
 

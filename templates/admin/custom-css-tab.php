@@ -2,39 +2,33 @@
 /**
  * Admin custom CSS tab template.
  *
- * @package WPHZ\UGC
+ * @package WPHZ\UGCCarousels
  */
 
 defined( 'ABSPATH' ) || exit;
 ?>
-<form id="wphz-ugc-custom-css-form" data-action="wphz_ugc_save_custom_css">
-	<?php wp_nonce_field( 'wphz_ugc_admin', 'wphz_nonce' ); ?>
+<form id="ugcc-custom-css-form" data-action="ugcc_save_custom_css">
+	<?php wp_nonce_field( 'ugcc_admin', 'ugcc_nonce' ); ?>
 	<input type="hidden" name="carousel_id" value="<?php echo esc_attr( $id ); ?>">
 
 	<p style="margin-top: 1.5rem; color: #555;">
 		<?php
-		/**
-		 * Custom CSS tab instructions.
-		 *
-		 * @package WPHZ\\UGC
-		 */
-
 		esc_html_e(
 			'Write CSS that applies only to this carousel. Use the selector shown in the hint below to target this carousel specifically.',
-			'wphz-ugc'
+			'ugc-carousels-for-woo'
 		);
 		?>
 	</p>
 
 	<p>
 		<code style="background:#f0f0f0; padding: 4px 8px; border-radius:3px; font-size:13px;">
-			[data-carousel-id="<?php echo esc_attr( $id ); ?>"] .wphz-ugc-video-wrap { }
+			[data-carousel-id="<?php echo esc_attr( $id ); ?>"] .ugcc-video-wrap { }
 		</code>
 	</p>
 
 	<div style="margin-top: 1rem;">
 		<textarea
-			id="wphz_custom_css"
+			id="ugcc_custom_css"
 			name="custom_css"
 			rows="20"
 			style="width:100%; font-family:monospace; font-size:13px;"
@@ -42,10 +36,10 @@ defined( 'ABSPATH' ) || exit;
 	</div>
 
 	<p class="submit">
-		<button type="submit" class="button button-primary" id="wphz-save-custom-css">
-			<?php esc_html_e( 'Save CSS', 'wphz-ugc' ); ?>
+		<button type="submit" class="button button-primary" id="ugcc-save-custom-css">
+			<?php esc_html_e( 'Save CSS', 'ugc-carousels-for-woo' ); ?>
 		</button>
-		<span class="wphz-save-status"></span>
+		<span class="ugcc-save-status"></span>
 	</p>
 </form>
 
@@ -54,9 +48,9 @@ defined( 'ABSPATH' ) || exit;
 // wp_enqueue_code_editor() is called by the admin AssetLoader when this tab is active.
 document.addEventListener('DOMContentLoaded', function () {
 	if (typeof wp === 'undefined' || !wp.codeEditor) return;
-	
+
 	// Store the editor instance so we can manually sync it later.
-	var editor = wp.codeEditor.initialize(document.getElementById('wphz_custom_css'), {
+	var editor = wp.codeEditor.initialize(document.getElementById('ugcc_custom_css'), {
 		codemirror: {
 			mode: 'css',
 			lineNumbers: true,
@@ -66,24 +60,24 @@ document.addEventListener('DOMContentLoaded', function () {
 	});
 
 	// Custom CSS Save Handler.
-	var $form = jQuery('#wphz-ugc-custom-css-form');
+	var $form = jQuery('#ugcc-custom-css-form');
 	$form.on('submit', function (e) {
 		e.preventDefault();
-		
+
 		// CodeMirror intercepts the textarea. If we preventDefault(), it doesn't auto-sync!
 		// We MUST force it to save its current buffer back into the textarea before reading .val().
 		if (editor && editor.codemirror) {
 			editor.codemirror.save();
 		}
 
-		var $btn = jQuery('#wphz-save-custom-css');
-		var $status = $form.find('.wphz-save-status');
-		
+		var $btn = jQuery('#ugcc-save-custom-css');
+		var $status = $form.find('.ugcc-save-status');
+
 		$btn.prop('disabled', true);
-		
-		jQuery.post(wphzUGC.ajaxurl, {
+
+		jQuery.post(ugccAdmin.ajaxurl, {
 			action:      $form.data('action'),
-			nonce:       wphzUGC.nonce,
+			nonce:       ugccAdmin.nonce,
 			carousel_id: $form.find('[name="carousel_id"]').val(),
 			custom_css:  $form.find('[name="custom_css"]').val(),
 		})

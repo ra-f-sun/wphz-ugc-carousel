@@ -1,18 +1,18 @@
 /**
- * WPHZ UGC Carousel — Frontend JavaScript Engine
- * 
+ * UGC Carousels & Shoppable Videos for WooCommerce — Frontend JavaScript Engine
+ *
  */
 
-class WPHZUGCCarousel {
+class UGCCCarousel {
   /**
-   * @param {HTMLElement} el - The carousel root element (.wphz-ugc-carousel).
+   * @param {HTMLElement} el - The carousel root element (.ugcc-carousel).
    */
   constructor(el) {
     this.root = el;
     this.id = el.dataset.carouselId;
-    this.stage = el.querySelector(".wphz-ugc-stage");
-    this.track = el.querySelector(".wphz-ugc-track");
-    this.origSlides = Array.from(el.querySelectorAll(".wphz-ugc-slide"));
+    this.stage = el.querySelector(".ugcc-stage");
+    this.track = el.querySelector(".ugcc-track");
+    this.origSlides = Array.from(el.querySelectorAll(".ugcc-slide"));
     this.totalOrig = this.origSlides.length;
     this.defaultMuted = el.dataset.muted === "1";
     this.isMuted = this.defaultMuted;
@@ -29,8 +29,8 @@ class WPHZUGCCarousel {
     this._playEpoch  = 0;      // incremented each goTo(); guards stale play() callbacks
 
     this.posterEngine =
-      typeof window.WPHZUGCPosterEngine === "function"
-        ? new window.WPHZUGCPosterEngine(el)
+      typeof window.UGCCPosterEngine === "function"
+        ? new window.UGCCPosterEngine(el)
         : null;
 
     this.init();
@@ -127,7 +127,7 @@ class WPHZUGCCarousel {
       this.track.appendChild(clone);
     }
 
-    this.slides = Array.from(this.track.querySelectorAll(".wphz-ugc-slide"));
+    this.slides = Array.from(this.track.querySelectorAll(".ugcc-slide"));
     this.totalSlides = this.slides.length;
   }
 
@@ -143,7 +143,7 @@ class WPHZUGCCarousel {
     const preferSD = isSlow || isMobile;
 
     this.origSlides.forEach((slide) => {
-      const video = slide.querySelector(".wphz-ugc-video");
+      const video = slide.querySelector(".ugcc-video");
       if (!video) return;
 
       const hdVideoUrl = video.dataset.srcHd;
@@ -313,7 +313,7 @@ class WPHZUGCCarousel {
 
       // Pause the clone's video
       const cloneVideo =
-        this.slides[prevCurrent]?.querySelector(".wphz-ugc-video");
+        this.slides[prevCurrent]?.querySelector(".ugcc-video");
       if (cloneVideo) {
         if (this.posterEngine) {
           this.posterEngine.pause(cloneVideo);
@@ -337,7 +337,7 @@ class WPHZUGCCarousel {
    */
   _updateSlideClasses() {
     this.slides.forEach((slide, i) => {
-      slide.classList.toggle("wphz-ugc-slide--active", i === this.current);
+      slide.classList.toggle("ugcc-slide--active", i === this.current);
     });
   }
 
@@ -365,7 +365,7 @@ class WPHZUGCCarousel {
       const distance = Math.min(diff, this.totalOrig - diff);
 
       if (distance > threshold) {
-        const video = slide.querySelector(".wphz-ugc-video");
+        const video = slide.querySelector(".ugcc-video");
         if (video && video.currentTime !== 0) {
           if (this.posterEngine) this.posterEngine.resetToPoster(video);
           video.currentTime = 0;
@@ -385,7 +385,7 @@ class WPHZUGCCarousel {
     const cloneRangeEnd   = this.cloneCount + this.totalOrig;
 
     for (let i = cloneRangeStart; i < cloneRangeEnd; i++) {
-      const video = this.slides[i]?.querySelector(".wphz-ugc-video");
+      const video = this.slides[i]?.querySelector(".ugcc-video");
       if (!video || video.readyState < 2 || !video.videoWidth) continue;
 
       const itemIndex = this._getItemIndexFromSlide(this.slides[i]);
@@ -405,7 +405,7 @@ class WPHZUGCCarousel {
       this.slides.forEach((slide, idx) => {
         if (idx >= cloneRangeStart && idx < cloneRangeEnd) return;
         if (this._getItemIndexFromSlide(slide) !== itemIndex) return;
-        const videoElement = slide.querySelector(".wphz-ugc-video");
+        const videoElement = slide.querySelector(".ugcc-video");
         if (videoElement) videoElement.poster = frameUrl;
       });
     }
@@ -419,7 +419,7 @@ class WPHZUGCCarousel {
    */
   _playCenter() {
     const slide = this.slides[this.current];
-    const video = slide?.querySelector(".wphz-ugc-video");
+    const video = slide?.querySelector(".ugcc-video");
     if (!video) return;
 
     // Clone zone guard — don't play clones, poster is sufficient
@@ -467,7 +467,7 @@ class WPHZUGCCarousel {
    */
   _pauseCenter() {
     const slide = this.slides[this.current];
-    const video = slide?.querySelector(".wphz-ugc-video");
+    const video = slide?.querySelector(".ugcc-video");
     if (!video) return;
 
     // Just pause — native paused frame stays visible.
@@ -485,7 +485,7 @@ class WPHZUGCCarousel {
    * @return {void}
    */
   _pauseForViewport() {
-    const video = this.slides[this.current]?.querySelector(".wphz-ugc-video");
+    const video = this.slides[this.current]?.querySelector(".ugcc-video");
     if (!video) return;
     video.pause();
   }
@@ -496,7 +496,7 @@ class WPHZUGCCarousel {
    * @return {void}
    */
   _resumeForViewport() {
-    const video = this.slides[this.current]?.querySelector(".wphz-ugc-video");
+    const video = this.slides[this.current]?.querySelector(".ugcc-video");
     if (!video) return;
     video.currentTime = 0;
     this._playCenter();
@@ -509,7 +509,7 @@ class WPHZUGCCarousel {
    */
   _onVideoEnded() {
     const endedVideo =
-      this.slides[this.current]?.querySelector(".wphz-ugc-video");
+      this.slides[this.current]?.querySelector(".ugcc-video");
     if (endedVideo) {
       endedVideo.currentTime = 0;
     }
@@ -602,10 +602,10 @@ class WPHZUGCCarousel {
       if (Math.abs(this._drag.diffX) > 12) return;
 
       // Don't intercept ATC buttons or product links
-      if (e.target.closest(".wphz-ugc-atc-btn") || e.target.closest(".wphz-ugc-product-img-link") || e.target.closest(".wphz-ugc-product-name-link")) return;
+      if (e.target.closest(".ugcc-atc-btn") || e.target.closest(".ugcc-product-img-link") || e.target.closest(".ugcc-product-name-link")) return;
 
-      const muteBtn = e.target.closest(".wphz-ugc-mute-btn");
-      const slide = e.target.closest(".wphz-ugc-slide");
+      const muteBtn = e.target.closest(".ugcc-mute-btn");
+      const slide = e.target.closest(".ugcc-slide");
       if (!slide) return;
 
       const clickedIndex = this.slides.indexOf(slide);
@@ -618,7 +618,7 @@ class WPHZUGCCarousel {
         if (clickedIndex !== this.current) {
           this.goTo(clickedIndex);
         } else {
-          const video = slide.querySelector(".wphz-ugc-video");
+          const video = slide.querySelector(".ugcc-video");
           if (video) video.muted = nextMuted;
         }
       } else {
@@ -660,14 +660,14 @@ class WPHZUGCCarousel {
   _setSlideMuted(slide, isMuted) {
     if (!slide) return;
 
-    const video = slide.querySelector(".wphz-ugc-video");
+    const video = slide.querySelector(".ugcc-video");
     if (video) video.muted = !!isMuted;
 
-    const btn = slide.querySelector(".wphz-ugc-mute-btn");
+    const btn = slide.querySelector(".ugcc-mute-btn");
     if (!btn) return;
 
-    const muteIcon   = btn.querySelector(".wphz-icon-mute");
-    const unmuteIcon = btn.querySelector(".wphz-icon-unmute");
+    const muteIcon   = btn.querySelector(".ugcc-icon-mute");
+    const unmuteIcon = btn.querySelector(".ugcc-icon-unmute");
     if (muteIcon)   muteIcon.style.display   = isMuted ? "" : "none";
     if (unmuteIcon) unmuteIcon.style.display = isMuted ? "none" : "";
   }
@@ -694,14 +694,14 @@ class WPHZUGCCarousel {
 }
 
 
-class WPHZProductCarousel {
+class UGCCProductCarousel {
   /**
    * @param {HTMLElement} el - The product carousel wrapper element.
    */
   constructor(el) {
     this.wrap = el;
-    this.track = el.querySelector(".wphz-ugc-products-track");
-    this.origItems = Array.from(el.querySelectorAll(".wphz-ugc-product-item"));
+    this.track = el.querySelector(".ugcc-products-track");
+    this.origItems = Array.from(el.querySelectorAll(".ugcc-product-item"));
     this.totalOrig = this.origItems.length;
 
     this._itemWidth = 0;
@@ -713,10 +713,10 @@ class WPHZProductCarousel {
 
     if (this.totalOrig === 1) {
       this.wrap
-        .querySelector(".wphz-product-arrow--next")
+        .querySelector(".ugcc-product-arrow--next")
         ?.style.setProperty("display", "none");
       this.wrap
-        .querySelector(".wphz-product-arrow--prev")
+        .querySelector(".ugcc-product-arrow--prev")
         ?.style.setProperty("display", "none");
       return;
     }
@@ -755,7 +755,7 @@ class WPHZProductCarousel {
     }
 
     this.items = Array.from(
-      this.track.querySelectorAll(".wphz-ugc-product-item"),
+      this.track.querySelectorAll(".ugcc-product-item"),
     );
     this.totalItems = this.items.length;
     this.current = this.cloneCount;
@@ -841,13 +841,13 @@ class WPHZProductCarousel {
    */
   _bindArrows() {
     this.wrap
-      .querySelector(".wphz-product-arrow--next")
+      .querySelector(".ugcc-product-arrow--next")
       ?.addEventListener("click", (e) => {
         e.currentTarget?.removeAttribute("disabled");
         this._slide(1);
       });
     this.wrap
-      .querySelector(".wphz-product-arrow--prev")
+      .querySelector(".ugcc-product-arrow--prev")
       ?.addEventListener("click", (e) => {
         e.currentTarget?.removeAttribute("disabled");
         this._slide(-1);
@@ -856,34 +856,34 @@ class WPHZProductCarousel {
 }
 
 /* Boot Process & Global API */
-window.wphzUGCFrontend = window.wphzUGCFrontend || {};
-window.wphzUGCFrontend.instances = {};
+window.ugccFrontend = window.ugccFrontend || {};
+window.ugccFrontend.instances = {};
 
 document.addEventListener("DOMContentLoaded", () => {
-  document.querySelectorAll(".wphz-ugc-carousel").forEach((el) => {
+  document.querySelectorAll(".ugcc-carousel").forEach((el) => {
     const id = el.dataset.carouselId;
-    const instance = new WPHZUGCCarousel(el);
+    const instance = new UGCCCarousel(el);
     if (id) {
-      window.wphzUGCFrontend.instances[id] = instance;
+      window.ugccFrontend.instances[id] = instance;
     }
   });
 
   document
-    .querySelectorAll(".wphz-ugc-products--carousel")
-    .forEach((el) => new WPHZProductCarousel(el));
+    .querySelectorAll(".ugcc-products--carousel")
+    .forEach((el) => new UGCCProductCarousel(el));
 });
 
 /* External Button Binding */
 document.addEventListener("click", (e) => {
-  const btn = e.target.closest("[data-wphz-target]");
+  const btn = e.target.closest("[data-ugcc-target]");
   if (!btn) return;
 
-  const id = btn.dataset.wphzTarget;
-  const action = btn.dataset.wphzAction;
-  const instance = window.wphzUGCFrontend?.instances?.[id];
+  const id = btn.dataset.ugccTarget;
+  const action = btn.dataset.ugccAction;
+  const instance = window.ugccFrontend?.instances?.[id];
 
   if (!instance) {
-    console.warn(`WPHZ Carousel: no instance found for id "${id}"`);
+    console.warn(`UGC Carousels: no instance found for id "${id}"`);
     return;
   }
 
@@ -893,18 +893,18 @@ document.addEventListener("click", (e) => {
 
 /* Add to Cart Integration */
 document.addEventListener("click", (e) => {
-  const btn = e.target.closest(".wphz-ugc-atc-btn");
+  const btn = e.target.closest(".ugcc-atc-btn");
   if (!btn) return;
 
-  if (!window.wphzUGCFrontend) {
+  if (!window.ugccFrontend) {
     console.error(
-      "WPHZ UGC Carousel: wphzUGCFrontend localized object is missing.",
+      "UGC Carousels: ugccFrontend localized object is missing.",
     );
     return;
   }
 
   const productId = btn.dataset.productId;
-  const nonce = wphzUGCFrontend.nonce;
+  const nonce = ugccFrontend.nonce;
   const original = btn.textContent;
 
   btn.textContent = "...";
@@ -912,17 +912,17 @@ document.addEventListener("click", (e) => {
   btn.classList.add("loading");
 
   const body = new URLSearchParams({
-    action:     "wphz_ugc_add_to_cart",
+    action:     "ugcc_add_to_cart",
     product_id: productId,
     quantity:   1,
     nonce:      nonce,
   });
 
-  fetch(wphzUGCFrontend.ajaxurl, { method: "POST", body })
+  fetch(ugccFrontend.ajaxurl, { method: "POST", body })
     .then((r) => r.json())
     .then((data) => {
       if (data.success) {
-        btn.textContent = wphzUGCFrontend.i18n.added;
+        btn.textContent = ugccFrontend.i18n.added;
         if (window.jQuery) {
           jQuery(document.body).trigger("wc_fragment_refresh");
           jQuery(document.body).trigger("added_to_cart", [
@@ -931,13 +931,13 @@ document.addEventListener("click", (e) => {
           ]);
         }
       } else {
-        console.error("WPHZ ATC Error:", data);
-        btn.textContent = wphzUGCFrontend.i18n.error;
+        console.error("UGC Carousels ATC Error:", data);
+        btn.textContent = ugccFrontend.i18n.error;
       }
     })
     .catch((error) => {
-      console.error("WPHZ ATC Network Error:", error);
-      btn.textContent = wphzUGCFrontend.i18n.error;
+      console.error("UGC Carousels ATC Network Error:", error);
+      btn.textContent = ugccFrontend.i18n.error;
     })
     .finally(() => {
       btn.classList.remove("loading");

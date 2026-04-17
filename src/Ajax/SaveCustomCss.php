@@ -2,17 +2,17 @@
 /**
  * Ajax handler for saving custom CSS.
  *
- * @package WPHZ\UGC
+ * @package WPHZ\UGCCarousels
  */
 
-namespace WPHZ\UGC\Ajax;
+namespace WPHZ\UGCCarousels\Ajax;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-use WPHZ\UGC\AbstractSingleton;
-use WPHZ\UGC\Repository\CarouselRepository;
+use WPHZ\UGCCarousels\AbstractSingleton;
+use WPHZ\UGCCarousels\Repository\CarouselRepository;
 
 /**
  * SaveCustomCss.
@@ -26,14 +26,14 @@ class SaveCustomCss extends AbstractSingleton {
 	 * @return void
 	 */
 	public function init(): void {
-		add_action( 'wp_ajax_wphz_ugc_save_custom_css', array( $this, 'handle' ) );
+		add_action( 'wp_ajax_ugcc_save_custom_css', array( $this, 'handle' ) );
 	}
 
 	/**
 	 * Handle save-custom-css AJAX request — persists per-carousel CSS overrides.
 	 *
 	 * Expects POST fields:
-	 *  - nonce       string  WordPress nonce for 'wphz_ugc_admin'.
+	 *  - nonce       string  WordPress nonce for 'ugcc_admin'.
 	 *  - carousel_id int     Carousel to update.
 	 *  - custom_css  string  Raw CSS; HTML tags stripped before storage.
 	 *
@@ -43,10 +43,10 @@ class SaveCustomCss extends AbstractSingleton {
 	public function handle(): void {
 		$nonce = filter_input( INPUT_POST, 'nonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 		if ( ! is_string( $nonce ) || '' === $nonce ) {
-			$nonce = filter_input( INPUT_POST, 'wphz_nonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+			$nonce = filter_input( INPUT_POST, 'ugcc_nonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 		}
 
-		if ( ! is_string( $nonce ) || ! wp_verify_nonce( $nonce, 'wphz_ugc_admin' ) ) {
+		if ( ! is_string( $nonce ) || ! wp_verify_nonce( $nonce, 'ugcc_admin' ) ) {
 			wp_send_json_error( array( 'message' => 'Nonce verification failed.' ), 403 );
 		}
 
@@ -57,7 +57,7 @@ class SaveCustomCss extends AbstractSingleton {
 		$carousel_id_input = filter_input( INPUT_POST, 'carousel_id', FILTER_VALIDATE_INT );
 		$carousel_id       = is_int( $carousel_id_input ) ? $carousel_id_input : 0;
 		if ( $carousel_id <= 0 ) {
-			wp_send_json_error( array( 'message' => __( 'Invalid Carousel ID.', 'wphz-ugc' ) ) );
+			wp_send_json_error( array( 'message' => __( 'Invalid Carousel ID.', 'ugc-carousels-for-woo' ) ) );
 			return; // Explicit return; do not rely on wp_die() inside wp_send_json_error().
 		}
 
@@ -75,9 +75,9 @@ class SaveCustomCss extends AbstractSingleton {
 		);
 
 		if ( $updated ) {
-			wp_send_json_success( array( 'message' => __( 'Custom CSS saved.', 'wphz-ugc' ) ) );
+			wp_send_json_success( array( 'message' => __( 'Custom CSS saved.', 'ugc-carousels-for-woo' ) ) );
 		} else {
-			wp_send_json_error( array( 'message' => __( 'Failed to save.', 'wphz-ugc' ) ) );
+			wp_send_json_error( array( 'message' => __( 'Failed to save.', 'ugc-carousels-for-woo' ) ) );
 		}
 	}
 }

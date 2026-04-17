@@ -2,10 +2,10 @@
 /**
  * Nonce verification helpers for the plugin.
  *
- * @package WPHZ\UGC
+ * @package WPHZ\UGCCarousels
  */
 
-namespace WPHZ\UGC\Helpers;
+namespace WPHZ\UGCCarousels\Helpers;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -19,7 +19,7 @@ class NonceHelper {
 	/**
 	 * Verify a WordPress nonce from the current request.
 	 *
-	 * Checks POST then GET for both `nonce` and `wphz_nonce` field names.
+	 * Checks POST then GET for both `nonce` and `ugcc_nonce` field names.
 	 * Calls wp_send_json_error() with HTTP 403 and exits if verification fails.
 	 *
 	 * @since  1.0.0
@@ -29,8 +29,8 @@ class NonceHelper {
 	public static function verify( string $action ): void {
 		$nonce = filter_input( INPUT_POST, 'nonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS )
 			?? filter_input( INPUT_GET, 'nonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS )
-			?? filter_input( INPUT_POST, 'wphz_nonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS )
-			?? filter_input( INPUT_GET, 'wphz_nonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS )
+			?? filter_input( INPUT_POST, 'ugcc_nonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS )
+			?? filter_input( INPUT_GET, 'ugcc_nonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS )
 			?? '';
 		if ( ! wp_verify_nonce( $nonce, $action ) ) {
 			wp_send_json_error( array( 'message' => 'Security check failed.' ), 403 );

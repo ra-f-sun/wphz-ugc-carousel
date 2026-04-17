@@ -10,22 +10,22 @@
  * Requires PHP: 8.0
  * WC requires at least: 7.0
  *
- * @package WPHZ\UGC
+ * @package WPHZ\UGCCarousels
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'WPHZ_UGC_VERSION', '1.0.8' );
-define( 'WPHZ_UGC_FILE', __FILE__ );
-define( 'WPHZ_UGC_DIR', plugin_dir_path( __FILE__ ) );
-define( 'WPHZ_UGC_URL', plugin_dir_url( __FILE__ ) );
-define( 'WPHZ_UGC_TEMPLATES', WPHZ_UGC_DIR . 'templates/' );
+define( 'WPHZ_UGCC_VERSION', '1.0.8' );
+define( 'WPHZ_UGCC_FILE', __FILE__ );
+define( 'WPHZ_UGCC_DIR', plugin_dir_path( __FILE__ ) );
+define( 'WPHZ_UGCC_URL', plugin_dir_url( __FILE__ ) );
+define( 'WPHZ_UGCC_TEMPLATES', WPHZ_UGCC_DIR . 'templates/' );
 
-require_once WPHZ_UGC_DIR . 'vendor/autoload.php';
+require_once WPHZ_UGCC_DIR . 'vendor/autoload.php';
 
-register_activation_hook( __FILE__, array( \WPHZ\UGC\Installer\Installer::class, 'activate' ) );
-register_deactivation_hook( __FILE__, array( \WPHZ\UGC\Installer\Installer::class, 'deactivate' ) );
+register_activation_hook( __FILE__, array( \WPHZ\UGCCarousels\Installer\Installer::class, 'activate' ) );
+register_deactivation_hook( __FILE__, array( \WPHZ\UGCCarousels\Installer\Installer::class, 'deactivate' ) );
 
-add_action( 'plugins_loaded', array( \WPHZ\UGC\Plugin::class, 'instance' ) );
+add_action( 'plugins_loaded', array( \WPHZ\UGCCarousels\Plugin::class, 'instance' ) );

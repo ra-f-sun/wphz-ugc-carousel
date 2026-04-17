@@ -2,10 +2,10 @@
 /**
  * Transient caching helpers for the plugin.
  *
- * @package WPHZ\UGC
+ * @package WPHZ\UGCCarousels
  */
 
-namespace WPHZ\UGC\Helpers;
+namespace WPHZ\UGCCarousels\Helpers;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class TransientHelper {
 
-	private const PREFIX      = 'wphz_ugc_';
+	private const PREFIX      = 'ugcc_';
 	private const PRODUCT_TTL = 300; // 5 minutes.
 
 	/**

@@ -26,7 +26,7 @@
     }
   ],
   "autoload": {
-    "psr-4": { "WPHZ\\UGC\\": "src/" }
+    "psr-4": { "WPHZ\\UGCCarousels\\": "src/" }
   },
   "config": {
     "vendor-dir": "vendor",

@@ -2,18 +2,18 @@
 /**
  * Ajax handler for saving carousel content.
  *
- * @package WPHZ\UGC
+ * @package WPHZ\UGCCarousels
  */
 
-namespace WPHZ\UGC\Ajax;
+namespace WPHZ\UGCCarousels\Ajax;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-use WPHZ\UGC\AbstractSingleton;
-use WPHZ\UGC\Installer\Installer;
-use WPHZ\UGC\Repository\ItemRepository;
+use WPHZ\UGCCarousels\AbstractSingleton;
+use WPHZ\UGCCarousels\Installer\Installer;
+use WPHZ\UGCCarousels\Repository\ItemRepository;
 
 /**
  * SaveContent.
@@ -28,14 +28,14 @@ class SaveContent extends AbstractSingleton {
 	 * @return void
 	 */
 	public function init(): void {
-		add_action( 'wp_ajax_wphz_ugc_save_content', array( $this, 'handle' ) );
+		add_action( 'wp_ajax_ugcc_save_content', array( $this, 'handle' ) );
 	}
 
 	/**
 	 * Handle save-content AJAX request — replaces all items for a carousel.
 	 *
 	 * Expects POST fields:
-	 *  - nonce       string  WordPress nonce for 'wphz_ugc_admin'.
+	 *  - nonce       string  WordPress nonce for 'ugcc_admin'.
 	 *  - carousel_id int     Carousel to update.
 	 *  - items       array   Serialized item rows (video_url_hd, video_url_sd, poster_url, products[]).
 	 *
@@ -45,10 +45,10 @@ class SaveContent extends AbstractSingleton {
 	public function handle(): void {
 		$nonce = filter_input( INPUT_POST, 'nonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 		if ( ! is_string( $nonce ) || '' === $nonce ) {
-			$nonce = filter_input( INPUT_POST, 'wphz_nonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+			$nonce = filter_input( INPUT_POST, 'ugcc_nonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 		}
 
-		if ( ! is_string( $nonce ) || ! wp_verify_nonce( $nonce, 'wphz_ugc_admin' ) ) {
+		if ( ! is_string( $nonce ) || ! wp_verify_nonce( $nonce, 'ugcc_admin' ) ) {
 			wp_send_json_error( array( 'message' => 'Nonce verification failed.' ), 403 );
 		}
 
@@ -63,13 +63,13 @@ class SaveContent extends AbstractSingleton {
 		$carousel_id       = is_int( $carousel_id_input ) ? $carousel_id_input : 0;
 
 		if ( $carousel_id <= 0 ) {
-			wp_send_json_error( array( 'message' => __( 'Invalid Carousel ID.', 'wphz-ugc' ) ) );
+			wp_send_json_error( array( 'message' => __( 'Invalid Carousel ID.', 'ugc-carousels-for-woo' ) ) );
 		}
 
 		if ( ! Installer::items_has_poster_column() ) {
 			wp_send_json_error(
 				array(
-					'message' => __( 'Database schema is outdated. Please reload the page and try again.', 'wphz-ugc' ),
+					'message' => __( 'Database schema is outdated. Please reload the page and try again.', 'ugc-carousels-for-woo' ),
 				)
 			);
 		}
@@ -121,7 +121,7 @@ class SaveContent extends AbstractSingleton {
 				global $wpdb;
 				wp_send_json_error(
 					array(
-						'message' => __( 'Failed to save carousel content. Please retry after refreshing the page.', 'wphz-ugc' ),
+						'message' => __( 'Failed to save carousel content. Please retry after refreshing the page.', 'ugc-carousels-for-woo' ),
 						'debug'   => $wpdb->last_error,
 					)
 				);
@@ -130,7 +130,7 @@ class SaveContent extends AbstractSingleton {
 
 		wp_send_json_success(
 			array(
-				'message'   => __( 'Content saved.', 'wphz-ugc' ),
+				'message'   => __( 'Content saved.', 'ugc-carousels-for-woo' ),
 				'shortcode' => sprintf( '[wphz_ugc_carousel id="%d"]', $carousel_id ),
 			)
 		);

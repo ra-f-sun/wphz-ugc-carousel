@@ -2,21 +2,21 @@
 /**
  * Admin carousel list view template.
  *
- * @package WPHZ\UGC
+ * @package WPHZ\UGCCarousels
  */
 
 defined( 'ABSPATH' ) || exit;
 ?>
-<div class="wrap wphz-ugc-admin">
-	<h1 class="wp-heading-inline"><?php esc_html_e( 'WPHZ UGC Carousels', 'wphz-ugc' ); ?></h1>
-	
+<div class="wrap ugcc-admin">
+	<h1 class="wp-heading-inline"><?php esc_html_e( 'UGC Carousels', 'ugc-carousels-for-woo' ); ?></h1>
+
 	<form method="POST" action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" style="display:inline-block; margin-left: 10px;">
-		<input type="hidden" name="action" value="wphz_ugc_create_carousel">
-		<?php wp_nonce_field( 'wphz_ugc_admin', 'wphz_nonce' ); ?>
+		<input type="hidden" name="action" value="ugcc_create_carousel">
+		<?php wp_nonce_field( 'ugcc_admin', 'ugcc_nonce' ); ?>
 		<input type="text" name="name" placeholder="New Carousel Name..." required>
 		<button type="submit" class="page-title-action">Add New</button>
-		<?php $wphz_msg = filter_input( INPUT_GET, 'wphz_msg', FILTER_SANITIZE_FULL_SPECIAL_CHARS ); ?>
-		<?php if ( 'deleted' === $wphz_msg ) : ?>
+		<?php $ugcc_msg = filter_input( INPUT_GET, 'ugcc_msg', FILTER_SANITIZE_FULL_SPECIAL_CHARS ); ?>
+		<?php if ( 'deleted' === $ugcc_msg ) : ?>
 			<span style="color:red; margin-left: 10px;">Carousel deleted.</span>
 		<?php endif; ?>
 	</form>
@@ -40,20 +40,14 @@ defined( 'ABSPATH' ) || exit;
 				<?php foreach ( $carousels as $c ) : ?>
 					<tr>
 						<td class="column-primary">
-							<strong><a href="?page=wphz-ugc-carousel&action=edit&id=<?php echo esc_attr( $c['id'] ); ?>" class="row-title"><?php echo esc_html( $c['name'] ); ?></a></strong>
+							<strong><a href="?page=ugc-carousels-for-woo&action=edit&id=<?php echo esc_attr( $c['id'] ); ?>" class="row-title"><?php echo esc_html( $c['name'] ); ?></a></strong>
 							<div class="row-actions">
-								<span class="edit"><a href="?page=wphz-ugc-carousel&action=edit&id=<?php echo esc_attr( $c['id'] ); ?>">Edit</a> | </span>
+								<span class="edit"><a href="?page=ugc-carousels-for-woo&action=edit&id=<?php echo esc_attr( $c['id'] ); ?>">Edit</a> | </span>
 								<?php
-								/**
-								 * List view row actions.
-								 *
-								 * @package WPHZ\\UGC
-								 */
-
 									$duplicate_url = wp_nonce_url(
-										admin_url( 'admin-ajax.php?action=wphz_ugc_duplicate_carousel&id=' . $c['id'] ),
-										'wphz_ugc_admin',
-										'wphz_nonce'
+										admin_url( 'admin-ajax.php?action=ugcc_duplicate_carousel&id=' . $c['id'] ),
+										'ugcc_admin',
+										'ugcc_nonce'
 									);
 								?>
 								<span class="duplicate"><a href="<?php echo esc_url( $duplicate_url ); ?>" onclick="return confirm('Duplicate this carousel?');">Duplicate</a></span>
@@ -63,9 +57,9 @@ defined( 'ABSPATH' ) || exit;
 						<td>
 							<?php
 								$delete_url = wp_nonce_url(
-									admin_url( 'admin-ajax.php?action=wphz_ugc_delete_carousel&id=' . $c['id'] ),
-									'wphz_ugc_admin',
-									'wphz_nonce'
+									admin_url( 'admin-ajax.php?action=ugcc_delete_carousel&id=' . $c['id'] ),
+									'ugcc_admin',
+									'ugcc_nonce'
 								);
 							?>
 							<a href="<?php echo esc_url( $delete_url ); ?>" class="button button-link-delete" onclick="return confirm('Are you sure?');">Delete</a>

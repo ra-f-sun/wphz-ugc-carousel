@@ -2,18 +2,18 @@
 /**
  * Admin menu registration and rendering.
  *
- * @package WPHZ\UGC
+ * @package WPHZ\UGCCarousels
  */
 
-namespace WPHZ\UGC\Admin;
+namespace WPHZ\UGCCarousels\Admin;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-use WPHZ\UGC\AbstractSingleton;
-use WPHZ\UGC\Helpers\TemplateLoader;
-use WPHZ\UGC\Repository\CarouselRepository;
+use WPHZ\UGCCarousels\AbstractSingleton;
+use WPHZ\UGCCarousels\Helpers\TemplateLoader;
+use WPHZ\UGCCarousels\Repository\CarouselRepository;
 
 /**
  * Admin menu controller.
@@ -39,10 +39,10 @@ class AdminMenu extends AbstractSingleton {
 	 */
 	public function register_menu(): void {
 		add_menu_page(
-			__( 'UGC Carousel', 'wphz-ugc' ),
-			__( 'UGC Carousel', 'wphz-ugc' ),
+			__( 'UGC Carousel', 'ugc-carousels-for-woo' ),
+			__( 'UGC Carousel', 'ugc-carousels-for-woo' ),
 			'manage_options',
-			'wphz-ugc-carousel',
+			'ugc-carousels-for-woo',
 			array( $this, 'render_page' ),
 			'dashicons-video-alt3',
 			58

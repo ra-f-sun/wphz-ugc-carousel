@@ -2,18 +2,18 @@
 /**
  * Ajax handler for deleting an item.
  *
- * @package WPHZ\UGC
+ * @package WPHZ\UGCCarousels
  */
 
-namespace WPHZ\UGC\Ajax;
+namespace WPHZ\UGCCarousels\Ajax;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-use WPHZ\UGC\AbstractSingleton;
-use WPHZ\UGC\Helpers\NonceHelper;
-use WPHZ\UGC\Repository\ItemRepository;
+use WPHZ\UGCCarousels\AbstractSingleton;
+use WPHZ\UGCCarousels\Helpers\NonceHelper;
+use WPHZ\UGCCarousels\Repository\ItemRepository;
 
 /**
  * DeleteItem.
@@ -28,21 +28,21 @@ class DeleteItem extends AbstractSingleton {
 	 * @return void
 	 */
 	public function init(): void {
-		add_action( 'wp_ajax_wphz_ugc_delete_item', array( $this, 'handle' ) );
+		add_action( 'wp_ajax_ugcc_delete_item', array( $this, 'handle' ) );
 	}
 
 	/**
 	 * Handle delete-item AJAX request.
 	 *
 	 * Expects POST fields:
-	 *  - nonce  string  WordPress nonce for 'wphz_ugc_admin'.
+	 *  - nonce  string  WordPress nonce for 'ugcc_admin'.
 	 *  - id     int     Item ID to delete.
 	 *
 	 * @since  1.0.0
 	 * @return void  Outputs JSON and exits.
 	 */
 	public function handle(): void {
-		NonceHelper::verify( 'wphz_ugc_admin' );
+		NonceHelper::verify( 'ugcc_admin' );
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_send_json_error( array( 'message' => 'Unauthorized.' ), 403 );
 		}

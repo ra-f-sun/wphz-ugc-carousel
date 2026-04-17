@@ -2,16 +2,16 @@
 /**
  * Admin asset loading.
  *
- * @package WPHZ\UGC
+ * @package WPHZ\UGCCarousels
  */
 
-namespace WPHZ\UGC\Admin;
+namespace WPHZ\UGCCarousels\Admin;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-use WPHZ\UGC\AbstractSingleton;
+use WPHZ\UGCCarousels\AbstractSingleton;
 
 /**
  * AssetLoader.
@@ -36,36 +36,36 @@ class AssetLoader extends AbstractSingleton {
 	 * @return void
 	 */
 	public function enqueue( string $hook ): void {
-		if ( ! str_contains( $hook, 'wphz-ugc-carousel' ) ) {
+		if ( ! str_contains( $hook, 'ugc-carousels-for-woo' ) ) {
 			return;
 		}
 
 		wp_enqueue_style(
-			'wphz-ugc-admin',
-			WPHZ_UGC_URL . 'assets/admin/admin.css',
+			'ugcc-admin',
+			WPHZ_UGCC_URL . 'assets/admin/admin.css',
 			array(),
-			WPHZ_UGC_VERSION
+			WPHZ_UGCC_VERSION
 		);
 
 		// Required for the WP media picker used in the Content tab.
 		wp_enqueue_media();
 
 		wp_enqueue_script(
-			'wphz-ugc-admin',
-			WPHZ_UGC_URL . 'assets/admin/admin.js',
+			'ugcc-admin',
+			WPHZ_UGCC_URL . 'assets/admin/admin.js',
 			array( 'jquery', 'jquery-ui-sortable' ),
-			WPHZ_UGC_VERSION,
+			WPHZ_UGCC_VERSION,
 			true // footer.
 		);
 
 		wp_localize_script(
-			'wphz-ugc-admin',
-			'wphzUGC',
+			'ugcc-admin',
+			'ugccAdmin',
 			array(
 				'ajaxurl'     => admin_url( 'admin-ajax.php' ),
-				'nonce'       => wp_create_nonce( 'wphz_ugc_admin' ),
-				'mediaTitle'  => __( 'Select Video', 'wphz-ugc' ),
-				'mediaButton' => __( 'Use this video', 'wphz-ugc' ),
+				'nonce'       => wp_create_nonce( 'ugcc_admin' ),
+				'mediaTitle'  => __( 'Select Video', 'ugc-carousels-for-woo' ),
+				'mediaButton' => __( 'Use this video', 'ugc-carousels-for-woo' ),
 			)
 		);
 
@@ -76,7 +76,7 @@ class AssetLoader extends AbstractSingleton {
 		$tab    = filter_input( INPUT_GET, 'tab', FILTER_SANITIZE_SPECIAL_CHARS ) ?? '';
 
 		if ( 'edit' === $action && 'custom-css' === $tab ) {
-			// Returns false if the user disabled syntax highlighting â€” safe to ignore.
+			// Returns false if the user disabled syntax highlighting — safe to ignore.
 			wp_enqueue_code_editor( array( 'type' => 'text/css' ) );
 		}
 	}

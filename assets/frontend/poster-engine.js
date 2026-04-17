@@ -1,5 +1,5 @@
 /**
- * WPHZ UGC Poster Engine
+ * UGC Carousels — Poster Engine
  *
  * Strategy (inspired by Tolstoy's carousel):
  *   Every <video> gets its src set at init time with preload="none".
@@ -16,7 +16,7 @@
  *   - Diagnostics for cross-origin media failures
  */
 (function () {
-  class WPHZUGCPosterEngine {
+  class UGCCPosterEngine {
     constructor(root) {
       this.root = root;
       this._diagnosed = new WeakSet();
@@ -78,9 +78,9 @@
       } catch (_) {
         // Ignore non-seekable edge cases
       }
-      video.classList.remove("wphz-video--revealed");
+      video.classList.remove("ugcc-video--revealed");
       const img = this._getPosterImg(video);
-      img?.classList.remove("wphz-poster--hidden");
+      img?.classList.remove("ugcc-poster--hidden");
     }
 
     /**
@@ -97,8 +97,8 @@
 
       const revealVideo = () => {
         if (video.dataset.shouldPlay !== "true") return;
-        video.classList.add("wphz-video--revealed");
-        img?.classList.add("wphz-poster--hidden");
+        video.classList.add("ugcc-video--revealed");
+        img?.classList.add("ugcc-poster--hidden");
       };
 
       if (video.readyState >= 2) {
@@ -112,7 +112,7 @@
 
     /** Return the <img> overlay sibling of the given video element, or null. */
     _getPosterImg(video) {
-      return video.parentElement?.querySelector(".wphz-ugc-poster-img") || null;
+      return video.parentElement?.querySelector(".ugcc-poster-img") || null;
     }
 
     /**
@@ -132,12 +132,12 @@
       video.addEventListener("error", () => {
         const src = video.currentSrc || video.src || "(empty-src)";
         console.warn(
-          "WPHZ UGC: media failed to load. If this URL is third-party hosted, verify CORS and media headers on the origin.",
+          "UGC Carousels: media failed to load. If this URL is third-party hosted, verify CORS and media headers on the origin.",
           src,
         );
       });
     }
   }
 
-  window.WPHZUGCPosterEngine = WPHZUGCPosterEngine;
+  window.UGCCPosterEngine = UGCCPosterEngine;
 })();

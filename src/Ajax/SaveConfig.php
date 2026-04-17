@@ -2,19 +2,19 @@
 /**
  * Ajax handler for saving carousel configuration.
  *
- * @package WPHZ\UGC
+ * @package WPHZ\UGCCarousels
  */
 
-namespace WPHZ\UGC\Ajax;
+namespace WPHZ\UGCCarousels\Ajax;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-use WPHZ\UGC\AbstractSingleton;
-use WPHZ\UGC\Helpers\NonceHelper;
-use WPHZ\UGC\Helpers\SanitizeHelper;
-use WPHZ\UGC\Repository\CarouselRepository;
+use WPHZ\UGCCarousels\AbstractSingleton;
+use WPHZ\UGCCarousels\Helpers\NonceHelper;
+use WPHZ\UGCCarousels\Helpers\SanitizeHelper;
+use WPHZ\UGCCarousels\Repository\CarouselRepository;
 
 /**
  * SaveConfig.
@@ -29,14 +29,14 @@ class SaveConfig extends AbstractSingleton {
 	 * @return void
 	 */
 	public function init(): void {
-		add_action( 'wp_ajax_wphz_ugc_save_config', array( $this, 'handle' ) );
+		add_action( 'wp_ajax_ugcc_save_config', array( $this, 'handle' ) );
 	}
 
 	/**
 	 * Handle save-config AJAX request — persists carousel display settings.
 	 *
 	 * Expects POST fields:
-	 *  - nonce       string  WordPress nonce for 'wphz_ugc_admin'.
+	 *  - nonce       string  WordPress nonce for 'ugcc_admin'.
 	 *  - carousel_id int     Carousel to update.
 	 *  - name        string  Carousel display name.
 	 *  - mute        string  '1' to mute videos by default, anything else for unmuted.
@@ -47,7 +47,7 @@ class SaveConfig extends AbstractSingleton {
 	 * @return void  Outputs JSON and exits.
 	 */
 	public function handle(): void {
-		NonceHelper::verify( 'wphz_ugc_admin' );
+		NonceHelper::verify( 'ugcc_admin' );
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_send_json_error( array( 'message' => 'Unauthorized.' ), 403 );
 		}
@@ -75,9 +75,9 @@ class SaveConfig extends AbstractSingleton {
 
 		if ( $carousel_id > 0 ) {
 			CarouselRepository::instance()->update( $carousel_id, $carousel_config );
-			wp_send_json_success( array( 'message' => __( 'Configuration saved.', 'wphz-ugc' ) ) );
+			wp_send_json_success( array( 'message' => __( 'Configuration saved.', 'ugc-carousels-for-woo' ) ) );
 		} else {
-			wp_send_json_error( array( 'message' => __( 'Invalid Carousel ID.', 'wphz-ugc' ) ) );
+			wp_send_json_error( array( 'message' => __( 'Invalid Carousel ID.', 'ugc-carousels-for-woo' ) ) );
 		}
 	}
 }

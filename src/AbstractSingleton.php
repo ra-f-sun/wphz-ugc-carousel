@@ -2,10 +2,10 @@
 /**
  * Abstract singleton base class.
  *
- * @package WPHZ\UGC
+ * @package WPHZ\UGCCarousels
  */
 
-namespace WPHZ\UGC;
+namespace WPHZ\UGCCarousels;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;

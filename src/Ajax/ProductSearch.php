@@ -2,18 +2,18 @@
 /**
  * Ajax product search handler.
  *
- * @package WPHZ\UGC
+ * @package WPHZ\UGCCarousels
  */
 
-namespace WPHZ\UGC\Ajax;
+namespace WPHZ\UGCCarousels\Ajax;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-use WPHZ\UGC\AbstractSingleton;
-use WPHZ\UGC\Helpers\NonceHelper;
-use WPHZ\UGC\Helpers\TransientHelper;
+use WPHZ\UGCCarousels\AbstractSingleton;
+use WPHZ\UGCCarousels\Helpers\NonceHelper;
+use WPHZ\UGCCarousels\Helpers\TransientHelper;
 
 /**
  * ProductSearch.
@@ -28,14 +28,14 @@ class ProductSearch extends AbstractSingleton {
 	 * @return void
 	 */
 	public function init(): void {
-		add_action( 'wp_ajax_wphz_ugc_product_search', array( $this, 'handle' ) );
+		add_action( 'wp_ajax_ugcc_product_search', array( $this, 'handle' ) );
 	}
 
 	/**
 	 * Handle product search AJAX request — returns matching WooCommerce products.
 	 *
 	 * Expects GET fields:
-	 *  - nonce  string  WordPress nonce for 'wphz_ugc_admin'.
+	 *  - nonce  string  WordPress nonce for 'ugcc_admin'.
 	 *  - term   string  Search term (minimum 2 characters). Matched against SKU, name, and ID.
 	 *
 	 * @since  1.0.0
@@ -44,14 +44,14 @@ class ProductSearch extends AbstractSingleton {
 	public function handle(): void {
 		$nonce = filter_input( INPUT_GET, 'nonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 		if ( ! is_string( $nonce ) || '' === $nonce ) {
-			$nonce = filter_input( INPUT_GET, 'wphz_nonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+			$nonce = filter_input( INPUT_GET, 'ugcc_nonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 		}
 
-		if ( ! is_string( $nonce ) || ! wp_verify_nonce( $nonce, 'wphz_ugc_admin' ) ) {
+		if ( ! is_string( $nonce ) || ! wp_verify_nonce( $nonce, 'ugcc_admin' ) ) {
 			wp_send_json_error( array( 'message' => 'Nonce verification failed.' ), 403 );
 		}
 
-		NonceHelper::verify( 'wphz_ugc_admin' );
+		NonceHelper::verify( 'ugcc_admin' );
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_send_json_error( array( 'message' => 'Unauthorized.' ), 403 );
 		}
@@ -64,7 +64,6 @@ class ProductSearch extends AbstractSingleton {
 			wp_send_json_success( array() );
 		}
 
-		// 'v2_' prefix busts caches from the old format (no status/sku fields).
 		$key    = TransientHelper::product_key( 'v2_' . $term );
 		$cached = TransientHelper::get( $key );
 
@@ -76,7 +75,7 @@ class ProductSearch extends AbstractSingleton {
 
 		$ordered_ids = array();
 
-		// 1. Exact SKU match (case-insensitive).
+		// Exact SKU match (case-insensitive).
 		$exact_sku_ids = $wpdb->get_col(
 			$wpdb->prepare(
 				"SELECT DISTINCT post_id FROM {$wpdb->postmeta}
@@ -89,7 +88,7 @@ class ProductSearch extends AbstractSingleton {
 			$ordered_ids[] = (int) $id;
 		}
 
-		// 2. Partial SKU match.
+		// Partial SKU match.
 		$partial_sku_ids = $wpdb->get_col(
 			$wpdb->prepare(
 				"SELECT DISTINCT post_id FROM {$wpdb->postmeta}
@@ -105,7 +104,7 @@ class ProductSearch extends AbstractSingleton {
 			}
 		}
 
-		// 3. Name search â€” include all statuses so drafts/private products are found.
+		// Name search — include all statuses so drafts/private products are found.
 		$name_query = new \WC_Product_Query(
 			array(
 				'limit'   => 10,
@@ -122,7 +121,7 @@ class ProductSearch extends AbstractSingleton {
 			}
 		}
 
-		// 4. Numeric ID lookup.
+		// Numeric ID lookup.
 		if ( is_numeric( $term ) ) {
 			$numeric_id = (int) $term;
 			if ( ! in_array( $numeric_id, $ordered_ids, true ) ) {
@@ -130,7 +129,7 @@ class ProductSearch extends AbstractSingleton {
 			}
 		}
 
-		// Build result set â€” no publish-only filter; show all valid products with status info.
+		// Build result set — no publish-only filter; show all valid products with status info.
 		$results = array();
 		foreach ( array_slice( $ordered_ids, 0, 15 ) as $product_id ) {
 			$product = wc_get_product( $product_id );
@@ -142,7 +141,7 @@ class ProductSearch extends AbstractSingleton {
 				'id'                 => $product->get_id(),
 				'name'               => $product->get_name(),
 				'sku'                => $product->get_sku(),
-				'price_html'         => wp_strip_all_tags( \WPHZ\UGC\Helpers\PriceHelper::get_clean_price( $product ) ),
+				'price_html'         => wp_strip_all_tags( \WPHZ\UGCCarousels\Helpers\PriceHelper::get_clean_price( $product ) ),
 				'thumbnail'          => wp_get_attachment_image_url( $product->get_image_id(), 'thumbnail' ),
 				'status'             => $product->get_status(),
 				'catalog_visibility' => $product->get_catalog_visibility(),

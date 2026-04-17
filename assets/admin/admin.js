@@ -1,7 +1,7 @@
 /**
  * UGC Carousels & Shoppable Videos for WooCommerce — Admin JavaScript
  */
-/* global wphzUGC, wp */
+/* global ugccAdmin, wp */
 jQuery(function ($) {
 
     /**
@@ -13,11 +13,11 @@ jQuery(function ($) {
     function onConfigFormSubmit( submitEvent ) {
         submitEvent.preventDefault();
         var $form   = $(this);
-        var $status = $form.find('.wphz-save-status');
+        var $status = $form.find('.ugcc-save-status');
 
-        $.post(wphzUGC.ajaxurl, {
+        $.post(ugccAdmin.ajaxurl, {
             action:      $form.data('action'),
-            nonce:       wphzUGC.nonce,
+            nonce:       ugccAdmin.nonce,
             carousel_id: $form.find('[name="carousel_id"]').val(),
             name:        $form.find('[name="name"]').val(),
             mute:        $form.find('[name="mute"]:checked').val(),
@@ -35,18 +35,18 @@ jQuery(function ($) {
             setTimeout(function () { $status.text(''); }, 3000);
         });
     }
-    $('#wphz-ugc-config-form').on('submit', onConfigFormSubmit);
+    $('#ugcc-config-form').on('submit', onConfigFormSubmit);
 
-    $('#wphz-items-list').sortable({
-        handle:      '.wphz-drag-handle',
+    $('#ugcc-items-list').sortable({
+        handle:      '.ugcc-drag-handle',
         axis:        'y',
-        placeholder: 'wphz-sortable-placeholder',
+        placeholder: 'ugcc-sortable-placeholder',
     });
 
-    $('#wphz-add-blank-row').on('click', function () {
+    $('#ugcc-add-blank-row').on('click', function () {
         var newItemRowId = 'new-' + Date.now();
-        var $row         = $(wphzBuildItemRow(newItemRowId));
-        $('#wphz-items-list').append($row);
+        var $row         = $(ugccBuildItemRow(newItemRowId));
+        $('#ugcc-items-list').append($row);
     });
 
     /**
@@ -58,13 +58,13 @@ jQuery(function ($) {
     function onMediaBtnClick( clickEvent ) {
         clickEvent.preventDefault();
         var $btn      = $(this);
-        var $input    = $btn.siblings('.wphz-url-input');
+        var $input    = $btn.siblings('.ugcc-url-input');
         var mediaType = ($btn.data('media-type') || 'video').toString();
         var isImage   = mediaType === 'image';
 
         var mediaFrame = wp.media({
-            title:    isImage ? (wphzUGC.imageTitle  || 'Select Image') : (wphzUGC.mediaTitle  || 'Select Video'),
-            button:   { text: isImage ? (wphzUGC.imageButton || 'Use this image') : (wphzUGC.mediaButton || 'Use this video') },
+            title:    isImage ? (ugccAdmin.imageTitle  || 'Select Image') : (ugccAdmin.mediaTitle  || 'Select Video'),
+            button:   { text: isImage ? (ugccAdmin.imageButton || 'Use this image') : (ugccAdmin.mediaButton || 'Use this video') },
             library:  { type: isImage ? 'image' : 'video' },
             multiple: false,
         });
@@ -76,7 +76,7 @@ jQuery(function ($) {
 
         mediaFrame.open();
     }
-    $(document).on('click', '.wphz-media-btn', onMediaBtnClick);
+    $(document).on('click', '.ugcc-media-btn', onMediaBtnClick);
 
     /**
      * Build HTML for a new (unsaved) item row with Dual Resolutions.
@@ -85,8 +85,8 @@ jQuery(function ($) {
      * @param {string} rowId - Unique row identifier (prefixed "new-<timestamp>" for unsaved rows).
      * @return {string} HTML string for the new row.
      */
-    function wphzBuildItemRow( rowId ) {
-        var tmpl = $('#tmpl-wphz-item-row').html();
+    function ugccBuildItemRow( rowId ) {
+        var tmpl = $('#tmpl-ugcc-item-row').html();
         return tmpl.replace(/\{\{rowId\}\}/g, rowId);
     }
 
@@ -103,7 +103,7 @@ jQuery(function ($) {
      * @param {string}       product.catalog_visibility - Catalog visibility setting.
      * @return {string} HTML string to append to the suggestions list.
      */
-    function wphzBuildProductSuggestionHtml( product ) {
+    function ugccBuildProductSuggestionHtml( product ) {
         // Use the DOM API to set src so the browser enforces safe URL handling,
         // preventing src-based XSS from unexpected server responses.
         var thumbnailHtml;
@@ -113,7 +113,7 @@ jQuery(function ($) {
             thumbImg.alt  = '';
             thumbnailHtml = thumbImg.outerHTML;
         } else {
-            thumbnailHtml = '<span class="wphz-no-thumb"></span>';
+            thumbnailHtml = '<span class="ugcc-no-thumb"></span>';
         }
 
         var cleanName = $('<div>').text(product.name).html();
@@ -125,20 +125,20 @@ jQuery(function ($) {
         var statusBadge = '';
         if (product.status && product.status !== 'publish') {
             var statusLabel = product.status.charAt(0).toUpperCase() + product.status.slice(1);
-            statusBadge = '<span class="wphz-badge wphz-badge--' + product.status + '">' + statusLabel + '</span>';
+            statusBadge = '<span class="ugcc-badge ugcc-badge--' + product.status + '">' + statusLabel + '</span>';
         }
 
         var visibilityBadge = '';
         if (product.catalog_visibility === 'hidden') {
-            visibilityBadge = '<span class="wphz-badge wphz-badge--hidden">Hidden from catalog</span>';
+            visibilityBadge = '<span class="ugcc-badge ugcc-badge--hidden">Hidden from catalog</span>';
         } else if (product.catalog_visibility === 'search') {
-            visibilityBadge = '<span class="wphz-badge wphz-badge--visibility">Search only</span>';
+            visibilityBadge = '<span class="ugcc-badge ugcc-badge--visibility">Search only</span>';
         } else if (product.catalog_visibility === 'catalog') {
-            visibilityBadge = '<span class="wphz-badge wphz-badge--visibility">Catalog only</span>';
+            visibilityBadge = '<span class="ugcc-badge ugcc-badge--visibility">Catalog only</span>';
         }
 
         // price_html is server-sanitized via wp_strip_all_tags() in ProductSearch.php — plain text only.
-        return $('#tmpl-wphz-product-suggestion').html()
+        return $('#tmpl-ugcc-product-suggestion').html()
             .replace(/\{\{productId\}\}/g,      product.id)
             .replace(/\{\{productNameRaw\}\}/g,  cleanName)
             .replace(/\{\{thumbHtml\}\}/g,       thumbnailHtml)
@@ -160,7 +160,7 @@ jQuery(function ($) {
         var $input       = $(this);
         var rowId        = $input.data('row');
         var term         = $input.val();
-        var $suggestions = $input.siblings('.wphz-product-suggestions');
+        var $suggestions = $input.siblings('.ugcc-product-suggestions');
 
         clearTimeout(searchTimers[rowId]);
 
@@ -170,9 +170,9 @@ jQuery(function ($) {
         }
 
         searchTimers[rowId] = setTimeout(function () {
-            $.get(wphzUGC.ajaxurl, {
-                action: 'wphz_ugc_product_search',
-                nonce:  wphzUGC.nonce,
+            $.get(ugccAdmin.ajaxurl, {
+                action: 'ugcc_product_search',
+                nonce:  ugccAdmin.nonce,
                 term:   term,
             })
             .done(function (res) {
@@ -182,18 +182,18 @@ jQuery(function ($) {
                     return;
                 }
                 $.each(res.data, function (i, product) {
-                    $suggestions.append(wphzBuildProductSuggestionHtml(product));
+                    $suggestions.append(ugccBuildProductSuggestionHtml(product));
                 });
                 $suggestions.show();
             });
         }, 300);
     }
-    $(document).on('keyup', '.wphz-product-search', onProductSearchKeyup);
+    $(document).on('keyup', '.ugcc-product-search', onProductSearchKeyup);
 
     // Click outside → close suggestions.
     $(document).on('click', function (e) {
-        if (!$(e.target).closest('.wphz-product-search-wrap').length) {
-            $('.wphz-product-suggestions').hide();
+        if (!$(e.target).closest('.ugcc-product-search-wrap').length) {
+            $('.ugcc-product-suggestions').hide();
         }
     });
 
@@ -206,30 +206,30 @@ jQuery(function ($) {
         var $li           = $(this);
         var productId     = $li.data('id');
         var productName   = $li.data('name');
-        var $wrap         = $li.closest('.wphz-product-search-wrap');
-        var rowId         = $wrap.siblings('.wphz-product-search-wrap').find('.wphz-product-search').data('row') ||
-                            $li.closest('.wphz-item-row').data('id');
-        var $selectedList = $li.closest('.wphz-item-products').find('.wphz-selected-products');
+        var $wrap         = $li.closest('.ugcc-product-search-wrap');
+        var rowId         = $wrap.siblings('.ugcc-product-search-wrap').find('.ugcc-product-search').data('row') ||
+                            $li.closest('.ugcc-item-row').data('id');
+        var $selectedList = $li.closest('.ugcc-item-products').find('.ugcc-selected-products');
 
         // Avoid duplicates.
         if ($selectedList.find('[value="' + productId + '"]').length) {
-            $li.closest('.wphz-product-suggestions').hide().empty();
+            $li.closest('.ugcc-product-suggestions').hide().empty();
             return;
         }
 
-        var tmpl = $('#tmpl-wphz-product-chip').html();
+        var tmpl = $('#tmpl-ugcc-product-chip').html();
         tmpl = tmpl.replace(/\{\{productId\}\}/g,   productId)
                    .replace(/\{\{productName\}\}/g,  productName)
                    .replace(/\{\{rowId\}\}/g,        rowId);
 
         $selectedList.append(tmpl);
-        $li.closest('.wphz-product-suggestions').hide().empty();
-        $li.closest('.wphz-item-products').find('.wphz-product-search').val('');
+        $li.closest('.ugcc-product-suggestions').hide().empty();
+        $li.closest('.ugcc-item-products').find('.ugcc-product-search').val('');
     }
-    $(document).on('click', '.wphz-product-suggestions li', onProductSuggestionClick);
+    $(document).on('click', '.ugcc-product-suggestions li', onProductSuggestionClick);
 
-    $(document).on('click', '.wphz-remove-product', function () {
-        $(this).closest('li.wphz-chip').remove();
+    $(document).on('click', '.ugcc-remove-product', function () {
+        $(this).closest('li.ugcc-chip').remove();
     });
 
     /**
@@ -240,13 +240,13 @@ jQuery(function ($) {
     function onDeleteItemClick() {
         var $btn  = $(this);
         var rowId = $btn.data('id');
-        var $row  = $btn.closest('.wphz-item-row');
+        var $row  = $btn.closest('.ugcc-item-row');
 
         // Persisted DB row (numeric id) → call AJAX delete endpoint then remove.
         if (!isNaN(parseInt(rowId, 10))) {
-            $.post(wphzUGC.ajaxurl, {
-                action: 'wphz_ugc_delete_item',
-                nonce:  wphzUGC.nonce,
+            $.post(ugccAdmin.ajaxurl, {
+                action: 'ugcc_delete_item',
+                nonce:  ugccAdmin.nonce,
                 id:     rowId,
             })
             .always(function () {
@@ -257,17 +257,17 @@ jQuery(function ($) {
             $row.fadeOut(200, function () { $(this).remove(); });
         }
     }
-    $(document).on('click', '.wphz-delete-item', onDeleteItemClick);
+    $(document).on('click', '.ugcc-delete-item', onDeleteItemClick);
 
     /**
      * Collect carousel item data from the DOM for the save-content AJAX call.
      *
      * @return {Object} Map of index → item data objects ready for the server.
      */
-    function wphzCollectContentItems() {
+    function ugccCollectContentItems() {
         var items = {};
 
-        $('#wphz-items-list .wphz-item-row').each(function (index) {
+        $('#ugcc-items-list .ugcc-item-row').each(function (index) {
             var $row       = $(this);
             var rowId      = $row.data('id');
             var videoId    = $row.find('[name="items[' + rowId + '][video_id]"]').val() || 0;
@@ -276,11 +276,11 @@ jQuery(function ($) {
             var posterUrl  = $row.find('[name="items[' + rowId + '][poster_url]"]').val();
             var products   = {};
 
-            $row.find('.wphz-chip').each(function () {
+            $row.find('.ugcc-chip').each(function () {
                 var $chip      = $(this);
                 var productId  = $chip.find('input[type="hidden"][name$="[id]"]').val();
                 // 3-state select: '' = inherit global, '0' = force show, '1' = force hide.
-                var hideAtcRaw = $chip.find('select.wphz-atc-override').val();
+                var hideAtcRaw = $chip.find('select.ugcc-atc-override').val();
                 var hideAtc    = (hideAtcRaw === '0' || hideAtcRaw === '1') ? parseInt(hideAtcRaw, 10) : '';
 
                 if (productId) {
@@ -310,22 +310,22 @@ jQuery(function ($) {
      */
     function onSaveContentClick() {
         var $btn       = $(this);
-        var $status    = $btn.siblings('.wphz-save-status');
-        var carouselId = $('#wphz-carousel-id').val();
+        var $status    = $btn.siblings('.ugcc-save-status');
+        var carouselId = $('#ugcc-carousel-id').val();
 
         $btn.prop('disabled', true);
 
-        $.post(wphzUGC.ajaxurl, {
-            action:      'wphz_ugc_save_content',
-            nonce:       wphzUGC.nonce,
+        $.post(ugccAdmin.ajaxurl, {
+            action:      'ugcc_save_content',
+            nonce:       ugccAdmin.nonce,
             carousel_id: carouselId,
-            items:       wphzCollectContentItems(),
+            items:       ugccCollectContentItems(),
         })
         .done(function (res) {
             $status.text((res.data && res.data.message) ? res.data.message : 'Saved!')
                    .css('color', 'green');
             if (res.data && res.data.shortcode) {
-                $('#wphz-shortcode').text(res.data.shortcode);
+                $('#ugcc-shortcode').text(res.data.shortcode);
             }
         })
         .fail(function () {
@@ -336,7 +336,7 @@ jQuery(function ($) {
             setTimeout(function () { $status.text(''); }, 3000);
         });
     }
-    $('#wphz-save-content').on('click', onSaveContentClick);
+    $('#ugcc-save-content').on('click', onSaveContentClick);
 
     /**
      * Handle CSV file input change — immediately posts file as FormData via AJAX.
@@ -347,19 +347,19 @@ jQuery(function ($) {
         var file = this.files[0];
         if (!file) return;
 
-        var carouselId = $('#wphz-carousel-id').val();
-        var $status    = $('#wphz-import-status');
+        var carouselId = $('#ugcc-carousel-id').val();
+        var $status    = $('#ugcc-import-status');
 
         var formData = new FormData();
-        formData.append('action',      'wphz_ugc_import_csv');
-        formData.append('nonce',       wphzUGC.nonce);
+        formData.append('action',      'ugcc_import_csv');
+        formData.append('nonce',       ugccAdmin.nonce);
         formData.append('carousel_id', carouselId);
         formData.append('csv_file',    file);
 
         $status.text('Importing...').css('color', '#888');
 
         $.ajax({
-            url:         wphzUGC.ajaxurl,
+            url:         ugccAdmin.ajaxurl,
             type:        'POST',
             data:        formData,
             processData: false,
@@ -382,10 +382,10 @@ jQuery(function ($) {
         })
         .always(function () {
             // Reset so re-importing the same file fires change again.
-            $('#wphz-import-file').val('');
+            $('#ugcc-import-file').val('');
         });
     }
-    $('#wphz-import-file').on('change', onImportFileChange);
+    $('#ugcc-import-file').on('change', onImportFileChange);
 
     /**
      * Handle copy-shortcode button click — writes shortcode text to clipboard.
@@ -393,10 +393,10 @@ jQuery(function ($) {
      * @return {void}
      */
     function onCopyShortcodeClick() {
-        var text = $('#wphz-shortcode').text();
+        var text = $('#ugcc-shortcode').text();
         if (navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(text).then(function () {
-                var $btn = $('#wphz-copy-shortcode');
+                var $btn = $('#ugcc-copy-shortcode');
                 $btn.text('Copied!');
                 setTimeout(function () { $btn.text('Copy'); }, 2000);
             });
@@ -407,6 +407,6 @@ jQuery(function ($) {
             $tempClipboardInput.remove();
         }
     }
-    $('#wphz-copy-shortcode').on('click', onCopyShortcodeClick);
+    $('#ugcc-copy-shortcode').on('click', onCopyShortcodeClick);
 
 });

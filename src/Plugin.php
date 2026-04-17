@@ -2,31 +2,32 @@
 /**
  * Core plugin bootstrap.
  *
- * @package WPHZ\UGC
+ * @package WPHZ\UGCCarousels
  */
 
-namespace WPHZ\UGC;
+namespace WPHZ\UGCCarousels;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-use WPHZ\UGC\Admin\AdminMenu;
-use WPHZ\UGC\Admin\AssetLoader as AdminAssets;
-use WPHZ\UGC\Shortcode\ShortcodeRegistrar;
-use WPHZ\UGC\Frontend\AssetLoader as FrontendAssets;
-use WPHZ\UGC\Ajax\SaveConfig;
-use WPHZ\UGC\Ajax\SaveContent;
-use WPHZ\UGC\Ajax\ProductSearch;
-use WPHZ\UGC\Ajax\DeleteItem;
-use WPHZ\UGC\Ajax\CreateCarousel;
-use WPHZ\UGC\Ajax\DeleteCarousel;
-use WPHZ\UGC\Ajax\ExportCsv;
-use WPHZ\UGC\Ajax\ImportCsv;
-use WPHZ\UGC\Frontend\CartHandler;
-use WPHZ\UGC\Ajax\SaveCustomCss;
-use WPHZ\UGC\Ajax\DuplicateCarousel;
-use WPHZ\UGC\Installer\Installer;
+use WPHZ\UGCCarousels\Admin\AdminMenu;
+use WPHZ\UGCCarousels\Admin\AssetLoader as AdminAssets;
+use WPHZ\UGCCarousels\Shortcode\ShortcodeRegistrar;
+use WPHZ\UGCCarousels\Frontend\AssetLoader as FrontendAssets;
+use WPHZ\UGCCarousels\Ajax\SaveConfig;
+use WPHZ\UGCCarousels\Ajax\SaveContent;
+use WPHZ\UGCCarousels\Ajax\ProductSearch;
+use WPHZ\UGCCarousels\Ajax\DeleteItem;
+use WPHZ\UGCCarousels\Ajax\CreateCarousel;
+use WPHZ\UGCCarousels\Ajax\DeleteCarousel;
+use WPHZ\UGCCarousels\Ajax\ExportCsv;
+use WPHZ\UGCCarousels\Ajax\ImportCsv;
+use WPHZ\UGCCarousels\Frontend\CartHandler;
+use WPHZ\UGCCarousels\Ajax\SaveCustomCss;
+use WPHZ\UGCCarousels\Ajax\DuplicateCarousel;
+use WPHZ\UGCCarousels\Installer\Installer;
+use WPHZ\UGCCarousels\Installer\Upgrader;
 
 /**
  * Plugin.
@@ -67,8 +68,10 @@ final class Plugin extends AbstractSingleton {
 		add_action(
 			'init',
 			function () {
+				Upgrader::maybe_migrate();
+
 				if (
-				get_option( 'wphz_ugc_db_version' ) !== WPHZ_UGC_VERSION
+				get_option( 'ugcc_db_version' ) !== WPHZ_UGCC_VERSION
 				|| ! Installer::items_has_poster_column()
 				|| ! Installer::carousels_has_hide_atc_column()
 				) {
@@ -132,7 +135,7 @@ final class Plugin extends AbstractSingleton {
 	 */
 	public function notice_wc_not_installed(): void {
 		echo '<div class="notice notice-error"><p>'
-			. esc_html__( 'WPHZ UGC Carousel requires WooCommerce to be installed.', 'wphz-ugc' )
+			. esc_html__( 'UGC Carousels requires WooCommerce to be installed.', 'ugc-carousels-for-woo' )
 			. '</p></div>';
 	}
 
@@ -144,7 +147,7 @@ final class Plugin extends AbstractSingleton {
 	 */
 	public function notice_wc_inactive(): void {
 		echo '<div class="notice notice-error"><p>'
-			. esc_html__( 'WPHZ UGC Carousel requires WooCommerce to be active.', 'wphz-ugc' )
+			. esc_html__( 'UGC Carousels requires WooCommerce to be active.', 'ugc-carousels-for-woo' )
 			. '</p></div>';
 	}
 }

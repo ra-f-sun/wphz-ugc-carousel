@@ -2,19 +2,19 @@
 /**
  * Ajax handler for duplicating a carousel.
  *
- * @package WPHZ\UGC
+ * @package WPHZ\UGCCarousels
  */
 
-namespace WPHZ\UGC\Ajax;
+namespace WPHZ\UGCCarousels\Ajax;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-use WPHZ\UGC\AbstractSingleton;
-use WPHZ\UGC\Helpers\NonceHelper;
-use WPHZ\UGC\Repository\CarouselRepository;
-use WPHZ\UGC\Repository\ItemRepository;
+use WPHZ\UGCCarousels\AbstractSingleton;
+use WPHZ\UGCCarousels\Helpers\NonceHelper;
+use WPHZ\UGCCarousels\Repository\CarouselRepository;
+use WPHZ\UGCCarousels\Repository\ItemRepository;
 
 /**
  * DuplicateCarousel.
@@ -30,36 +30,36 @@ class DuplicateCarousel extends AbstractSingleton {
 	 */
 	public function init(): void {
 		// We use admin-ajax.php but it's fundamentally a GET redirect hook.
-		add_action( 'wp_ajax_wphz_ugc_duplicate_carousel', array( $this, 'handle' ) );
+		add_action( 'wp_ajax_ugcc_duplicate_carousel', array( $this, 'handle' ) );
 	}
 
 	/**
 	 * Handle duplicate-carousel action — deep-clones carousel and all its items.
 	 *
 	 * Expects GET fields:
-	 *  - nonce  string  WordPress nonce for 'wphz_ugc_admin'.
+	 *  - nonce  string  WordPress nonce for 'ugcc_admin'.
 	 *  - id     int     Source carousel ID to duplicate.
 	 *
 	 * @since  1.0.0
 	 * @return void  Redirects to the new carousel's edit page and exits.
 	 */
 	public function handle(): void {
-		NonceHelper::verify( 'wphz_ugc_admin' );
+		NonceHelper::verify( 'ugcc_admin' );
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_die( esc_html__( 'Unauthorized.', 'wphz-ugc' ) );
+			wp_die( esc_html__( 'Unauthorized.', 'ugc-carousels-for-woo' ) );
 		}
 
 		$carousel_id_input = filter_input( INPUT_GET, 'id', FILTER_VALIDATE_INT );
 		$carousel_id       = is_int( $carousel_id_input ) ? $carousel_id_input : 0;
 		if ( $carousel_id <= 0 ) {
-			wp_die( esc_html__( 'Invalid Carousel ID.', 'wphz-ugc' ) );
+			wp_die( esc_html__( 'Invalid Carousel ID.', 'ugc-carousels-for-woo' ) );
 		}
 
 		$carousel_repository = CarouselRepository::instance();
 		$carousel            = $carousel_repository->get_by_id( $carousel_id );
 
 		if ( ! $carousel ) {
-			wp_die( esc_html__( 'Carousel not found.', 'wphz-ugc' ) );
+			wp_die( esc_html__( 'Carousel not found.', 'ugc-carousels-for-woo' ) );
 		}
 
 		// Duplicate the parent carousel configuration exactly.
@@ -77,7 +77,7 @@ class DuplicateCarousel extends AbstractSingleton {
 		);
 
 		if ( ! $duplicate_carousel_id ) {
-			wp_die( esc_html__( 'Failed to duplicate carousel.', 'wphz-ugc' ) );
+			wp_die( esc_html__( 'Failed to duplicate carousel.', 'ugc-carousels-for-woo' ) );
 		}
 
 		// Deep clone the nested video/product item arrays.
@@ -105,7 +105,7 @@ class DuplicateCarousel extends AbstractSingleton {
 		}
 
 		// Redirect immediately seamlessly into the newly cloned configuration environment.
-		wp_safe_redirect( admin_url( 'admin.php?page=wphz-ugc-carousel&action=edit&id=' . $duplicate_carousel_id ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=ugc-carousels-for-woo&action=edit&id=' . $duplicate_carousel_id ) );
 		exit;
 	}
 }

@@ -2,10 +2,10 @@
 /**
  * Installer.
  *
- * @package WPHZ\UGC
+ * @package WPHZ\UGCCarousels
  */
 
-namespace WPHZ\UGC\Installer;
+namespace WPHZ\UGCCarousels\Installer;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -24,7 +24,7 @@ class Installer {
 	 */
 	public static function items_has_poster_column(): bool {
 		global $wpdb;
-		$table_items = $wpdb->prefix . 'wphz_ugc_items';
+		$table_items = $wpdb->prefix . 'ugcc_items';
 		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table_items is derived from $wpdb->prefix; table names cannot use prepare() placeholders.
 		return (bool) $wpdb->get_var( "SHOW COLUMNS FROM {$table_items} LIKE 'poster_url'" );
 	}
@@ -36,7 +36,7 @@ class Installer {
 	 */
 	public static function carousels_has_hide_atc_column(): bool {
 		global $wpdb;
-		$table_carousels = $wpdb->prefix . 'wphz_ugc_carousels';
+		$table_carousels = $wpdb->prefix . 'ugcc_carousels';
 		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table_carousels is derived from $wpdb->prefix; table names cannot use prepare() placeholders.
 		return (bool) $wpdb->get_var( "SHOW COLUMNS FROM {$table_carousels} LIKE 'hide_atc'" );
 	}
@@ -47,6 +47,7 @@ class Installer {
 	 * @return void Return value.
 	 */
 	public static function activate(): void {
+		Upgrader::maybe_migrate();
 		self::create_tables();
 		self::migrate_to_multi_carousel();
 		flush_rewrite_rules();
@@ -68,8 +69,8 @@ class Installer {
 	 */
 	private static function create_tables(): void {
 		global $wpdb;
-		$table_items     = $wpdb->prefix . 'wphz_ugc_items';
-		$table_carousels = $wpdb->prefix . 'wphz_ugc_carousels';
+		$table_items     = $wpdb->prefix . 'ugcc_items';
+		$table_carousels = $wpdb->prefix . 'ugcc_carousels';
 		$charset         = $wpdb->get_charset_collate();
 
 		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
@@ -139,7 +140,7 @@ class Installer {
 			$wpdb->query( "ALTER TABLE {$table_carousels} ADD COLUMN hide_atc tinyint(1) DEFAULT 0" );
 		}
 
-		update_option( 'wphz_ugc_db_version', WPHZ_UGC_VERSION );
+		update_option( 'ugcc_db_version', WPHZ_UGCC_VERSION );
 	}
 
 	/**
@@ -149,8 +150,8 @@ class Installer {
 	 */
 	private static function migrate_to_multi_carousel(): void {
 		global $wpdb;
-		$table_items     = $wpdb->prefix . 'wphz_ugc_items';
-		$table_carousels = $wpdb->prefix . 'wphz_ugc_carousels';
+		$table_items     = $wpdb->prefix . 'ugcc_items';
+		$table_carousels = $wpdb->prefix . 'ugcc_carousels';
 
 		// Check if carousels table is empty.
 		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table names cannot use prepare() placeholders; $table_carousels is derived from $wpdb->prefix.

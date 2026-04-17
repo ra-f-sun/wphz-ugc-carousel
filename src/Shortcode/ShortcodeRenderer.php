@@ -2,20 +2,20 @@
 /**
  * Frontend shortcode rendering for the plugin.
  *
- * @package WPHZ\UGC
+ * @package WPHZ\UGCCarousels
  */
 
-namespace WPHZ\UGC\Shortcode;
+namespace WPHZ\UGCCarousels\Shortcode;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-use WPHZ\UGC\AbstractSingleton;
-use WPHZ\UGC\Repository\CarouselRepository;
-use WPHZ\UGC\Repository\ItemRepository;
-use WPHZ\UGC\Helpers\TemplateLoader;
-use WPHZ\UGC\Frontend\AssetLoader;
+use WPHZ\UGCCarousels\AbstractSingleton;
+use WPHZ\UGCCarousels\Repository\CarouselRepository;
+use WPHZ\UGCCarousels\Repository\ItemRepository;
+use WPHZ\UGCCarousels\Helpers\TemplateLoader;
+use WPHZ\UGCCarousels\Frontend\AssetLoader;
 
 /**
  * ShortcodeRenderer.
@@ -35,12 +35,12 @@ class ShortcodeRenderer extends AbstractSingleton {
 		$carousel_id = (int) $atts['id'];
 
 		if ( $carousel_id <= 0 ) {
-			return '<p>WPHZ UGC Carousel: Please provide a valid carousel ID in the shortcode.</p>';
+			return '<p>UGC Carousel: Please provide a valid carousel ID in the shortcode.</p>';
 		}
 
 		$carousel_config = CarouselRepository::instance()->get_by_id( $carousel_id );
 		if ( ! $carousel_config ) {
-			return sprintf( '<p>WPHZ UGC Carousel: Carousel #%d not found.</p>', $carousel_id );
+			return sprintf( '<p>UGC Carousel: Carousel #%d not found.</p>', $carousel_id );
 		}
 
 		$items = ItemRepository::instance()->get_all( (string) $carousel_id );
@@ -50,7 +50,7 @@ class ShortcodeRenderer extends AbstractSingleton {
 			return '';
 		}
 
-		// Lazy-enqueue frontend assets â€” AssetLoader receives the unified config array.
+		// Lazy-enqueue frontend assets — AssetLoader receives the unified config array.
 		AssetLoader::instance()->enqueue_now( $carousel_config );
 
 		// Prepend scoped custom CSS if the carousel has any.
@@ -61,7 +61,7 @@ class ShortcodeRenderer extends AbstractSingleton {
 		$raw_css           = trim( $carousel_config['custom_css'] ?? '' );
 		if ( '' !== $raw_css ) {
 			$custom_css_output = sprintf(
-				'<style id="wphz-carousel-css-%d">%s</style>',
+				'<style id="ugcc-carousel-css-%d">%s</style>',
 				$carousel_id,
 				$raw_css  // already sanitized via wp_strip_all_tags() on save.
 			);

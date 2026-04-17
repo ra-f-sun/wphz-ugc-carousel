@@ -2,17 +2,17 @@
 /**
  * Ajax handler for importing CSV data.
  *
- * @package WPHZ\UGC
+ * @package WPHZ\UGCCarousels
  */
 
-namespace WPHZ\UGC\Ajax;
+namespace WPHZ\UGCCarousels\Ajax;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-use WPHZ\UGC\AbstractSingleton;
-use WPHZ\UGC\Repository\ItemRepository;
+use WPHZ\UGCCarousels\AbstractSingleton;
+use WPHZ\UGCCarousels\Repository\ItemRepository;
 
 /**
  * ImportCsv.
@@ -26,14 +26,14 @@ class ImportCsv extends AbstractSingleton {
 	 * @return void
 	 */
 	public function init(): void {
-		add_action( 'wp_ajax_wphz_ugc_import_csv', array( $this, 'handle' ) );
+		add_action( 'wp_ajax_ugcc_import_csv', array( $this, 'handle' ) );
 	}
 
 	/**
 	 * Handle CSV import action — replaces all carousel items from an uploaded CSV.
 	 *
 	 * Expects POST fields:
-	 *  - nonce       string  WordPress nonce for 'wphz_ugc_admin'.
+	 *  - nonce       string  WordPress nonce for 'ugcc_admin'.
 	 *  - carousel_id int     Target carousel to import into.
 	 *
 	 * Expects FILES:
@@ -43,12 +43,12 @@ class ImportCsv extends AbstractSingleton {
 	 * @return void  Outputs JSON and exits.
 	 */
 	public function handle(): void {
-		$nonce = filter_input( INPUT_POST, 'wphz_nonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+		$nonce = filter_input( INPUT_POST, 'ugcc_nonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 		if ( ! is_string( $nonce ) || '' === $nonce ) {
 			$nonce = filter_input( INPUT_POST, 'nonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 		}
 
-		if ( ! is_string( $nonce ) || ! wp_verify_nonce( $nonce, 'wphz_ugc_admin' ) ) {
+		if ( ! is_string( $nonce ) || ! wp_verify_nonce( $nonce, 'ugcc_admin' ) ) {
 			wp_send_json_error( array( 'message' => 'Nonce verification failed.' ), 403 );
 		}
 
@@ -70,17 +70,17 @@ class ImportCsv extends AbstractSingleton {
 		$file_name = sanitize_file_name( (string) ( $_FILES['csv_file']['name'] ?? '' ) );
 		$extension = strtolower( pathinfo( $file_name, PATHINFO_EXTENSION ) );
 		if ( 'csv' !== $extension ) {
-			wp_send_json_error( array( 'message' => __( 'File must have a .csv extension.', 'wphz-ugc-carousel' ) ) );
+			wp_send_json_error( array( 'message' => __( 'File must have a .csv extension.', 'ugc-carousels-for-woo' ) ) );
 		}
 
 		$allowed_mime_types = array( 'text/csv', 'text/plain', 'application/csv', 'application/vnd.ms-excel' );
 		$uploaded_type      = (string) ( $_FILES['csv_file']['type'] ?? '' );
 		if ( ! in_array( $uploaded_type, $allowed_mime_types, true ) ) {
-			wp_send_json_error( array( 'message' => __( 'Invalid file type. Please upload a CSV file.', 'wphz-ugc-carousel' ) ) );
+			wp_send_json_error( array( 'message' => __( 'Invalid file type. Please upload a CSV file.', 'ugc-carousels-for-woo' ) ) );
 		}
 		// phpcs:enable
-
-		$csv_path = (string) $_FILES['csv_file']['tmp_name'];
+		
+		$csv_path = sanitize_file_name( (string) $_FILES['csv_file']['tmp_name'] );
 		try {
 			$csv = new \SplFileObject( $csv_path, 'r' );
 		} catch ( \RuntimeException $exception ) {

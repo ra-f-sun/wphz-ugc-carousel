@@ -2,10 +2,10 @@
 /**
  * Sanitization helpers used throughout the plugin.
  *
- * @package WPHZ\UGC
+ * @package WPHZ\UGCCarousels
  */
 
-namespace WPHZ\UGC\Helpers;
+namespace WPHZ\UGCCarousels\Helpers;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;

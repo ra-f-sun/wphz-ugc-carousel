@@ -2,16 +2,16 @@
 /**
  * Frontend asset loading for the plugin.
  *
- * @package WPHZ\UGC
+ * @package WPHZ\UGCCarousels
  */
 
-namespace WPHZ\UGC\Frontend;
+namespace WPHZ\UGCCarousels\Frontend;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-use WPHZ\UGC\AbstractSingleton;
+use WPHZ\UGCCarousels\AbstractSingleton;
 
 /**
  * AssetLoader.
@@ -52,42 +52,42 @@ class AssetLoader extends AbstractSingleton {
 		$this->enqueued = true;
 
 		wp_enqueue_style(
-			'wphz-ugc-frontend',
-			WPHZ_UGC_URL . 'assets/frontend/carousel.css',
+			'ugcc-frontend',
+			WPHZ_UGCC_URL . 'assets/frontend/carousel.css',
 			array( 'woocommerce-general' ), // depend on WC stylesheet for price formatting.
-			WPHZ_UGC_VERSION
+			WPHZ_UGCC_VERSION
 		);
 
 		wp_enqueue_script(
-			'wphz-ugc-poster-engine',
-			WPHZ_UGC_URL . 'assets/frontend/poster-engine.js',
+			'ugcc-poster-engine',
+			WPHZ_UGCC_URL . 'assets/frontend/poster-engine.js',
 			array(),
-			WPHZ_UGC_VERSION,
+			WPHZ_UGCC_VERSION,
 			true
 		);
 
 		wp_enqueue_script(
-			'wphz-ugc-frontend',
-			WPHZ_UGC_URL . 'assets/frontend/carousel.js',
-			array( 'wphz-ugc-poster-engine' ), // no jQuery dependency - vanilla JS.
-			WPHZ_UGC_VERSION,
+			'ugcc-frontend',
+			WPHZ_UGCC_URL . 'assets/frontend/carousel.js',
+			array( 'ugcc-poster-engine' ), // no jQuery dependency - vanilla JS.
+			WPHZ_UGCC_VERSION,
 			true           // load in footer.
 		);
 
-		// C4 contract: exact key names required - JS reads window.wphzUGCFrontend.*.
+		// C4 contract: exact key names required - JS reads window.ugccFrontend.*.
 		wp_localize_script(
-			'wphz-ugc-frontend',
-			'wphzUGCFrontend',
+			'ugcc-frontend',
+			'ugccFrontend',
 			array(
 				'ajaxurl' => admin_url( 'admin-ajax.php' ),
-				'nonce'   => wp_create_nonce( 'wphz_ugc_atc' ),
+				'nonce'   => wp_create_nonce( 'ugcc_atc' ),
 				'danger'  => array(
 					'on_arrow_right' => $config['on_arrow_right'] ?? '',
 					'on_arrow_left'  => $config['on_arrow_left'] ?? '',
 				),
 				'i18n'    => array(
-					'added' => __( 'Added!', 'wphz-ugc' ),
-					'error' => __( 'Error - retry.', 'wphz-ugc' ),
+					'added' => __( 'Added!', 'ugc-carousels-for-woo' ),
+					'error' => __( 'Error - retry.', 'ugc-carousels-for-woo' ),
 				),
 			)
 		);

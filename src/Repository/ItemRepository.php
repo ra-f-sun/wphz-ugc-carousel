@@ -2,16 +2,16 @@
 /**
  * ItemRepository.
  *
- * @package WPHZ\UGC
+ * @package WPHZ\UGCCarousels
  */
 
-namespace WPHZ\UGC\Repository;
+namespace WPHZ\UGCCarousels\Repository;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-use WPHZ\UGC\AbstractSingleton;
+use WPHZ\UGCCarousels\AbstractSingleton;
 
 /**
  * ItemRepository.
@@ -26,7 +26,7 @@ class ItemRepository extends AbstractSingleton {
 	 */
 	private function table(): string {
 		global $wpdb;
-		return $wpdb->prefix . 'wphz_ugc_items';
+		return $wpdb->prefix . 'ugcc_items';
 	}
 
 	/**

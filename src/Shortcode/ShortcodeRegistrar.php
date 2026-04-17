@@ -2,16 +2,16 @@
 /**
  * Shortcode registration for the plugin.
  *
- * @package WPHZ\UGC
+ * @package WPHZ\UGCCarousels
  */
 
-namespace WPHZ\UGC\Shortcode;
+namespace WPHZ\UGCCarousels\Shortcode;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-use WPHZ\UGC\AbstractSingleton;
+use WPHZ\UGCCarousels\AbstractSingleton;
 
 /**
  * ShortcodeRegistrar.

@@ -2,19 +2,19 @@
 /**
  * Ajax handler for creating a carousel.
  *
- * @package WPHZ\UGC
+ * @package WPHZ\UGCCarousels
  */
 
-namespace WPHZ\UGC\Ajax;
+namespace WPHZ\UGCCarousels\Ajax;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-use WPHZ\UGC\AbstractSingleton;
-use WPHZ\UGC\Helpers\NonceHelper;
-use WPHZ\UGC\Helpers\SanitizeHelper;
-use WPHZ\UGC\Repository\CarouselRepository;
+use WPHZ\UGCCarousels\AbstractSingleton;
+use WPHZ\UGCCarousels\Helpers\NonceHelper;
+use WPHZ\UGCCarousels\Helpers\SanitizeHelper;
+use WPHZ\UGCCarousels\Repository\CarouselRepository;
 
 /**
  * CreateCarousel.
@@ -29,21 +29,21 @@ class CreateCarousel extends AbstractSingleton {
 	 * @return void
 	 */
 	public function init(): void {
-		add_action( 'admin_action_wphz_ugc_create_carousel', array( $this, 'handle' ) );
+		add_action( 'admin_action_ugcc_create_carousel', array( $this, 'handle' ) );
 	}
 
 	/**
 	 * Handle create-carousel form submission.
 	 *
 	 * Expects POST fields:
-	 *  - _wpnonce  string  WordPress nonce for 'wphz_ugc_admin'.
+	 *  - _wpnonce  string  WordPress nonce for 'ugcc_admin'.
 	 *  - name      string  Carousel display name.
 	 *
 	 * @since  1.0.0
 	 * @return void  Redirects to the new carousel's config tab and exits.
 	 */
 	public function handle(): void {
-		NonceHelper::verify( 'wphz_ugc_admin' );
+		NonceHelper::verify( 'ugcc_admin' );
 
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_die( 'Unauthorized' );
@@ -59,7 +59,7 @@ class CreateCarousel extends AbstractSingleton {
 		$carousel_id = CarouselRepository::instance()->insert( array( 'name' => $carousel_name ) );
 
 		if ( $carousel_id ) {
-			wp_safe_redirect( admin_url( 'admin.php?page=wphz-ugc-carousel&action=edit&id=' . $carousel_id . '&tab=config' ) );
+			wp_safe_redirect( admin_url( 'admin.php?page=ugc-carousels-for-woo&action=edit&id=' . $carousel_id . '&tab=config' ) );
 			exit;
 		}
 

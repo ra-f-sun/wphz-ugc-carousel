@@ -2,56 +2,50 @@
 /**
  * Admin layout template.
  *
- * @package WPHZ\UGC
+ * @package WPHZ\UGCCarousels
  */
 
 defined( 'ABSPATH' ) || exit;
 ?>
-<div class="wrap wphz-ugc-admin">
-	<a href="?page=wphz-ugc-carousel" class="page-title-action" style="margin-bottom: 10px; display: inline-block;">&larr; Back to All Carousels</a>
-	<h1><?php esc_html_e( 'Edit UGC Carousel', 'wphz-ugc' ); ?></h1>
+<div class="wrap ugcc-admin">
+	<a href="?page=ugc-carousels-for-woo" class="page-title-action" style="margin-bottom: 10px; display: inline-block;">&larr; Back to All Carousels</a>
+	<h1><?php esc_html_e( 'Edit UGC Carousel', 'ugc-carousels-for-woo' ); ?></h1>
 
 	<nav class="nav-tab-wrapper">
-		<a href="?page=wphz-ugc-carousel&action=edit&id=<?php echo esc_attr( $id ); ?>&tab=config"
+		<a href="?page=ugc-carousels-for-woo&action=edit&id=<?php echo esc_attr( $id ); ?>&tab=config"
 			class="nav-tab <?php echo 'config' === $active_tab ? 'nav-tab-active' : ''; ?>">
-			<?php esc_html_e( 'Configuration', 'wphz-ugc' ); ?>
+			<?php esc_html_e( 'Configuration', 'ugc-carousels-for-woo' ); ?>
 		</a>
-		<a href="?page=wphz-ugc-carousel&action=edit&id=<?php echo esc_attr( $id ); ?>&tab=content"
+		<a href="?page=ugc-carousels-for-woo&action=edit&id=<?php echo esc_attr( $id ); ?>&tab=content"
 			class="nav-tab <?php echo 'content' === $active_tab ? 'nav-tab-active' : ''; ?>">
-			<?php esc_html_e( 'Content', 'wphz-ugc' ); ?>
+			<?php esc_html_e( 'Content', 'ugc-carousels-for-woo' ); ?>
 		</a>
-		<a href="?page=wphz-ugc-carousel&action=edit&id=<?php echo esc_attr( $id ); ?>&tab=custom-css"
+		<a href="?page=ugc-carousels-for-woo&action=edit&id=<?php echo esc_attr( $id ); ?>&tab=custom-css"
 			class="nav-tab <?php echo 'custom-css' === $active_tab ? 'nav-tab-active' : ''; ?>">
-			<?php esc_html_e( 'Custom CSS', 'wphz-ugc' ); ?>
+			<?php esc_html_e( 'Custom CSS', 'ugc-carousels-for-woo' ); ?>
 		</a>
 	</nav>
 
 	<div class="tab-content">
 		<?php if ( 'config' === $active_tab ) : ?>
 			<?php
-			/**
-			 * Layout section.
-			 *
-			 * @package WPHZ\\UGC
-			 */
-
-			\WPHZ\UGC\Helpers\TemplateLoader::render(
+			\WPHZ\UGCCarousels\Helpers\TemplateLoader::render(
 				'admin/config-tab',
-				\WPHZ\UGC\Admin\ConfigPage::instance()->get_data( $id )
+				\WPHZ\UGCCarousels\Admin\ConfigPage::instance()->get_data( $id )
 			);
 			?>
 		<?php elseif ( 'content' === $active_tab ) : ?>
 			<?php
-			\WPHZ\UGC\Helpers\TemplateLoader::render(
+			\WPHZ\UGCCarousels\Helpers\TemplateLoader::render(
 				'admin/content-tab',
-				\WPHZ\UGC\Admin\ContentPage::instance()->get_data( $id )
+				\WPHZ\UGCCarousels\Admin\ContentPage::instance()->get_data( $id )
 			);
 			?>
 		<?php elseif ( 'custom-css' === $active_tab ) : ?>
 			<?php
-			\WPHZ\UGC\Helpers\TemplateLoader::render(
+			\WPHZ\UGCCarousels\Helpers\TemplateLoader::render(
 				'admin/custom-css-tab',
-				\WPHZ\UGC\Admin\ConfigPage::instance()->get_data( $id )
+				\WPHZ\UGCCarousels\Admin\ConfigPage::instance()->get_data( $id )
 			);
 			?>
 		<?php endif; ?>

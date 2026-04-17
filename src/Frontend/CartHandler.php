@@ -2,16 +2,16 @@
 /**
  * Frontend cart handling for the plugin.
  *
- * @package WPHZ\UGC
+ * @package WPHZ\UGCCarousels
  */
 
-namespace WPHZ\UGC\Frontend;
+namespace WPHZ\UGCCarousels\Frontend;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-use WPHZ\UGC\AbstractSingleton;
+use WPHZ\UGCCarousels\AbstractSingleton;
 
 /**
  * CartHandler.
@@ -26,15 +26,15 @@ class CartHandler extends AbstractSingleton {
 	 * @return void
 	 */
 	public function init(): void {
-		add_action( 'wp_ajax_wphz_ugc_add_to_cart', array( $this, 'handle' ) );
-		add_action( 'wp_ajax_nopriv_wphz_ugc_add_to_cart', array( $this, 'handle' ) );
+		add_action( 'wp_ajax_ugcc_add_to_cart', array( $this, 'handle' ) );
+		add_action( 'wp_ajax_nopriv_ugcc_add_to_cart', array( $this, 'handle' ) );
 	}
 
 	/**
 	 * Handle add-to-cart AJAX request — available to both logged-in and guest users.
 	 *
 	 * Expects POST fields:
-	 *  - nonce      string  WordPress nonce for 'wphz_ugc_atc'.
+	 *  - nonce      string  WordPress nonce for 'ugcc_atc'.
 	 *  - product_id int     WooCommerce product ID to add.
 	 *  - quantity   int     Optional. Quantity to add. Defaults to 1.
 	 *
@@ -44,10 +44,10 @@ class CartHandler extends AbstractSingleton {
 	public function handle(): void {
 		$nonce = filter_input( INPUT_POST, 'nonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 		if ( ! is_string( $nonce ) || '' === $nonce ) {
-			$nonce = filter_input( INPUT_POST, 'wphz_nonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+			$nonce = filter_input( INPUT_POST, 'ugcc_nonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 		}
 
-		if ( ! is_string( $nonce ) || ! wp_verify_nonce( $nonce, 'wphz_ugc_atc' ) ) {
+		if ( ! is_string( $nonce ) || ! wp_verify_nonce( $nonce, 'ugcc_atc' ) ) {
 			wp_send_json_error( array( 'message' => 'Nonce verification failed.' ), 403 );
 		}
 
@@ -72,7 +72,7 @@ class CartHandler extends AbstractSingleton {
 
 			wp_send_json_success(
 				array(
-					'message'   => __( 'Added to cart.', 'wphz-ugc' ),
+					'message'   => __( 'Added to cart.', 'ugc-carousels-for-woo' ),
 					'fragments' => apply_filters( 'woocommerce_add_to_cart_fragments', array() ),
 					'cart_hash' => WC()->cart->get_cart_hash(),
 				)

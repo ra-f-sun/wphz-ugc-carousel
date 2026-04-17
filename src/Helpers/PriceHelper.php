@@ -2,10 +2,10 @@
 /**
  * Price formatting helpers for WooCommerce products.
  *
- * @package WPHZ\UGC
+ * @package WPHZ\UGCCarousels
  */
 
-namespace WPHZ\UGC\Helpers;
+namespace WPHZ\UGCCarousels\Helpers;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;

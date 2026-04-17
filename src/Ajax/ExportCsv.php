@@ -2,18 +2,18 @@
 /**
  * Ajax handler for CSV export.
  *
- * @package WPHZ\UGC
+ * @package WPHZ\UGCCarousels
  */
 
-namespace WPHZ\UGC\Ajax;
+namespace WPHZ\UGCCarousels\Ajax;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-use WPHZ\UGC\AbstractSingleton;
-use WPHZ\UGC\Helpers\NonceHelper;
-use WPHZ\UGC\Repository\ItemRepository;
+use WPHZ\UGCCarousels\AbstractSingleton;
+use WPHZ\UGCCarousels\Helpers\NonceHelper;
+use WPHZ\UGCCarousels\Repository\ItemRepository;
 
 /**
  * ExportCsv.
@@ -27,21 +27,21 @@ class ExportCsv extends AbstractSingleton {
 	 * @return void
 	 */
 	public function init(): void {
-		add_action( 'wp_ajax_wphz_ugc_export_csv', array( $this, 'handle' ) );
+		add_action( 'wp_ajax_ugcc_export_csv', array( $this, 'handle' ) );
 	}
 
 	/**
 	 * Handle CSV export action — streams a CSV file download response.
 	 *
 	 * Expects GET fields:
-	 *  - nonce       string  WordPress nonce for 'wphz_ugc_admin'.
+	 *  - nonce       string  WordPress nonce for 'ugcc_admin'.
 	 *  - carousel_id int     Carousel whose items should be exported.
 	 *
 	 * @since  1.0.0
 	 * @return void  Outputs CSV headers + body and exits.
 	 */
 	public function handle(): void {
-		NonceHelper::verify( 'wphz_ugc_admin' );
+		NonceHelper::verify( 'ugcc_admin' );
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_die( 'Unauthorized', '', array( 'response' => 403 ) );
 		}

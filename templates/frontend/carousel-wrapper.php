@@ -2,7 +2,7 @@
 /**
  * Frontend carousel wrapper template.
  *
- * @package WPHZ\\UGC
+ * @package WPHZ\UGCCarousels
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -17,16 +17,16 @@ defined( 'ABSPATH' ) || exit;
  * @var int    $global_hide_atc
  */
 ?>
-<div class="wphz-ugc-carousel"
+<div class="ugcc-carousel"
 		data-carousel-id="<?php echo esc_attr( $id ); ?>"
 		data-muted="<?php echo $is_muted ? '1' : '0'; ?>"
 		data-direction="<?php echo esc_attr( $slide ); ?>">
 
-	<div class="wphz-ugc-stage">
-		<div class="wphz-ugc-track">
+	<div class="ugcc-stage">
+		<div class="ugcc-track">
 			<?php foreach ( $items as $index => $item ) : ?>
 				<?php
-				\WPHZ\UGC\Helpers\TemplateLoader::render(
+				\WPHZ\UGCCarousels\Helpers\TemplateLoader::render(
 					'frontend/carousel-item',
 					array(
 						'item'            => $item,
