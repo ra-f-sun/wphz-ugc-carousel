@@ -14,7 +14,7 @@
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
-    exit;
+	exit;
 }
 
 define( 'WPHZ_UGC_VERSION', '1.0.7' );

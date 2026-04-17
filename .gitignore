@@ -5,10 +5,13 @@ build.sh
 tolstoy.js
 FEATURES.md
 
-# Dev-only Composer tooling pulled in for PHPCS/PHPCBF.
-/vendor/bin/
-/vendor/dealerdirect/
-/vendor/phpcompatibility/
-/vendor/phpcsstandards/
-/vendor/squizlabs/
-/vendor/wp-coding-standards/
+# Composer dependencies.
+/vendor/
+
+# Static-analysis caches and local reports.
+/.phpstan/
+/.phpstan.cache
+/.phpmd.result-cache.php
+/.semgrep/
+/semgrep-results.json
+/semgrep-results.sarif
