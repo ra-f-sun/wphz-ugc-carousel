@@ -1,36 +1,6 @@
 /**
  * WPHZ UGC Carousel — Frontend JavaScript Engine
- * Infinite center-play carousel with clone-based looping.
- * Phase 7: Video carousel, product sub-carousel, drag/swipe, danger events
- * Phase 8: WooCommerce AJAX Add-to-Cart integration
- *
- * ARCHITECTURE
- * ─────────────────────────────────────────────────────────────────────────────
- * Track layout after cloning (N = totalOrig):
- *
- *   indices  0 … N-1    → prepended clones
- *   indices  N … 2N-1   → original slides
- *   indices  2N … 3N-1  → appended clones
- *
- * VIDEO LOADING STRATEGY (inspired by Tolstoy):
- *   Every <video> gets src set at init with preload="none".
- *   preload="none" = zero network requests, identical page load cost to no src.
- *   Since src is set before cloning, clones inherit it automatically.
- *   When play() is called, the browser fetches on demand — no black flash,
- *   no attachSource → load() step, no poster rewrite artifacts.
- *
- * INITIAL POSITION:
- *   current = cloneCount + Math.round(centerOffset)
- *   All visible positions filled with originals. Clone boundary pushed
- *   N slides away — normal navigation never reaches it.
- *
- * VIDEO STATE RULES:
- *   - All slides (originals + clones): src always set, preload="none".
- *   - Active slide: play() called — browser fetches and plays.
- *   - Inactive originals: paused in place, native paused frame preserved.
- *   - Distant videos: reset via circular index-distance calculation.
- *   - Clone posters: synced via canvas capture before navigation.
- * ─────────────────────────────────────────────────────────────────────────────
+ * 
  */
 
 class WPHZUGCCarousel {
@@ -65,10 +35,6 @@ class WPHZUGCCarousel {
 
     this.init();
   }
-
-  /* ═══════════════════════════════════════════════════════════════════════
-   *  INIT
-   * ═══════════════════════════════════════════════════════════════════════ */
 
   /**
    * Set up video sources, infinite track, drag, mute, ResizeObserver,
@@ -123,10 +89,6 @@ class WPHZUGCCarousel {
     this._viewportObserver.observe(this.root);
   }
 
-  /* ═══════════════════════════════════════════════════════════════════════
-   *  SLIDE SIZING
-   * ═══════════════════════════════════════════════════════════════════════ */
-
   /**
    * Recalculate slide width from stage width and apply flex sizing to all slides.
    *
@@ -143,10 +105,6 @@ class WPHZUGCCarousel {
       slide.style.flex = `0 0 ${this._slideWidth}px`;
     });
   }
-
-  /* ═══════════════════════════════════════════════════════════════════════
-   *  INFINITE TRACK — clone all slides before & after originals
-   * ═══════════════════════════════════════════════════════════════════════ */
 
   /**
    * Prepend and append full copies of all original slides to enable seamless
@@ -172,14 +130,6 @@ class WPHZUGCCarousel {
     this.slides = Array.from(this.track.querySelectorAll(".wphz-ugc-slide"));
     this.totalSlides = this.slides.length;
   }
-
-  /* ═══════════════════════════════════════════════════════════════════════
-   *  PHASE 12 — Dual-Resolution Source Selection
-   *
-   *  Runs BEFORE cloning. Sets src + preload="none" on every original.
-   *  Clones inherit src via cloneNode(true).
-   *  preload="none" = zero bytes fetched until play() is called.
-   * ═══════════════════════════════════════════════════════════════════════ */
 
   /**
    * Select HD or SD video source per slide based on connection speed and
@@ -215,10 +165,6 @@ class WPHZUGCCarousel {
       }
     });
   }
-
-  /* ═══════════════════════════════════════════════════════════════════════
-   *  NAVIGATION
-   * ═══════════════════════════════════════════════════════════════════════ */
 
   /**
    * Navigate to the given slide index with re-entrancy protection.
@@ -302,10 +248,6 @@ class WPHZUGCCarousel {
     this.goTo(this.current - 1);
   }
 
-  /* ═══════════════════════════════════════════════════════════════════════
-   *  TRANSFORM — pixel-based, center-offset positioning
-   * ═══════════════════════════════════════════════════════════════════════ */
-
   /**
    * Translate the track to center the current slide.
    *
@@ -345,10 +287,6 @@ class WPHZUGCCarousel {
     if (window.innerWidth <= 768) return (visible - 1) / 2;
     return Math.max(0, visible - 2.25);
   }
-
-  /* ═══════════════════════════════════════════════════════════════════════
-   *  INFINITE SNAPBACK
-   * ═══════════════════════════════════════════════════════════════════════ */
 
   /**
    * Schedule a silent position correction when the track has scrolled into a
@@ -392,10 +330,6 @@ class WPHZUGCCarousel {
     }, 550);
   }
 
-  /* ═══════════════════════════════════════════════════════════════════════
-   *  SLIDE CLASSES
-   * ═══════════════════════════════════════════════════════════════════════ */
-
   /**
    * Toggle the --active modifier class to match this.current.
    *
@@ -406,16 +340,6 @@ class WPHZUGCCarousel {
       slide.classList.toggle("wphz-ugc-slide--active", i === this.current);
     });
   }
-
-  /* ═══════════════════════════════════════════════════════════════════════
-   *  INDEX-DISTANCE VIDEO RESET
-   *
-   *  Replaces per-slide IntersectionObserver. Calculates circular distance
-   *  between each item's data-index and the active item. Items beyond the
-   *  visible threshold get currentTime=0. Nearby items keep paused frame.
-   *
-   *  Works through snapback because circular distance is position-independent.
-   * ═══════════════════════════════════════════════════════════════════════ */
 
   /**
    * Reset videos that are too far from the active slide back to their poster
@@ -449,15 +373,6 @@ class WPHZUGCCarousel {
       }
     });
   }
-
-  /* ═══════════════════════════════════════════════════════════════════════
-   *  CLONE POSTER SYNC
-   *
-   *  Clones are DOM copies from init — they don't inherit runtime playback
-   *  state. Before every navigation, capture each played original's current
-   *  frame via canvas and write it as poster on all matching clones.
-   *  Synchronous (toDataURL) to avoid timing gaps.
-   * ═══════════════════════════════════════════════════════════════════════ */
 
   /**
    * Capture the current frame of each playing original slide and write it as
@@ -495,16 +410,6 @@ class WPHZUGCCarousel {
       });
     }
   }
-
-  /* ═══════════════════════════════════════════════════════════════════════
-   *  VIDEO CONTROL
-   *
-   *  Since src is always set (preload="none"), play() just calls
-   *  video.play() — browser fetches on demand. No attach/detach cycle,
-   *  no poster rewrite, no black flash.
-   *
-   *  Pause just pauses — native paused frame stays visible.
-   * ═══════════════════════════════════════════════════════════════════════ */
 
   /**
    * Play the video at the center slide. Skips clone-zone slides, applies mute
@@ -613,10 +518,6 @@ class WPHZUGCCarousel {
     this.direction === "rtl" ? this.prev() : this.next();
   }
 
-  /* ═══════════════════════════════════════════════════════════════════════
-   *  DRAG & SWIPE
-   * ═══════════════════════════════════════════════════════════════════════ */
-
   /**
    * Attach mouse and touch drag listeners to the track.
    *
@@ -688,10 +589,6 @@ class WPHZUGCCarousel {
     if (this._drag.diffX < -threshold) this.next();
     else if (this._drag.diffX > threshold) this.prev();
   }
-
-  /* ═══════════════════════════════════════════════════════════════════════
-   *  MUTE TOGGLES
-   * ═══════════════════════════════════════════════════════════════════════ */
 
   /**
    * Attach a delegated click listener on the carousel root for mute-button
@@ -796,7 +693,6 @@ class WPHZUGCCarousel {
   }
 }
 
-/* ══════════════════════════════════════════════════════════════════════════ */
 
 class WPHZProductCarousel {
   /**
@@ -959,7 +855,7 @@ class WPHZProductCarousel {
   }
 }
 
-/* ── Boot Process & Global API ────────────────────────────────────────────── */
+/* Boot Process & Global API */
 window.wphzUGCFrontend = window.wphzUGCFrontend || {};
 window.wphzUGCFrontend.instances = {};
 
@@ -977,7 +873,7 @@ document.addEventListener("DOMContentLoaded", () => {
     .forEach((el) => new WPHZProductCarousel(el));
 });
 
-/* ── External Button Binding ─────────────────────────────────────────────── */
+/* External Button Binding */
 document.addEventListener("click", (e) => {
   const btn = e.target.closest("[data-wphz-target]");
   if (!btn) return;
@@ -995,7 +891,7 @@ document.addEventListener("click", (e) => {
   else if (action === "prev") instance.prev();
 });
 
-/* ── Phase 8: Add to Cart Integration ──────────────────────────────────────── */
+/* Add to Cart Integration */
 document.addEventListener("click", (e) => {
   const btn = e.target.closest(".wphz-ugc-atc-btn");
   if (!btn) return;

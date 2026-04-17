@@ -1,7 +1,5 @@
 /**
  * WPHZ UGC Carousel Frontend Styles
- * Phase 6: Core layout, animations, and typography
- * Pure CSS (No JS logic here, Phase 7 JS adds/removes modifier classes)
  */
 
 .wphz-ugc-carousel {
@@ -319,10 +317,6 @@
   text-decoration: none !important;
   font-weight: 700 !important;
 }
-
-/* .wphz-ugc-product-name-link:hover {
-  text-decoration: underline;
-} */
 
 .wphz-ugc-product-price {
   font-size: 13px;
