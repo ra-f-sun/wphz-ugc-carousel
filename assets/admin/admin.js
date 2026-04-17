@@ -1,12 +1,8 @@
 /**
- * WPHZ UGC Carousel — Admin JavaScript
- * Phase 3: Config form AJAX save
- * Phase 4: Media picker, product search, content save, drag-reorder, delete, copy
+ * UGC Carousels & Shoppable Videos for WooCommerce — Admin JavaScript
  */
 /* global wphzUGC, wp */
 jQuery(function ($) {
-
-    // ── Phase 3: Config Form AJAX Save ───────────────────────────
 
     /**
      * Handle config form submission via AJAX.
@@ -41,21 +37,17 @@ jQuery(function ($) {
     }
     $('#wphz-ugc-config-form').on('submit', onConfigFormSubmit);
 
-    // ── Phase 4: jQuery UI Sortable ──────────────────────────────
     $('#wphz-items-list').sortable({
         handle:      '.wphz-drag-handle',
         axis:        'y',
         placeholder: 'wphz-sortable-placeholder',
     });
 
-    // ── Phase 12: Add New Blank Row ──────────────────────────────
     $('#wphz-add-blank-row').on('click', function () {
         var newItemRowId = 'new-' + Date.now();
         var $row         = $(wphzBuildItemRow(newItemRowId));
         $('#wphz-items-list').append($row);
     });
-
-    // ── Phase 12: Scoped Media Picker ────────────────────────────
 
     /**
      * Handle media picker button click — opens WP media modal for image or video.
@@ -157,7 +149,6 @@ jQuery(function ($) {
             .replace(/\{\{visibilityBadge\}\}/g, visibilityBadge);
     }
 
-    // ── Phase 4: Product Search (debounced 300ms) ─────────────────
     var searchTimers = {};
 
     /**
@@ -199,7 +190,7 @@ jQuery(function ($) {
     }
     $(document).on('keyup', '.wphz-product-search', onProductSearchKeyup);
 
-    // Click outside → close suggestions
+    // Click outside → close suggestions.
     $(document).on('click', function (e) {
         if (!$(e.target).closest('.wphz-product-search-wrap').length) {
             $('.wphz-product-suggestions').hide();
@@ -220,7 +211,7 @@ jQuery(function ($) {
                             $li.closest('.wphz-item-row').data('id');
         var $selectedList = $li.closest('.wphz-item-products').find('.wphz-selected-products');
 
-        // Avoid duplicates
+        // Avoid duplicates.
         if ($selectedList.find('[value="' + productId + '"]').length) {
             $li.closest('.wphz-product-suggestions').hide().empty();
             return;
@@ -237,12 +228,9 @@ jQuery(function ($) {
     }
     $(document).on('click', '.wphz-product-suggestions li', onProductSuggestionClick);
 
-    // ── Phase 4: Remove Product Chip ─────────────────────────────
     $(document).on('click', '.wphz-remove-product', function () {
         $(this).closest('li.wphz-chip').remove();
     });
-
-    // ── Phase 4: Delete Item Row ──────────────────────────────────
 
     /**
      * Handle item row delete button click — removes from DOM; calls AJAX for persisted rows.
@@ -270,8 +258,6 @@ jQuery(function ($) {
         }
     }
     $(document).on('click', '.wphz-delete-item', onDeleteItemClick);
-
-    // ── Phase 4: Save Content ─────────────────────────────────────
 
     /**
      * Collect carousel item data from the DOM for the save-content AJAX call.
@@ -352,8 +338,6 @@ jQuery(function ($) {
     }
     $('#wphz-save-content').on('click', onSaveContentClick);
 
-    // ── CSV Import ────────────────────────────────────────────────
-
     /**
      * Handle CSV file input change — immediately posts file as FormData via AJAX.
      *
@@ -402,8 +386,6 @@ jQuery(function ($) {
         });
     }
     $('#wphz-import-file').on('change', onImportFileChange);
-
-    // ── Phase 4: Copy Shortcode to Clipboard ─────────────────────
 
     /**
      * Handle copy-shortcode button click — writes shortcode text to clipboard.

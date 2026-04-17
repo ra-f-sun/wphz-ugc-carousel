@@ -1,15 +1,11 @@
 /* WPHZ UGC Carousel — Admin Styles */
 
-/* ─────────────────────────────────────────────────────
-   PAGE LAYOUT
-───────────────────────────────────────────────────── */
+/* Page Layout */
 .wphz-ugc-admin .tab-content {
     margin-top: 20px;
 }
 
-/* ─────────────────────────────────────────────────────
-   SAVE STATUS
-───────────────────────────────────────────────────── */
+/* Save Status */
 .wphz-save-status {
     display: inline-block;
     margin-left: 12px;
@@ -17,9 +13,7 @@
     vertical-align: middle;
 }
 
-/* ─────────────────────────────────────────────────────
-   SHORTCODE BOX
-───────────────────────────────────────────────────── */
+/* Shortcode Box */
 .wphz-shortcode-box {
     display: flex;
     align-items: center;
@@ -38,9 +32,7 @@
     padding: 0;
 }
 
-/* ─────────────────────────────────────────────────────
-   INTEGRATION BOX
-───────────────────────────────────────────────────── */
+/* Integration Box */
 .wphz-integration-box {
     margin-top: 20px;
     padding: 16px 20px;
@@ -60,18 +52,14 @@
     word-break: break-all;
 }
 
-/* ─────────────────────────────────────────────────────
-   ITEMS LIST
-───────────────────────────────────────────────────── */
+/* Items List */
 .wphz-items-list {
     list-style: none;
     margin: 0;
     padding: 0;
 }
 
-/* ─────────────────────────────────────────────────────
-   ITEM ROW  (vertical card layout)
-───────────────────────────────────────────────────── */
+/* Item Row */
 .wphz-item-row {
     display: flex;
     flex-direction: column;
@@ -83,7 +71,7 @@
     cursor: default;
 }
 
-/* ── Row header strip (drag + remove) */
+/* Row header strip (drag + remove) */
 .wphz-item-header {
     display: flex;
     align-items: center;
@@ -105,18 +93,18 @@
     line-height: 1;
 }
 
-/* ── Section base */
+/* Section base */
 .wphz-item-section {
     padding: 16px;
 }
 
-/* ── Video section — white */
+/* Video section */
 .wphz-item-section--video {
     background: #fff;
     border-radius: 10px 10px 0 0;
 }
 
-/* ── Products section — tinted, visually separated */
+/* Products section */
 .wphz-item-section--products {
     background: #f4f6f9;
     border-top: 1px solid #dde1e7;
@@ -124,9 +112,7 @@
     overflow: visible;
 }
 
-/* ─────────────────────────────────────────────────────
-   VIDEO SOURCES
-───────────────────────────────────────────────────── */
+/* Video Sources */
 .wphz-video-sources {
     display: flex;
     flex-direction: column;
@@ -173,9 +159,7 @@
     min-width: 0;
 }
 
-/* ─────────────────────────────────────────────────────
-   PRODUCT PANEL
-───────────────────────────────────────────────────── */
+/* Products Panel */
 .wphz-item-products {
     display: flex;
     flex-direction: column;
@@ -190,9 +174,7 @@
     margin-bottom: 2px;
 }
 
-/* ─────────────────────────────────────────────────────
-   PRODUCT SEARCH AUTOCOMPLETE
-───────────────────────────────────────────────────── */
+/* Product Search */
 .wphz-product-search-wrap {
     position: relative;
 }
@@ -256,9 +238,7 @@
     font-size: 11px;
 }
 
-/* ─────────────────────────────────────────────────────
-   SELECTED PRODUCT CHIPS
-───────────────────────────────────────────────────── */
+/* Selected Products */
 .wphz-selected-products {
     display: flex;
     flex-wrap: wrap;
@@ -325,9 +305,7 @@
     padding: 2px 4px;
 }
 
-/* ─────────────────────────────────────────────────────
-   STATUS / VISIBILITY BADGES
-───────────────────────────────────────────────────── */
+/* Badges */
 .wphz-badge {
     display: inline-block;
     padding: 1px 6px;
@@ -344,9 +322,7 @@
 .wphz-badge--hidden     { background: #d9534f; color: #fff; }
 .wphz-badge--visibility { background: #6c757d; color: #fff; }
 
-/* ─────────────────────────────────────────────────────
-   CSV ACTIONS
-───────────────────────────────────────────────────── */
+/* CSV Actions */
 .wphz-csv-actions {
     display: flex;
     align-items: center;
@@ -354,9 +330,7 @@
     margin: 16px 0 8px;
 }
 
-/* ─────────────────────────────────────────────────────
-   DELETE ITEM BUTTON (in header)
-───────────────────────────────────────────────────── */
+/* Delete Item Button */
 .wphz-delete-item {
     font-size: 12px !important;
     padding: 2px 8px !important;
@@ -371,9 +345,7 @@
     color: #fff !important;
 }
 
-/* ─────────────────────────────────────────────────────
-   DANGER ZONE
-───────────────────────────────────────────────────── */
+/* Danger Zone */
 .wphz-danger-zone {
     background: #fff8f8;
     border: 1px solid #f5c6cb;
@@ -386,9 +358,7 @@
     margin-top: 0;
 }
 
-/* ─────────────────────────────────────────────────────
-   SORTABLE DRAG PLACEHOLDER
-───────────────────────────────────────────────────── */
+/* Sortable Placeholder */
 .wphz-sortable-placeholder {
     background: #eef3ff;
     border: 2px dashed #7c9ef0;
