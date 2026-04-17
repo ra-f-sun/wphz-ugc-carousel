@@ -6,9 +6,25 @@
   "require-dev": {
     "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
     "phpcompatibility/phpcompatibility-wp": "^2.1",
+    "plugin-check/phpcs-sniffs": "dev-trunk",
     "squizlabs/php_codesniffer": "^3.10",
     "wp-coding-standards/wpcs": "^3.1"
   },
+  "repositories": [
+    {
+      "type": "package",
+      "package": {
+        "name": "plugin-check/phpcs-sniffs",
+        "version": "dev-trunk",
+        "type": "phpcodesniffer-standard",
+        "source": {
+          "type": "git",
+          "url": "https://github.com/WordPress/plugin-check.git",
+          "reference": "trunk"
+        }
+      }
+    }
+  ],
   "autoload": {
     "psr-4": { "WPHZ\\UGC\\": "src/" }
   },

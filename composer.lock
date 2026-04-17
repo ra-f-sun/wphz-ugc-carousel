@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "0f2fd922a786c43c13363d50f5570cb7",
+    "content-hash": "e359caed03c327618cab75bfcb736ed1",
     "packages": [],
     "packages-dev": [
         {
@@ -492,6 +492,16 @@
             "time": "2025-12-08T14:27:58+00:00"
         },
         {
+            "name": "plugin-check/phpcs-sniffs",
+            "version": "dev-trunk",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/WordPress/plugin-check.git",
+                "reference": "trunk"
+            },
+            "type": "phpcodesniffer-standard"
+        },
+        {
             "name": "squizlabs/php_codesniffer",
             "version": "3.13.5",
             "source": {
@@ -639,7 +649,9 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {
+        "plugin-check/phpcs-sniffs": 20
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {

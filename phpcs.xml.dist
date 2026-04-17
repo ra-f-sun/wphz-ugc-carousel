@@ -20,13 +20,189 @@
     <rule ref="WordPress-Core"/>
     <rule ref="WordPress-Docs"/>
     <rule ref="WordPress-Extra"/>
+
     <!-- PSR-4 class files in src/ use CamelCase names, not WordPress class-*.php naming. -->
     <rule ref="WordPress.Files.FileName">
         <exclude-pattern>*/src/*</exclude-pattern>
     </rule>
+
     <rule ref="PHPCompatibilityWP">
         <properties>
             <property name="testVersion" value="8.0-"/>
         </properties>
     </rule>
+
+    <rule ref="WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound"/>
+
+    <!-- ============================================================
+         Plugin Check ruleset equivalents
+         (PluginCheck.* sniffs require the plugin-check WP plugin to
+         be installed; the rules below reproduce the same intent using
+         only sniffs already available through your composer deps.)
+         Reference: https://github.com/WordPress/plugin-check/blob/trunk/phpcs-rulesets/plugin-check.ruleset.xml
+         ============================================================ -->
+
+    <!-- All SQL queries should be prepared as close to the time of querying as possible. -->
+    <rule ref="WordPress.DB.PreparedSQL"/>
+    <rule ref="WordPress.DB.PreparedSQL.InterpolatedNotPrepared">
+        <type>warning</type>
+    </rule>
+
+    <!-- Direct DB queries should use WP abstraction correctly. -->
+    <rule ref="WordPress.DB.DirectDatabaseQuery.DirectQuery"/>
+
+    <!-- Verify placeholders in prepared queries are used correctly. -->
+    <rule ref="WordPress.DB.PreparedSQLPlaceholders"/>
+
+    <!-- Nonce verification. Triggered on any GET/POST access, so warning only. -->
+    <rule ref="WordPress.Security.NonceVerification">
+        <type>warning</type>
+    </rule>
+
+    <!-- Sanitized Input rules. -->
+    <rule ref="WordPress.Security.ValidatedSanitizedInput">
+        <type>warning</type>
+    </rule>
+
+    <!-- Prohibit the use of the backtick operator. -->
+    <rule ref="Generic.PHP.BacktickOperator">
+        <severity>7</severity>
+    </rule>
+
+    <!--
+        PluginCheck.CodeAnalysis.Heredoc (severity 7) has no standalone native PHPCS
+        equivalent. HEREDOC/NOWDOC detection requires the plugin-check WP plugin.
+        If you need this check, install the Plugin Check WP plugin and run it
+        separately. Leaving as a comment so the intent is preserved.
+    -->
+    <!-- <rule ref="PluginCheck.CodeAnalysis.Heredoc"><severity>7</severity></rule> -->
+
+    <!--
+        PluginCheck.CodeAnalysis.ShortURL (severity 6) has no native PHPCS equivalent.
+        Short URL detection requires the plugin-check WP plugin.
+    -->
+    <!-- <rule ref="PluginCheck.CodeAnalysis.ShortURL"><severity>6</severity></rule> -->
+
+    <!-- Prohibit the use of the `goto` construct. -->
+    <rule ref="Generic.PHP.DiscourageGoto.Found">
+        <type>error</type>
+        <severity>7</severity>
+    </rule>
+
+    <!-- Check for error logs / debug output in plugin. -->
+    <rule ref="WordPress.PHP.DevelopmentFunctions">
+        <type>warning</type>
+    </rule>
+
+    <!-- No PHP short open tags allowed. -->
+    <rule ref="Generic.PHP.DisallowShortOpenTag"/>
+    <rule ref="Generic.PHP.DisallowShortOpenTag.Found">
+        <severity>7</severity>
+    </rule>
+    <rule ref="Generic.PHP.DisallowShortOpenTag.EchoFound">
+        <severity>7</severity>
+    </rule>
+
+    <!-- Alternative PHP open tags not allowed. -->
+    <rule ref="Generic.PHP.DisallowAlternativePHPTags">
+        <severity>7</severity>
+    </rule>
+
+    <!-- Prevent path disclosure when using add_menu_page() / add_theme_page(). -->
+    <rule ref="WordPress.Security.PluginMenuSlug">
+        <severity>6</severity>
+    </rule>
+
+    <!-- Don't use raw PHP DB classes/functions; use the WP abstraction layer. -->
+    <rule ref="WordPress.DB.RestrictedClasses">
+        <severity>7</severity>
+    </rule>
+    <rule ref="WordPress.DB.RestrictedFunctions">
+        <severity>7</severity>
+    </rule>
+
+    <!-- Check for code WP does better. -->
+    <rule ref="WordPress.WP.AlternativeFunctions">
+        <type>error</type>
+        <exclude name="WordPress.WP.AlternativeFunctions.json_encode_json_encode"/>
+        <exclude name="WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents"/>
+        <exclude name="WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents"/>
+    </rule>
+
+    <!--
+        Replaces PluginCheck.CodeAnalysis.DiscouragedFunctions.
+        The upstream plugin-check ruleset implements this via these two native sniffs.
+    -->
+
+    <!-- Forbidden functions (error, severity 7) – mirrors plugin-check.ruleset.xml exactly. -->
+    <rule ref="Generic.PHP.ForbiddenFunctions">
+        <properties>
+            <property name="forbiddenFunctions" type="array">
+                <element key="move_uploaded_file"                  value="null"/>
+                <element key="passthru"                            value="null"/>
+                <element key="proc_open"                           value="null"/>
+                <element key="create_function"                     value="null"/>
+                <element key="eval"                                value="null"/>
+                <element key="str_rot13"                           value="null"/>
+                <element key="_cleanup_header_comment"             value="null"/>
+                <element key="_get_plugin_data_markup_translate"   value="null"/>
+                <element key="_transition_post_status"             value="null"/>
+                <element key="_wp_post_revision_fields"            value="null"/>
+                <element key="do_shortcode_tag"                    value="null"/>
+                <element key="get_post_type_labels"                value="null"/>
+                <element key="wp_get_sidebars_widgets"             value="null"/>
+                <element key="wp_get_widget_defaults"              value="null"/>
+            </property>
+        </properties>
+        <type>error</type>
+        <severity>7</severity>
+    </rule>
+
+    <!-- Discouraged functions (warning) – mirrors plugin-check.ruleset.xml exactly. -->
+    <rule ref="Squiz.PHP.DiscouragedFunctions">
+        <properties>
+            <property name="forbiddenFunctions" type="array">
+                <element key="set_time_limit" value="null"/>
+                <element key="ini_set"         value="null"/>
+                <element key="ini_alter"       value="null"/>
+                <element key="dl"              value="null"/>
+            </property>
+        </properties>
+    </rule>
+
+    <!--
+        PluginCheck.CodeAnalysis.RequiredFunctionParameters (severity 7) has no
+        native PHPCS equivalent. It checks that calls to WP functions like
+        register_post_type() include all required arguments. Requires the
+        plugin-check WP plugin. Leaving as a comment to preserve intent.
+    -->
+    <!-- <rule ref="PluginCheck.CodeAnalysis.RequiredFunctionParameters"><severity>7</severity></rule> -->
+
+    <!-- Check for use of deprecated WordPress classes, functions, parameters. -->
+    <rule ref="WordPress.WP.DeprecatedClasses"/>
+    <rule ref="WordPress.WP.DeprecatedFunctions"/>
+    <rule ref="WordPress.WP.DeprecatedParameters"/>
+    <rule ref="WordPress.DateTime.RestrictedFunctions"/>
+
+    <!-- Check for deprecated WordPress constants. -->
+    <rule ref="WordPress.WP.DiscouragedConstants">
+        <type>error</type>
+        <severity>7</severity>
+    </rule>
+
+    <!-- Check for discouraged WordPress functions. -->
+    <rule ref="WordPress.WP.DiscouragedFunctions">
+        <severity>6</severity>
+    </rule>
+
+    <!-- Deprecated parameter values. -->
+    <rule ref="WordPress.WP.DeprecatedParameterValues">
+        <severity>7</severity>
+    </rule>
+
+    <!-- No ByteOrderMark – prevents content being sent before headers. -->
+    <rule ref="Generic.Files.ByteOrderMark">
+        <severity>7</severity>
+    </rule>
+
 </ruleset>
