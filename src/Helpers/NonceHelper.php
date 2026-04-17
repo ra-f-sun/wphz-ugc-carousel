@@ -17,15 +17,21 @@ if ( ! defined( 'ABSPATH' ) ) {
 class NonceHelper {
 
 	/**
-	 * Verify a WordPress nonce. Checks both $_REQUEST['nonce'] and $_REQUEST['wphz_nonce'].
-	 * Sends 403 JSON error and exits on failure.
+	 * Verify a WordPress nonce from the current request.
 	 *
-	 * @param string $action Nonce action name.
+	 * Checks POST then GET for both `nonce` and `wphz_nonce` field names.
+	 * Calls wp_send_json_error() with HTTP 403 and exits if verification fails.
+	 *
+	 * @since  1.0.0
+	 * @param  string $action The nonce action string to verify against.
+	 * @return void
 	 */
 	public static function verify( string $action ): void {
-		$nonce = sanitize_text_field(
-			$_REQUEST['nonce'] ?? $_REQUEST['wphz_nonce'] ?? ''
-		);
+		$nonce = filter_input( INPUT_POST, 'nonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS )
+			?? filter_input( INPUT_GET, 'nonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS )
+			?? filter_input( INPUT_POST, 'wphz_nonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS )
+			?? filter_input( INPUT_GET, 'wphz_nonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS )
+			?? '';
 		if ( ! wp_verify_nonce( $nonce, $action ) ) {
 			wp_send_json_error( array( 'message' => 'Security check failed.' ), 403 );
 		}

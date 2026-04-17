@@ -26,18 +26,24 @@ class AssetLoader extends AbstractSingleton {
 	private bool $enqueued = false;
 
 	/**
-	 * Called by Plugin::init_hooks(). No global enqueue here -
-	 * assets are lazy-loaded only when the shortcode is actually rendered.
+	 * Register WordPress hooks for this component.
+	 *
+	 * Intentionally a no-op — assets are lazy-loaded via enqueue_now() only when
+	 * the shortcode is actually rendered on a given request.
+	 *
+	 * @since  1.0.0
+	 * @return void
 	 */
 	public function init(): void {
 		// Intentionally empty: enqueue happens lazily via enqueue_now().
 	}
 
 	/**
-	 * Called by ShortcodeRenderer::render() the first time the shortcode appears.
-	 * Subsequent calls on the same request are silently skipped.
+	 * Enqueue frontend CSS and JS on first shortcode render; subsequent calls are no-ops.
 	 *
-	 * @param array<string, mixed> $config Resolved carousel configuration data.
+	 * @since  1.0.0
+	 * @param  array<string, mixed> $config Resolved carousel configuration data.
+	 * @return void
 	 */
 	public function enqueue_now( array $config ): void {
 		if ( $this->enqueued ) {

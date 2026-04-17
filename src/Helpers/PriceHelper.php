@@ -21,8 +21,9 @@ class PriceHelper {
 	 * This explicitly circumvents `$product->get_price_html()` to prevent
 	 * 3rd-party plugins from appending promotional strings like "Subscribe & Save".
 	 *
-	 * @param \WC_Product $product Product to format.
-	 * @return string
+	 * @since  1.0.0
+	 * @param  \WC_Product $product Product to format.
+	 * @return string Price HTML string.
 	 */
 	public static function get_clean_price( \WC_Product $product ): string {
 		$price = '';

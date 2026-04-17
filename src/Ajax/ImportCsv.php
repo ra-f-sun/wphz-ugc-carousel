@@ -20,18 +20,27 @@ use WPHZ\UGC\Repository\ItemRepository;
 class ImportCsv extends AbstractSingleton {
 
 	/**
-	 * Initialize hooks.
+	 * Register WordPress hooks for this component.
 	 *
-	 * @return void Return value.
+	 * @since  1.0.0
+	 * @return void
 	 */
 	public function init(): void {
 		add_action( 'wp_ajax_wphz_ugc_import_csv', array( $this, 'handle' ) );
 	}
 
 	/**
-	 * Handle CSV import action.
+	 * Handle CSV import action — replaces all carousel items from an uploaded CSV.
 	 *
-	 * @return void Return value.
+	 * Expects POST fields:
+	 *  - nonce       string  WordPress nonce for 'wphz_ugc_admin'.
+	 *  - carousel_id int     Target carousel to import into.
+	 *
+	 * Expects FILES:
+	 *  - csv_file    file    A UTF-8 CSV with columns: sort_order, video_url_hd, video_url_sd, poster_url, products.
+	 *
+	 * @since  1.0.0
+	 * @return void  Outputs JSON and exits.
 	 */
 	public function handle(): void {
 		$nonce = filter_input( INPUT_POST, 'wphz_nonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
@@ -53,9 +62,23 @@ class ImportCsv extends AbstractSingleton {
 			wp_send_json_error( array( 'message' => 'Invalid carousel ID.' ) );
 		}
 
+		// phpcs:disable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- $_FILES values validated below before use.
 		if ( empty( $_FILES['csv_file']['tmp_name'] ) || ! is_uploaded_file( $_FILES['csv_file']['tmp_name'] ) ) {
 			wp_send_json_error( array( 'message' => 'No valid file uploaded.' ) );
 		}
+
+		$file_name = sanitize_file_name( (string) ( $_FILES['csv_file']['name'] ?? '' ) );
+		$extension = strtolower( pathinfo( $file_name, PATHINFO_EXTENSION ) );
+		if ( 'csv' !== $extension ) {
+			wp_send_json_error( array( 'message' => __( 'File must have a .csv extension.', 'wphz-ugc-carousel' ) ) );
+		}
+
+		$allowed_mime_types = array( 'text/csv', 'text/plain', 'application/csv', 'application/vnd.ms-excel' );
+		$uploaded_type      = (string) ( $_FILES['csv_file']['type'] ?? '' );
+		if ( ! in_array( $uploaded_type, $allowed_mime_types, true ) ) {
+			wp_send_json_error( array( 'message' => __( 'Invalid file type. Please upload a CSV file.', 'wphz-ugc-carousel' ) ) );
+		}
+		// phpcs:enable
 
 		$csv_path = (string) $_FILES['csv_file']['tmp_name'];
 		try {
@@ -75,9 +98,7 @@ class ImportCsv extends AbstractSingleton {
 		}
 
 		// Delete all existing items for this carousel (same pattern as SaveContent).
-		global $wpdb;
-		$table = $wpdb->prefix . 'wphz_ugc_items';
-		$wpdb->delete( $table, array( 'carousel_id' => (string) $carousel_id ) );
+		ItemRepository::instance()->delete_by_carousel( $carousel_id );
 
 		$repo     = ItemRepository::instance();
 		$sort     = 0;

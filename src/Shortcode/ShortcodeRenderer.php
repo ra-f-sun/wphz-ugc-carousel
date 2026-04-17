@@ -24,10 +24,11 @@ class ShortcodeRenderer extends AbstractSingleton {
 
 
 	/**
-	 * Main shortcode callback. Returns rendered HTML string (never echoes).
+	 * Main shortcode callback — returns rendered HTML string (never echoes).
 	 *
-	 * @param array<string, string>|string $atts Shortcode attributes.
-	 * @return string
+	 * @since  1.0.0
+	 * @param  array<string, string>|string $atts Shortcode attributes. Accepts: id (int).
+	 * @return string  Rendered carousel HTML, or an error notice string.
 	 */
 	public function render( array|string $atts ): string {
 		$atts        = shortcode_atts( array( 'id' => 0 ), (array) $atts, 'wphz_ugc_carousel' );
@@ -80,10 +81,11 @@ class ShortcodeRenderer extends AbstractSingleton {
 	}
 
 	/**
-	 * Decode product_ids JSON and attach WC product objects to each item.
+	 * Decode product_ids JSON and attach resolved WC product objects to each item.
 	 *
-	 * @param array<int, array> $items Carousel items.
-	 * @return array<int, array>
+	 * @since  1.0.0
+	 * @param  array<int, array> $items Raw carousel items from the repository.
+	 * @return array<int, array>  Items with a `products` key containing hydrated data.
 	 */
 	private function hydrate_items( array $items ): array {
 		return array_map(
@@ -100,10 +102,11 @@ class ShortcodeRenderer extends AbstractSingleton {
 	}
 
 	/**
-	 * Resolve WC product objects, filtering out non-visible / non-existent products.
+	 * Resolve WC product objects, skipping products that no longer exist.
 	 *
-	 * @param array $product_ids Product IDs and product metadata.
-	 * @return array[] Associative array containing the WC_Product model and custom flags.
+	 * @since  1.0.0
+	 * @param  array $product_ids Array of product entries with 'id' and optional 'hide_atc' keys.
+	 * @return array<int, array{model: \WC_Product, hide_atc: int|null}>
 	 */
 	private function fetch_products( array $product_ids ): array {
 		$products = array();

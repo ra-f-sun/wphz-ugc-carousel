@@ -22,18 +22,20 @@ class AdminMenu extends AbstractSingleton {
 
 
 	/**
-	 * Initialize hooks.
+	 * Register WordPress hooks for this component.
 	 *
-	 * @return void Return value.
+	 * @since  1.0.0
+	 * @return void
 	 */
 	public function init(): void {
 		add_action( 'admin_menu', array( $this, 'register_menu' ) );
 	}
 
 	/**
-	 * Register admin menu page.
+	 * Register the top-level admin menu page for the plugin.
 	 *
-	 * @return void Return value.
+	 * @since  1.0.0
+	 * @return void
 	 */
 	public function register_menu(): void {
 		add_menu_page(
@@ -48,9 +50,10 @@ class AdminMenu extends AbstractSingleton {
 	}
 
 	/**
-	 * Render admin page.
+	 * Render the admin page — dispatches to list view or edit view based on GET params.
 	 *
-	 * @return void Return value.
+	 * @since  1.0.0
+	 * @return void
 	 */
 	public function render_page(): void {
 		$action = filter_input( INPUT_GET, 'action', FILTER_SANITIZE_FULL_SPECIAL_CHARS );

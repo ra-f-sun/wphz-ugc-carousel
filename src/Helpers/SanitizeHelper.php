@@ -19,7 +19,8 @@ class SanitizeHelper {
 	/**
 	 * Sanitize a plain text string (strips tags, extra whitespace).
 	 *
-	 * @param string $value Raw text value.
+	 * @since  1.0.0
+	 * @param  string $value Raw text value.
 	 * @return string Sanitized text.
 	 */
 	public static function text( string $value ): string {
@@ -31,7 +32,8 @@ class SanitizeHelper {
 	 * Allows only alphanumeric, underscore, and dash - prevents XSS
 	 * in Danger Zone fields that get injected into wp_localize_script output.
 	 *
-	 * @param string $value Raw identifier value.
+	 * @since  1.0.0
+	 * @param  string $value Raw identifier value.
 	 * @return string Sanitized identifier.
 	 */
 	public static function js_identifier( string $value ): string {
@@ -41,7 +43,8 @@ class SanitizeHelper {
 	/**
 	 * Sanitize a URL.
 	 *
-	 * @param string $value Raw URL value.
+	 * @since  1.0.0
+	 * @param  string $value Raw URL value.
 	 * @return string Sanitized URL.
 	 */
 	public static function url( string $value ): string {
@@ -51,7 +54,8 @@ class SanitizeHelper {
 	/**
 	 * Cast all values of an array to integers.
 	 *
-	 * @param array<mixed> $values Raw values.
+	 * @since  1.0.0
+	 * @param  array<mixed> $values Raw values.
 	 * @return array<int>
 	 */
 	public static function int_array( array $values ): array {

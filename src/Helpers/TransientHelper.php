@@ -22,7 +22,8 @@ class TransientHelper {
 	/**
 	 * Build a transient key for product searches.
 	 *
-	 * @param string $search_term Search term.
+	 * @since  1.0.0
+	 * @param  string $search_term Search term.
 	 * @return string Transient key.
 	 */
 	public static function product_key( string $search_term ): string {
@@ -32,8 +33,9 @@ class TransientHelper {
 	/**
 	 * Get a transient value.
 	 *
-	 * @param string $key Transient key.
-	 * @return mixed Transient value or null when missing.
+	 * @since  1.0.0
+	 * @param  string $key Transient key.
+	 * @return mixed  Cached value, or null if not found or expired.
 	 */
 	public static function get( string $key ): mixed {
 		$value = get_transient( $key );
@@ -41,11 +43,12 @@ class TransientHelper {
 	}
 
 	/**
-	 * Set a transient value.
+	 * Store a value in the transient cache.
 	 *
-	 * @param string $key Transient key.
-	 * @param mixed  $value Transient value.
-	 * @param int    $expiry Expiration in seconds.
+	 * @since  1.0.0
+	 * @param  string $key    Transient key.
+	 * @param  mixed  $value  Value to cache.
+	 * @param  int    $expiry Time in seconds before expiry. Default: 300 (5 min).
 	 * @return void
 	 */
 	public static function set( string $key, mixed $value, int $expiry = self::PRODUCT_TTL ): void {
@@ -55,6 +58,7 @@ class TransientHelper {
 	/**
 	 * Flush product-related transients.
 	 *
+	 * @since  1.0.0
 	 * @return void
 	 */
 	public static function flush_products(): void {

@@ -33,8 +33,9 @@ abstract class AbstractSingleton {
 	private function __clone() {}
 
 	/**
-	 * Returns the singleton instance for the called class.
+	 * Return the singleton instance for the called class, creating it if needed.
 	 *
+	 * @since  1.0.0
 	 * @return static
 	 */
 	public static function instance(): static {

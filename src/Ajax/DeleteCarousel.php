@@ -13,6 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use WPHZ\UGC\AbstractSingleton;
 use WPHZ\UGC\Repository\CarouselRepository;
+use WPHZ\UGC\Repository\ItemRepository;
 
 /**
  * DeleteCarousel.
@@ -21,21 +22,28 @@ class DeleteCarousel extends AbstractSingleton {
 
 
 	/**
-	 * Initialize hooks.
+	 * Register WordPress hooks for this component.
 	 *
-	 * @return void Return value.
+	 * @since  1.0.0
+	 * @return void
 	 */
 	public function init(): void {
 		add_action( 'wp_ajax_wphz_ugc_delete_carousel', array( $this, 'handle' ) );
 	}
 
 	/**
-	 * Handle delete carousel action.
+	 * Handle delete-carousel action including cascading item deletion.
 	 *
-	 * @return void Return value.
+	 * Expects GET fields:
+	 *  - wphz_nonce  string  WordPress nonce for 'wphz_ugc_admin'.
+	 *  - id          int     Carousel ID to delete.
+	 *
+	 * @since  1.0.0
+	 * @return void  Redirects to the carousel list and exits.
 	 */
 	public function handle(): void {
-		if ( ! isset( $_GET['wphz_nonce'] ) || ! wp_verify_nonce( $_GET['wphz_nonce'], 'wphz_ugc_admin' ) ) {
+		$nonce = filter_input( INPUT_GET, 'wphz_nonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ) ?? '';
+		if ( ! wp_verify_nonce( $nonce, 'wphz_ugc_admin' ) ) {
 			wp_die( 'Nonce verification failed.' );
 		}
 
@@ -43,15 +51,11 @@ class DeleteCarousel extends AbstractSingleton {
 			wp_die( 'Unauthorized' );
 		}
 
-		$carousel_id = (int) ( $_GET['id'] ?? 0 );
+		$carousel_id = (int) filter_input( INPUT_GET, 'id', FILTER_VALIDATE_INT );
 
 		if ( $carousel_id > 0 ) {
 			CarouselRepository::instance()->delete( $carousel_id );
-
-			// Cascade delete items.
-			global $wpdb;
-			$table = $wpdb->prefix . 'wphz_ugc_items';
-			$wpdb->delete( $table, array( 'carousel_id' => (string) $carousel_id ) );
+			ItemRepository::instance()->delete_by_carousel( $carousel_id );
 		}
 
 		wp_safe_redirect( admin_url( 'admin.php?page=wphz-ugc-carousel&wphz_msg=deleted' ) );

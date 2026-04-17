@@ -20,18 +20,25 @@ use WPHZ\UGC\Repository\CarouselRepository;
 class SaveCustomCss extends AbstractSingleton {
 
 	/**
-	 * Initialize hooks.
+	 * Register WordPress hooks for this component.
 	 *
-	 * @return void Return value.
+	 * @since  1.0.0
+	 * @return void
 	 */
 	public function init(): void {
 		add_action( 'wp_ajax_wphz_ugc_save_custom_css', array( $this, 'handle' ) );
 	}
 
 	/**
-	 * Handle save custom CSS action.
+	 * Handle save-custom-css AJAX request — persists per-carousel CSS overrides.
 	 *
-	 * @return void Return value.
+	 * Expects POST fields:
+	 *  - nonce       string  WordPress nonce for 'wphz_ugc_admin'.
+	 *  - carousel_id int     Carousel to update.
+	 *  - custom_css  string  Raw CSS; HTML tags stripped before storage.
+	 *
+	 * @since  1.0.0
+	 * @return void  Outputs JSON and exits.
 	 */
 	public function handle(): void {
 		$nonce = filter_input( INPUT_POST, 'nonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS );

@@ -22,18 +22,24 @@ class ProductSearch extends AbstractSingleton {
 
 
 	/**
-	 * Initialize hooks.
+	 * Register WordPress hooks for this component.
 	 *
-	 * @return void Return value.
+	 * @since  1.0.0
+	 * @return void
 	 */
 	public function init(): void {
 		add_action( 'wp_ajax_wphz_ugc_product_search', array( $this, 'handle' ) );
 	}
 
 	/**
-	 * Handle product search action.
+	 * Handle product search AJAX request — returns matching WooCommerce products.
 	 *
-	 * @return void Return value.
+	 * Expects GET fields:
+	 *  - nonce  string  WordPress nonce for 'wphz_ugc_admin'.
+	 *  - term   string  Search term (minimum 2 characters). Matched against SKU, name, and ID.
+	 *
+	 * @since  1.0.0
+	 * @return void  Outputs JSON array of product objects and exits.
 	 */
 	public function handle(): void {
 		$nonce = filter_input( INPUT_GET, 'nonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
@@ -50,7 +56,9 @@ class ProductSearch extends AbstractSingleton {
 			wp_send_json_error( array( 'message' => 'Unauthorized.' ), 403 );
 		}
 
-		$term = sanitize_text_field( $_GET['term'] ?? '' );
+		$term = sanitize_text_field(
+			filter_input( INPUT_GET, 'term', FILTER_SANITIZE_FULL_SPECIAL_CHARS ) ?? ''
+		);
 
 		if ( strlen( $term ) < 2 ) {
 			wp_send_json_success( array() );

@@ -19,9 +19,10 @@ use WPHZ\UGC\AbstractSingleton;
 class ItemRepository extends AbstractSingleton {
 
 	/**
-	 * Table.
+	 * Return the fully qualified items table name.
 	 *
-	 * @return string Return value.
+	 * @since  1.0.0
+	 * @return string
 	 */
 	private function table(): string {
 		global $wpdb;
@@ -29,10 +30,11 @@ class ItemRepository extends AbstractSingleton {
 	}
 
 	/**
-	 * Get_all.
+	 * Retrieve all items for a carousel, ordered by sort_order ascending.
 	 *
-	 * @param string $carousel_id Parameter value.
-	 * @return array<int, array> Return value.
+	 * @since  1.0.0
+	 * @param  string $carousel_id Parent carousel ID.
+	 * @return array<int, array<string, mixed>>
 	 */
 	public function get_all( string $carousel_id = '1' ): array {
 		global $wpdb;
@@ -46,10 +48,11 @@ class ItemRepository extends AbstractSingleton {
 	}
 
 	/**
-	 * Get_by_id.
+	 * Retrieve a single item by its primary key.
 	 *
-	 * @param int $id Parameter value.
-	 * @return ?array Return value.
+	 * @since  1.0.0
+	 * @param  int $id Item primary key.
+	 * @return array<string, mixed>|null  Row data, or null if not found.
 	 */
 	public function get_by_id( int $id ): ?array {
 		global $wpdb;
@@ -63,10 +66,11 @@ class ItemRepository extends AbstractSingleton {
 	}
 
 	/**
-	 * Insert.
+	 * Insert a new carousel item and return the new ID.
 	 *
-	 * @param array $data Parameter value.
-	 * @return int|false Return value.
+	 * @since  1.0.0
+	 * @param  array<string, mixed> $data Column values. Unknown keys are ignored.
+	 * @return int|false  New item ID on success, false on failure.
 	 */
 	public function insert( array $data ): int|false {
 		global $wpdb;
@@ -86,11 +90,12 @@ class ItemRepository extends AbstractSingleton {
 	}
 
 	/**
-	 * Update.
+	 * Update one or more fields of an existing item.
 	 *
-	 * @param int   $id   Parameter value.
-	 * @param array $data Parameter value.
-	 * @return bool Return value.
+	 * @since  1.0.0
+	 * @param  int                  $id   Item primary key.
+	 * @param  array<string, mixed> $data Fields to update. Unknown keys are ignored.
+	 * @return bool  True on success, false on DB error or empty $data.
 	 */
 	public function update( int $id, array $data ): bool {
 		global $wpdb;
@@ -117,10 +122,11 @@ class ItemRepository extends AbstractSingleton {
 	}
 
 	/**
-	 * Delete.
+	 * Delete a single item by its primary key.
 	 *
-	 * @param int $id Parameter value.
-	 * @return bool Return value.
+	 * @since  1.0.0
+	 * @param  int $id Item primary key.
+	 * @return bool  True if a row was deleted, false otherwise.
 	 */
 	public function delete( int $id ): bool {
 		global $wpdb;
@@ -128,9 +134,27 @@ class ItemRepository extends AbstractSingleton {
 	}
 
 	/**
-	 * Bulk-update sort_order.
+	 * Delete all items belonging to a carousel.
 	 *
-	 * @param array<int, int> $order [item_id => new_sort_order, ...].
+	 * @since  1.0.0
+	 * @param  int $carousel_id The parent carousel ID.
+	 * @return void
+	 */
+	public function delete_by_carousel( int $carousel_id ): void {
+		global $wpdb;
+		$wpdb->delete( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+			$this->table(),
+			array( 'carousel_id' => (string) $carousel_id ),
+			array( '%s' )
+		);
+	}
+
+	/**
+	 * Bulk-update the sort_order of multiple items in one call.
+	 *
+	 * @since  1.0.0
+	 * @param  array<int, int> $order Map of item_id → new_sort_order.
+	 * @return void
 	 */
 	public function reorder( array $order ): void {
 		foreach ( $order as $id => $sort ) {

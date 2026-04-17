@@ -22,18 +22,24 @@ class DeleteItem extends AbstractSingleton {
 
 
 	/**
-	 * Initialize hooks.
+	 * Register WordPress hooks for this component.
 	 *
-	 * @return void Return value.
+	 * @since  1.0.0
+	 * @return void
 	 */
 	public function init(): void {
 		add_action( 'wp_ajax_wphz_ugc_delete_item', array( $this, 'handle' ) );
 	}
 
 	/**
-	 * Handle delete item action.
+	 * Handle delete-item AJAX request.
 	 *
-	 * @return void Return value.
+	 * Expects POST fields:
+	 *  - nonce  string  WordPress nonce for 'wphz_ugc_admin'.
+	 *  - id     int     Item ID to delete.
+	 *
+	 * @since  1.0.0
+	 * @return void  Outputs JSON and exits.
 	 */
 	public function handle(): void {
 		NonceHelper::verify( 'wphz_ugc_admin' );

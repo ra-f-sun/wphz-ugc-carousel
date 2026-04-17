@@ -19,9 +19,10 @@ use WPHZ\UGC\AbstractSingleton;
 class CarouselRepository extends AbstractSingleton {
 
 	/**
-	 * Table.
+	 * Return the fully qualified carousels table name.
 	 *
-	 * @return string Return value.
+	 * @since  1.0.0
+	 * @return string
 	 */
 	private function table(): string {
 		global $wpdb;
@@ -29,9 +30,10 @@ class CarouselRepository extends AbstractSingleton {
 	}
 
 	/**
-	 * Get_all.
+	 * Retrieve all carousels ordered by most recently created.
 	 *
-	 * @return array<int, array> Return value.
+	 * @since  1.0.0
+	 * @return array<int, array<string, mixed>>
 	 */
 	public function get_all(): array {
 		global $wpdb;
@@ -42,10 +44,11 @@ class CarouselRepository extends AbstractSingleton {
 	}
 
 	/**
-	 * Get_by_id.
+	 * Retrieve a single carousel by its primary key.
 	 *
-	 * @param int $id Parameter value.
-	 * @return ?array Return value.
+	 * @since  1.0.0
+	 * @param  int $id Carousel primary key.
+	 * @return array<string, mixed>|null  Row data, or null if not found.
 	 */
 	public function get_by_id( int $id ): ?array {
 		global $wpdb;
@@ -59,10 +62,11 @@ class CarouselRepository extends AbstractSingleton {
 	}
 
 	/**
-	 * Insert.
+	 * Insert a new carousel row and return the new ID.
 	 *
-	 * @param array $data Parameter value.
-	 * @return int|false Return value.
+	 * @since  1.0.0
+	 * @param  array<string, mixed> $data Column values. Unknown keys are ignored.
+	 * @return int|false  New carousel ID on success, false on failure.
 	 */
 	public function insert( array $data ): int|false {
 		global $wpdb;
@@ -88,11 +92,15 @@ class CarouselRepository extends AbstractSingleton {
 	}
 
 	/**
-	 * Update.
+	 * Update one or more fields of an existing carousel.
 	 *
-	 * @param int   $id   Parameter value.
-	 * @param array $data Parameter value.
-	 * @return bool Return value.
+	 * Returns true even when the matched row had no actual changes (0 affected rows
+	 * from $wpdb->update is still a success).
+	 *
+	 * @since  1.0.0
+	 * @param  int                  $id   Carousel primary key.
+	 * @param  array<string, mixed> $data Fields to update. Unknown keys are ignored.
+	 * @return bool  True on success or no-op, false on DB error or empty $data.
 	 */
 	public function update( int $id, array $data ): bool {
 		global $wpdb;
@@ -140,10 +148,11 @@ class CarouselRepository extends AbstractSingleton {
 	}
 
 	/**
-	 * Delete.
+	 * Delete a carousel by its primary key.
 	 *
-	 * @param int $id Parameter value.
-	 * @return bool Return value.
+	 * @since  1.0.0
+	 * @param  int $id Carousel primary key.
+	 * @return bool  True if a row was deleted, false otherwise.
 	 */
 	public function delete( int $id ): bool {
 		global $wpdb;

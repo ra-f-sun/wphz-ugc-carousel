@@ -22,18 +22,25 @@ class SaveContent extends AbstractSingleton {
 
 
 	/**
-	 * Initialize hooks.
+	 * Register WordPress hooks for this component.
 	 *
-	 * @return void Return value.
+	 * @since  1.0.0
+	 * @return void
 	 */
 	public function init(): void {
 		add_action( 'wp_ajax_wphz_ugc_save_content', array( $this, 'handle' ) );
 	}
 
 	/**
-	 * Handle save content action.
+	 * Handle save-content AJAX request — replaces all items for a carousel.
 	 *
-	 * @return void Return value.
+	 * Expects POST fields:
+	 *  - nonce       string  WordPress nonce for 'wphz_ugc_admin'.
+	 *  - carousel_id int     Carousel to update.
+	 *  - items       array   Serialized item rows (video_url_hd, video_url_sd, poster_url, products[]).
+	 *
+	 * @since  1.0.0
+	 * @return void  Outputs JSON and exits.
 	 */
 	public function handle(): void {
 		$nonce = filter_input( INPUT_POST, 'nonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
@@ -130,14 +137,13 @@ class SaveContent extends AbstractSingleton {
 	}
 
 	/**
-	 * Clear existing carousel items.
+	 * Delete all existing items for a carousel before re-inserting.
 	 *
-	 * @param int $carousel_id Carousel ID.
-	 * @return void Return value.
+	 * @since  1.0.0
+	 * @param  int $carousel_id Parent carousel ID.
+	 * @return void
 	 */
 	private function clear_existing( int $carousel_id ): void {
-		global $wpdb;
-		$table = $wpdb->prefix . 'wphz_ugc_items';
-		$wpdb->delete( $table, array( 'carousel_id' => (string) $carousel_id ) );
+		ItemRepository::instance()->delete_by_carousel( $carousel_id );
 	}
 }

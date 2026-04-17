@@ -23,18 +23,24 @@ class CreateCarousel extends AbstractSingleton {
 
 
 	/**
-	 * Initialize hooks.
+	 * Register WordPress hooks for this component.
 	 *
-	 * @return void Return value.
+	 * @since  1.0.0
+	 * @return void
 	 */
 	public function init(): void {
 		add_action( 'admin_action_wphz_ugc_create_carousel', array( $this, 'handle' ) );
 	}
 
 	/**
-	 * Handle create carousel action.
+	 * Handle create-carousel form submission.
 	 *
-	 * @return void Return value.
+	 * Expects POST fields:
+	 *  - _wpnonce  string  WordPress nonce for 'wphz_ugc_admin'.
+	 *  - name      string  Carousel display name.
+	 *
+	 * @since  1.0.0
+	 * @return void  Redirects to the new carousel's config tab and exits.
 	 */
 	public function handle(): void {
 		NonceHelper::verify( 'wphz_ugc_admin' );

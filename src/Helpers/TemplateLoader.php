@@ -19,8 +19,10 @@ class TemplateLoader {
 	/**
 	 * Render a template by name using local variables from the provided data.
 	 *
-	 * @param string       $template Template path relative to the templates/ dir, without .php extension.
-	 * @param array<mixed> $data Variables to expose to the template scope.
+	 * @since  1.0.0
+	 * @param  string       $template Template path relative to the templates/ dir, without .php extension.
+	 * @param  array<mixed> $data     Variables to expose to the template scope.
+	 * @return void
 	 */
 	public static function render( string $template, array $data = array() ): void {
 		$file = WPHZ_UGC_TEMPLATES . ltrim( $template, '/' ) . '.php';
@@ -50,8 +52,9 @@ class TemplateLoader {
 	/**
 	 * Same as render() but captures and returns output as a string.
 	 *
-	 * @param string       $template Template path relative to the templates/ dir, without .php extension.
-	 * @param array<mixed> $data Variables to expose to the template scope.
+	 * @since  1.0.0
+	 * @param  string       $template Template path relative to the templates/ dir, without .php extension.
+	 * @param  array<mixed> $data     Variables to expose to the template scope.
 	 * @return string Rendered template output.
 	 */
 	public static function render_return( string $template, array $data = array() ): string {

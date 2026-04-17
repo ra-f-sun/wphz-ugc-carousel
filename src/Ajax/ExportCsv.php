@@ -21,18 +21,24 @@ use WPHZ\UGC\Repository\ItemRepository;
 class ExportCsv extends AbstractSingleton {
 
 	/**
-	 * Initialize hooks.
+	 * Register WordPress hooks for this component.
 	 *
-	 * @return void Return value.
+	 * @since  1.0.0
+	 * @return void
 	 */
 	public function init(): void {
 		add_action( 'wp_ajax_wphz_ugc_export_csv', array( $this, 'handle' ) );
 	}
 
 	/**
-	 * Handle CSV export action.
+	 * Handle CSV export action — streams a CSV file download response.
 	 *
-	 * @return void Return value.
+	 * Expects GET fields:
+	 *  - nonce       string  WordPress nonce for 'wphz_ugc_admin'.
+	 *  - carousel_id int     Carousel whose items should be exported.
+	 *
+	 * @since  1.0.0
+	 * @return void  Outputs CSV headers + body and exits.
 	 */
 	public function handle(): void {
 		NonceHelper::verify( 'wphz_ugc_admin' );
@@ -70,17 +76,17 @@ class ExportCsv extends AbstractSingleton {
 
 			$products_export = array();
 
-			foreach ( $pids_raw as $p ) {
-				$p_id    = (int) ( $p['id'] ?? 0 );
-				$product = $p_id ? wc_get_product( $p_id ) : null;
-				$sku     = $product ? $product->get_sku() : '';
+			foreach ( $pids_raw as $product_id_raw ) {
+				$product_id = (int) ( $product_id_raw['id'] ?? 0 );
+				$product    = $product_id ? wc_get_product( $product_id ) : null;
+				$sku        = $product ? $product->get_sku() : '';
 
 				// hide_atc: null = inherit, 0 = force show, 1 = force hide.
-				$hide_atc = array_key_exists( 'hide_atc', $p ) ? $p['hide_atc'] : null;
+				$hide_atc = array_key_exists( 'hide_atc', $product_id_raw ) ? $product_id_raw['hide_atc'] : null;
 
 				$products_export[] = array(
 					'sku'      => $sku,
-					'id'       => $p_id,
+					'id'       => $product_id,
 					'hide_atc' => $hide_atc,
 				);
 			}

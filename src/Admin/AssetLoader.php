@@ -19,19 +19,21 @@ use WPHZ\UGC\AbstractSingleton;
 class AssetLoader extends AbstractSingleton {
 
 	/**
-	 * Initialize hooks.
+	 * Register WordPress hooks for this component.
 	 *
-	 * @return void Return value.
+	 * @since  1.0.0
+	 * @return void
 	 */
 	public function init(): void {
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue' ) );
 	}
 
 	/**
-	 * Enqueue admin assets.
+	 * Enqueue admin CSS, JS, and localized data — only on plugin admin pages.
 	 *
-	 * @param string $hook Parameter value.
-	 * @return void Return value.
+	 * @since  1.0.0
+	 * @param  string $hook Current admin page hook suffix.
+	 * @return void
 	 */
 	public function enqueue( string $hook ): void {
 		if ( ! str_contains( $hook, 'wphz-ugc-carousel' ) ) {

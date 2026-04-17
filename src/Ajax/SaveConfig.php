@@ -23,18 +23,28 @@ class SaveConfig extends AbstractSingleton {
 
 
 	/**
-	 * Initialize hooks.
+	 * Register WordPress hooks for this component.
 	 *
-	 * @return void Return value.
+	 * @since  1.0.0
+	 * @return void
 	 */
 	public function init(): void {
 		add_action( 'wp_ajax_wphz_ugc_save_config', array( $this, 'handle' ) );
 	}
 
 	/**
-	 * Handle save configuration action.
+	 * Handle save-config AJAX request — persists carousel display settings.
 	 *
-	 * @return void Return value.
+	 * Expects POST fields:
+	 *  - nonce       string  WordPress nonce for 'wphz_ugc_admin'.
+	 *  - carousel_id int     Carousel to update.
+	 *  - name        string  Carousel display name.
+	 *  - mute        string  '1' to mute videos by default, anything else for unmuted.
+	 *  - direction   string  Scroll direction: 'ltr' or 'rtl'.
+	 *  - hide_atc    int     Global add-to-cart visibility override (0 = show, 1 = hide).
+	 *
+	 * @since  1.0.0
+	 * @return void  Outputs JSON and exits.
 	 */
 	public function handle(): void {
 		NonceHelper::verify( 'wphz_ugc_admin' );

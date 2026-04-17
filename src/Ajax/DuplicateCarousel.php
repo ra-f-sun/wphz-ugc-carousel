@@ -23,9 +23,10 @@ class DuplicateCarousel extends AbstractSingleton {
 
 
 	/**
-	 * Initialize hooks.
+	 * Register WordPress hooks for this component.
 	 *
-	 * @return void Return value.
+	 * @since  1.0.0
+	 * @return void
 	 */
 	public function init(): void {
 		// We use admin-ajax.php but it's fundamentally a GET redirect hook.
@@ -33,9 +34,14 @@ class DuplicateCarousel extends AbstractSingleton {
 	}
 
 	/**
-	 * Handle duplicate carousel action.
+	 * Handle duplicate-carousel action — deep-clones carousel and all its items.
 	 *
-	 * @return void Return value.
+	 * Expects GET fields:
+	 *  - nonce  string  WordPress nonce for 'wphz_ugc_admin'.
+	 *  - id     int     Source carousel ID to duplicate.
+	 *
+	 * @since  1.0.0
+	 * @return void  Redirects to the new carousel's edit page and exits.
 	 */
 	public function handle(): void {
 		NonceHelper::verify( 'wphz_ugc_admin' );

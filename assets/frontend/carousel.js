@@ -34,6 +34,9 @@
  */
 
 class WPHZUGCCarousel {
+  /**
+   * @param {HTMLElement} el - The carousel root element (.wphz-ugc-carousel).
+   */
   constructor(el) {
     this.root = el;
     this.id = el.dataset.carouselId;
@@ -67,10 +70,16 @@ class WPHZUGCCarousel {
    *  INIT
    * ═══════════════════════════════════════════════════════════════════════ */
 
+  /**
+   * Set up video sources, infinite track, drag, mute, ResizeObserver,
+   * and IntersectionObserver. Called once from the constructor.
+   *
+   * @return {void}
+   */
   init() {
     if (this.totalOrig === 0) return;
 
-    this._setVideoSources();   // Select resolution + set src + preload="none"
+    this._setVideoSources();    // Select resolution + set src + preload="none"
     this._buildInfiniteTrack(); // Clone AFTER src is set — clones inherit it
     this._bindDrag();
     this._bindMuteButtons();
@@ -118,6 +127,11 @@ class WPHZUGCCarousel {
    *  SLIDE SIZING
    * ═══════════════════════════════════════════════════════════════════════ */
 
+  /**
+   * Recalculate slide width from stage width and apply flex sizing to all slides.
+   *
+   * @return {void}
+   */
   _setSlideSizes() {
     const stageWidth = this.stage.offsetWidth;
     if (!stageWidth) return;
@@ -134,6 +148,12 @@ class WPHZUGCCarousel {
    *  INFINITE TRACK — clone all slides before & after originals
    * ═══════════════════════════════════════════════════════════════════════ */
 
+  /**
+   * Prepend and append full copies of all original slides to enable seamless
+   * infinite looping. Populates this.slides and this.totalSlides.
+   *
+   * @return {void}
+   */
   _buildInfiniteTrack() {
     this.cloneCount = this.totalOrig;
 
@@ -161,6 +181,12 @@ class WPHZUGCCarousel {
    *  preload="none" = zero bytes fetched until play() is called.
    * ═══════════════════════════════════════════════════════════════════════ */
 
+  /**
+   * Select HD or SD video source per slide based on connection speed and
+   * viewport width, then set src + preload="none" before cloning.
+   *
+   * @return {void}
+   */
   _setVideoSources() {
     const isSlow = navigator.connection && navigator.connection.downlink < 3;
     const isMobile = window.innerWidth <= 768;
@@ -170,13 +196,13 @@ class WPHZUGCCarousel {
       const video = slide.querySelector(".wphz-ugc-video");
       if (!video) return;
 
-      const hd = video.dataset.srcHd;
-      const sd = video.dataset.srcSd;
+      const hdVideoUrl = video.dataset.srcHd;
+      const sdVideoUrl = video.dataset.srcSd;
       let targetSrc = "";
 
-      if (hd && !sd) targetSrc = hd;
-      else if (sd && !hd) targetSrc = sd;
-      else if (hd && sd) targetSrc = preferSD ? sd : hd;
+      if (hdVideoUrl && !sdVideoUrl) targetSrc = hdVideoUrl;
+      else if (sdVideoUrl && !hdVideoUrl) targetSrc = sdVideoUrl;
+      else if (hdVideoUrl && sdVideoUrl) targetSrc = preferSD ? sdVideoUrl : hdVideoUrl;
 
       video.dataset.selectedSrc = targetSrc;
 
@@ -194,6 +220,16 @@ class WPHZUGCCarousel {
    *  NAVIGATION
    * ═══════════════════════════════════════════════════════════════════════ */
 
+  /**
+   * Navigate to the given slide index with re-entrancy protection.
+   *
+   * Concurrent calls while a shift is in progress are queued; only the
+   * most recent queued request is replayed after the current shift completes.
+   * Uses an epoch counter to cancel stale async play() callbacks.
+   *
+   * @param {number} index - Target slide index (0-based across the full cloned track).
+   * @return {void}
+   */
   goTo(index) {
     if (this._isShifting) {
       // Queue only the most recent request; earlier queued requests are discarded.
@@ -205,14 +241,8 @@ class WPHZUGCCarousel {
     this._shiftQueue = null;
     this._playEpoch++;
 
-    this._pauseCenter();
-    this._syncClonePosters();
-    this.current = index;
-    this._updateSlideClasses();
-    this._resetDistantVideos();
-    this._applyTransform(true);
-    this._playCenter();
-    this._scheduleSnapback();
+    this._prepareShift(index);
+    this._completeShift();
 
     // Release lock after CSS transition completes (500ms).
     // _scheduleSnapback fires at 550ms; it calls clearTimeout(_snapTimer) on
@@ -227,10 +257,47 @@ class WPHZUGCCarousel {
     }, 500);
   }
 
+  /**
+   * Pause current video, sync clone posters, update index and slide classes,
+   * reset distant videos. Called at the start of every shift.
+   *
+   * @param {number} index - The target slide index.
+   * @return {void}
+   */
+  _prepareShift(index) {
+    this._pauseCenter();
+    this._syncClonePosters();
+    this.current = index;
+    this._updateSlideClasses();
+    this._resetDistantVideos();
+  }
+
+  /**
+   * Apply the CSS transform, start playback on the new center slide,
+   * and schedule the infinite-loop snapback. Called at the end of every shift.
+   *
+   * @return {void}
+   */
+  _completeShift() {
+    this._applyTransform(true);
+    this._playCenter();
+    this._scheduleSnapback();
+  }
+
+  /**
+   * Navigate one slide forward (respecting direction).
+   *
+   * @return {void}
+   */
   next() {
     this.goTo(this.current + 1);
   }
 
+  /**
+   * Navigate one slide backward (respecting direction).
+   *
+   * @return {void}
+   */
   prev() {
     this.goTo(this.current - 1);
   }
@@ -239,6 +306,12 @@ class WPHZUGCCarousel {
    *  TRANSFORM — pixel-based, center-offset positioning
    * ═══════════════════════════════════════════════════════════════════════ */
 
+  /**
+   * Translate the track to center the current slide.
+   *
+   * @param {boolean} animate - Whether to apply the CSS transition.
+   * @return {void}
+   */
   _applyTransform(animate) {
     if (!this._slideWidth) return;
 
@@ -255,12 +328,19 @@ class WPHZUGCCarousel {
     }
   }
 
+  /**
+   * @return {number} Number of visible slides for the current viewport width.
+   */
   _getVisibleCount() {
     if (window.innerWidth <= 768) return 1.7;
     if (window.innerWidth <= 1024) return 3.3;
     return 4.0;
   }
 
+  /**
+   * @param {number} visible - Output of _getVisibleCount().
+   * @return {number} Fractional slide offset that centers the active slide.
+   */
   _getCenterOffset(visible) {
     if (window.innerWidth <= 768) return (visible - 1) / 2;
     return Math.max(0, visible - 2.25);
@@ -270,18 +350,24 @@ class WPHZUGCCarousel {
    *  INFINITE SNAPBACK
    * ═══════════════════════════════════════════════════════════════════════ */
 
+  /**
+   * Schedule a silent position correction when the track has scrolled into a
+   * clone zone. Fires 550ms after navigation (after the 500ms CSS transition).
+   *
+   * @return {void}
+   */
   _scheduleSnapback() {
     clearTimeout(this._snapTimer);
 
     this._snapTimer = setTimeout(() => {
-      const lo = this.cloneCount;
-      const hi = this.cloneCount + this.totalOrig;
+      const cloneRangeStart = this.cloneCount;
+      const cloneRangeEnd   = this.cloneCount + this.totalOrig;
 
-      if (this.current >= lo && this.current < hi) return;
+      if (this.current >= cloneRangeStart && this.current < cloneRangeEnd) return;
 
       const prevCurrent = this.current;
 
-      if (this.current >= hi) {
+      if (this.current >= cloneRangeEnd) {
         this.current -= this.totalOrig;
       } else {
         this.current += this.totalOrig;
@@ -310,6 +396,11 @@ class WPHZUGCCarousel {
    *  SLIDE CLASSES
    * ═══════════════════════════════════════════════════════════════════════ */
 
+  /**
+   * Toggle the --active modifier class to match this.current.
+   *
+   * @return {void}
+   */
   _updateSlideClasses() {
     this.slides.forEach((slide, i) => {
       slide.classList.toggle("wphz-ugc-slide--active", i === this.current);
@@ -326,6 +417,12 @@ class WPHZUGCCarousel {
    *  Works through snapback because circular distance is position-independent.
    * ═══════════════════════════════════════════════════════════════════════ */
 
+  /**
+   * Reset videos that are too far from the active slide back to their poster
+   * frame. Uses circular item-index distance so clone positions are irrelevant.
+   *
+   * @return {void}
+   */
   _resetDistantVideos() {
     const currentItemIndex = this._getItemIndexFromSlide(
       this.slides[this.current],
@@ -362,11 +459,17 @@ class WPHZUGCCarousel {
    *  Synchronous (toDataURL) to avoid timing gaps.
    * ═══════════════════════════════════════════════════════════════════════ */
 
+  /**
+   * Capture the current frame of each playing original slide and write it as
+   * the poster on all corresponding clone slides.
+   *
+   * @return {void}
+   */
   _syncClonePosters() {
-    const lo = this.cloneCount;
-    const hi = this.cloneCount + this.totalOrig;
+    const cloneRangeStart = this.cloneCount;
+    const cloneRangeEnd   = this.cloneCount + this.totalOrig;
 
-    for (let i = lo; i < hi; i++) {
+    for (let i = cloneRangeStart; i < cloneRangeEnd; i++) {
       const video = this.slides[i]?.querySelector(".wphz-ugc-video");
       if (!video || video.readyState < 2 || !video.videoWidth) continue;
 
@@ -375,20 +478,20 @@ class WPHZUGCCarousel {
 
       let frameUrl;
       try {
-        const c = document.createElement("canvas");
-        c.width = video.videoWidth;
-        c.height = video.videoHeight;
-        c.getContext("2d").drawImage(video, 0, 0, c.width, c.height);
-        frameUrl = c.toDataURL("image/png");
+        const canvas = document.createElement("canvas");
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
+        frameUrl = canvas.toDataURL("image/png");
       } catch (_) {
         continue;
       }
 
-      this.slides.forEach((s, idx) => {
-        if (idx >= lo && idx < hi) return;
-        if (this._getItemIndexFromSlide(s) !== itemIndex) return;
-        const v = s.querySelector(".wphz-ugc-video");
-        if (v) v.poster = frameUrl;
+      this.slides.forEach((slide, idx) => {
+        if (idx >= cloneRangeStart && idx < cloneRangeEnd) return;
+        if (this._getItemIndexFromSlide(slide) !== itemIndex) return;
+        const videoElement = slide.querySelector(".wphz-ugc-video");
+        if (videoElement) videoElement.poster = frameUrl;
       });
     }
   }
@@ -403,15 +506,21 @@ class WPHZUGCCarousel {
    *  Pause just pauses — native paused frame stays visible.
    * ═══════════════════════════════════════════════════════════════════════ */
 
+  /**
+   * Play the video at the center slide. Skips clone-zone slides, applies mute
+   * state, and retries with mute forced on if autoplay policy blocks playback.
+   *
+   * @return {void}
+   */
   _playCenter() {
     const slide = this.slides[this.current];
     const video = slide?.querySelector(".wphz-ugc-video");
     if (!video) return;
 
     // Clone zone guard — don't play clones, poster is sufficient
-    const lo = this.cloneCount;
-    const hi = this.cloneCount + this.totalOrig;
-    if (this.current < lo || this.current >= hi) {
+    const cloneRangeStart = this.cloneCount;
+    const cloneRangeEnd   = this.cloneCount + this.totalOrig;
+    if (this.current < cloneRangeStart || this.current >= cloneRangeEnd) {
       this._applyMutedToAllSlides();
       if (this.posterEngine) {
         this.posterEngine.resetToPoster(video);
@@ -446,6 +555,11 @@ class WPHZUGCCarousel {
     video.onended = () => this._onVideoEnded();
   }
 
+  /**
+   * Pause the video at the current center slide. Preserves the native paused frame.
+   *
+   * @return {void}
+   */
   _pauseCenter() {
     const slide = this.slides[this.current];
     const video = slide?.querySelector(".wphz-ugc-video");
@@ -460,12 +574,22 @@ class WPHZUGCCarousel {
     }
   }
 
+  /**
+   * Pause center video when the carousel scrolls out of the viewport.
+   *
+   * @return {void}
+   */
   _pauseForViewport() {
     const video = this.slides[this.current]?.querySelector(".wphz-ugc-video");
     if (!video) return;
     video.pause();
   }
 
+  /**
+   * Reset and play the center video when the carousel scrolls back into view.
+   *
+   * @return {void}
+   */
   _resumeForViewport() {
     const video = this.slides[this.current]?.querySelector(".wphz-ugc-video");
     if (!video) return;
@@ -473,6 +597,11 @@ class WPHZUGCCarousel {
     this._playCenter();
   }
 
+  /**
+   * Handle natural video end — reset currentTime and auto-advance.
+   *
+   * @return {void}
+   */
   _onVideoEnded() {
     const endedVideo =
       this.slides[this.current]?.querySelector(".wphz-ugc-video");
@@ -488,6 +617,11 @@ class WPHZUGCCarousel {
    *  DRAG & SWIPE
    * ═══════════════════════════════════════════════════════════════════════ */
 
+  /**
+   * Attach mouse and touch drag listeners to the track.
+   *
+   * @return {void}
+   */
   _bindDrag() {
     const track = this.track;
 
@@ -512,6 +646,11 @@ class WPHZUGCCarousel {
     track.addEventListener("touchend", () => this._onDragEnd());
   }
 
+  /**
+   * @param {number} x - Pointer X coordinate.
+   * @param {number} y - Pointer Y coordinate.
+   * @return {void}
+   */
   _onDragStart(x, y) {
     this._drag.active = true;
     this._drag.startX = x;
@@ -520,12 +659,22 @@ class WPHZUGCCarousel {
     this._drag.diffY = 0;
   }
 
+  /**
+   * @param {number} x - Current pointer X coordinate.
+   * @param {number} y - Current pointer Y coordinate.
+   * @return {void}
+   */
   _onDragMove(x, y) {
     if (!this._drag.active || !this._slideWidth) return;
     this._drag.diffX = x - this._drag.startX;
     this._drag.diffY = y - this._drag.startY;
   }
 
+  /**
+   * Determine swipe direction from accumulated drag delta and navigate.
+   *
+   * @return {void}
+   */
   _onDragEnd() {
     if (!this._drag.active) return;
     this._drag.active = false;
@@ -544,6 +693,12 @@ class WPHZUGCCarousel {
    *  MUTE TOGGLES
    * ═══════════════════════════════════════════════════════════════════════ */
 
+  /**
+   * Attach a delegated click listener on the carousel root for mute-button
+   * and slide-navigation interactions.
+   *
+   * @return {void}
+   */
   _bindMuteButtons() {
     this.root.addEventListener("click", (e) => {
       // Guard: ignore if this was actually a drag
@@ -578,17 +733,33 @@ class WPHZUGCCarousel {
     });
   }
 
+  /**
+   * @param {boolean} isMuted - New global mute state.
+   * @return {void}
+   */
   _setGlobalMuted(isMuted) {
     this.isMuted = !!isMuted;
     this._applyMutedToAllSlides();
   }
 
+  /**
+   * Apply the current global mute state to every slide.
+   *
+   * @return {void}
+   */
   _applyMutedToAllSlides() {
     this.slides.forEach((slide) => {
       this._setSlideMuted(slide, this.isMuted);
     });
   }
 
+  /**
+   * Apply mute state to a single slide's video and update the mute-button icons.
+   *
+   * @param {HTMLElement} slide   - The slide element.
+   * @param {boolean}     isMuted - Whether to mute.
+   * @return {void}
+   */
   _setSlideMuted(slide, isMuted) {
     if (!slide) return;
 
@@ -598,16 +769,25 @@ class WPHZUGCCarousel {
     const btn = slide.querySelector(".wphz-ugc-mute-btn");
     if (!btn) return;
 
-    const muteIcon = btn.querySelector(".wphz-icon-mute");
+    const muteIcon   = btn.querySelector(".wphz-icon-mute");
     const unmuteIcon = btn.querySelector(".wphz-icon-unmute");
-    if (muteIcon) muteIcon.style.display = isMuted ? "" : "none";
+    if (muteIcon)   muteIcon.style.display   = isMuted ? "" : "none";
     if (unmuteIcon) unmuteIcon.style.display = isMuted ? "none" : "";
   }
 
+  /**
+   * @return {boolean} Current global mute state.
+   */
   _isMuted() {
     return !!this.isMuted;
   }
 
+  /**
+   * Extract the data-index attribute from a slide as a number.
+   *
+   * @param {HTMLElement|null} slide - A slide element.
+   * @return {number} The item index, or -1 if missing/invalid.
+   */
   _getItemIndexFromSlide(slide) {
     if (!slide) return -1;
     const raw = slide.dataset.index;
@@ -619,6 +799,9 @@ class WPHZUGCCarousel {
 /* ══════════════════════════════════════════════════════════════════════════ */
 
 class WPHZProductCarousel {
+  /**
+   * @param {HTMLElement} el - The product carousel wrapper element.
+   */
   constructor(el) {
     this.wrap = el;
     this.track = el.querySelector(".wphz-ugc-products-track");
@@ -655,6 +838,11 @@ class WPHZProductCarousel {
     this._resizeObserver.observe(this.wrap);
   }
 
+  /**
+   * Prepend and append full copies of all original items for infinite looping.
+   *
+   * @return {void}
+   */
   _buildInfiniteTrack() {
     this.cloneCount = this.totalOrig;
 
@@ -677,6 +865,11 @@ class WPHZProductCarousel {
     this.current = this.cloneCount;
   }
 
+  /**
+   * Measure wrapper width and apply it as flex-basis to all items.
+   *
+   * @return {void}
+   */
   _setItemSizes() {
     this._itemWidth = this.wrap.offsetWidth;
     if (!this._itemWidth) return;
@@ -686,6 +879,12 @@ class WPHZProductCarousel {
     });
   }
 
+  /**
+   * Translate the track to show the current item.
+   *
+   * @param {boolean} animate - Whether to apply the CSS transition.
+   * @return {void}
+   */
   _applyTransform(animate) {
     if (!this._itemWidth) return;
 
@@ -700,6 +899,12 @@ class WPHZProductCarousel {
     }
   }
 
+  /**
+   * Slide one step in the given direction with re-entrancy guard.
+   *
+   * @param {number} dir - 1 for next, -1 for previous.
+   * @return {void}
+   */
   _slide(dir) {
     if (this._isSliding) return;
     this._isSliding = true;
@@ -709,16 +914,21 @@ class WPHZProductCarousel {
     setTimeout(() => { this._isSliding = false; }, 350);
   }
 
+  /**
+   * Schedule a silent position correction when the track enters a clone zone.
+   *
+   * @return {void}
+   */
   _scheduleSnapback() {
     clearTimeout(this._snapTimer);
 
     this._snapTimer = setTimeout(() => {
-      const lo = this.cloneCount;
-      const hi = this.cloneCount + this.totalOrig;
+      const cloneRangeStart = this.cloneCount;
+      const cloneRangeEnd   = this.cloneCount + this.totalOrig;
 
-      if (this.current >= lo && this.current < hi) return;
+      if (this.current >= cloneRangeStart && this.current < cloneRangeEnd) return;
 
-      if (this.current >= hi) {
+      if (this.current >= cloneRangeEnd) {
         this.current -= this.totalOrig;
       } else {
         this.current += this.totalOrig;
@@ -728,6 +938,11 @@ class WPHZProductCarousel {
     }, 350);
   }
 
+  /**
+   * Attach click listeners to the next/prev arrow buttons.
+   *
+   * @return {void}
+   */
   _bindArrows() {
     this.wrap
       .querySelector(".wphz-product-arrow--next")
@@ -801,10 +1016,10 @@ document.addEventListener("click", (e) => {
   btn.classList.add("loading");
 
   const body = new URLSearchParams({
-    action: "wphz_ugc_add_to_cart",
+    action:     "wphz_ugc_add_to_cart",
     product_id: productId,
-    quantity: 1,
-    nonce: nonce,
+    quantity:   1,
+    nonce:      nonce,
   });
 
   fetch(wphzUGCFrontend.ajaxurl, { method: "POST", body })

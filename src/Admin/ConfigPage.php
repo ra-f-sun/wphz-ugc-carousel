@@ -20,9 +20,10 @@ use WPHZ\UGC\Repository\CarouselRepository;
 class ConfigPage extends AbstractSingleton {
 
 	/**
-	 * Provides data to the config-tab template. No output here.
+	 * Build the data array passed to the config-tab template.
 	 *
-	 * @param int $id Carousel ID.
+	 * @since  1.0.0
+	 * @param  int $id Carousel ID.
 	 * @return array<string, mixed>
 	 */
 	public function get_data( int $id ): array {

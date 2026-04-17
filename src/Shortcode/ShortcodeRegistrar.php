@@ -20,9 +20,10 @@ class ShortcodeRegistrar extends AbstractSingleton {
 
 
 	/**
-	 * Initialize shortcode hooks.
+	 * Register WordPress hooks for this component.
 	 *
-	 * @return void Return value.
+	 * @since  1.0.0
+	 * @return void
 	 */
 	public function init(): void {
 		add_shortcode( 'wphz_ugc_carousel', array( ShortcodeRenderer::instance(), 'render' ) );

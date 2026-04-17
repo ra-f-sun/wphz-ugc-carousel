@@ -35,16 +35,21 @@ final class Plugin extends AbstractSingleton {
 
 
 	/**
-	 * Construct the plugin instance.
+	 * Construct the plugin instance and wire all hooks.
+	 *
+	 * @since  1.0.0
 	 */
 	protected function __construct() {
 		$this->init_hooks();
 	}
 
 	/**
-	 * Initialize plugin hooks.
+	 * Register all WordPress hooks and initialize plugin components.
 	 *
-	 * @return void Return value.
+	 * Bails early with an admin notice if WooCommerce is not installed or inactive.
+	 *
+	 * @since  1.0.0
+	 * @return void
 	 */
 	private function init_hooks(): void {
 		$woo_status = $this->get_woocommerce_status();
@@ -91,9 +96,10 @@ final class Plugin extends AbstractSingleton {
 	}
 
 	/**
-	 * Get the WooCommerce status.
+	 * Determine whether WooCommerce is installed and active.
 	 *
-	 * @return array Return value.
+	 * @since  1.0.0
+	 * @return array{installed: bool, active: bool}
 	 */
 	private function get_woocommerce_status(): array {
 		if ( ! function_exists( 'is_plugin_active' ) ) {
@@ -119,9 +125,10 @@ final class Plugin extends AbstractSingleton {
 	}
 
 	/**
-	 * Notify when WooCommerce is not installed.
+	 * Output an admin notice when WooCommerce is not installed.
 	 *
-	 * @return void Return value.
+	 * @since  1.0.0
+	 * @return void
 	 */
 	public function notice_wc_not_installed(): void {
 		echo '<div class="notice notice-error"><p>'
@@ -130,9 +137,10 @@ final class Plugin extends AbstractSingleton {
 	}
 
 	/**
-	 * Notify when WooCommerce is inactive.
+	 * Output an admin notice when WooCommerce is installed but not active.
 	 *
-	 * @return void Return value.
+	 * @since  1.0.0
+	 * @return void
 	 */
 	public function notice_wc_inactive(): void {
 		echo '<div class="notice notice-error"><p>'

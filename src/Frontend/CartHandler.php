@@ -20,9 +20,10 @@ class CartHandler extends AbstractSingleton {
 
 
 	/**
-	 * Initialize hooks.
+	 * Register WordPress hooks for this component.
 	 *
-	 * @return void Return value.
+	 * @since  1.0.0
+	 * @return void
 	 */
 	public function init(): void {
 		add_action( 'wp_ajax_wphz_ugc_add_to_cart', array( $this, 'handle' ) );
@@ -30,9 +31,15 @@ class CartHandler extends AbstractSingleton {
 	}
 
 	/**
-	 * Handle add to cart action.
+	 * Handle add-to-cart AJAX request — available to both logged-in and guest users.
 	 *
-	 * @return void Return value.
+	 * Expects POST fields:
+	 *  - nonce      string  WordPress nonce for 'wphz_ugc_atc'.
+	 *  - product_id int     WooCommerce product ID to add.
+	 *  - quantity   int     Optional. Quantity to add. Defaults to 1.
+	 *
+	 * @since  1.0.0
+	 * @return void  Outputs JSON and exits.
 	 */
 	public function handle(): void {
 		$nonce = filter_input( INPUT_POST, 'nonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
