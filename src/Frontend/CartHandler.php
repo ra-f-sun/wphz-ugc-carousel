@@ -73,6 +73,7 @@ class CartHandler extends AbstractSingleton {
 			wp_send_json_success(
 				array(
 					'message'   => __( 'Added to cart.', 'ugc-carousels-for-woo' ),
+					// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- woocommerce_add_to_cart_fragments is a WooCommerce core filter, not a custom plugin hook. It is being applied here, not defined.
 					'fragments' => apply_filters( 'woocommerce_add_to_cart_fragments', array() ),
 					'cart_hash' => WC()->cart->get_cart_hash(),
 				)

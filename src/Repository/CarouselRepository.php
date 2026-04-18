@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- This class IS the database abstraction layer for the plugin-owned ugcc_carousels table. WordPress provides no object model (WP_Query, WP_Post) for plugin-defined schemas, so direct $wpdb calls are intentional and correct here. NoCaching is suppressed because caching at this layer would require invalidation logic duplicated across all callers; any caching is the caller's responsibility. All user-supplied values are sanitised before reaching this layer and parameterised via $wpdb->prepare() or the typed $wpdb->insert/update/delete wrappers.
+// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter -- This class IS the database abstraction layer for the plugin-owned ugcc_carousels table. WordPress provides no object model (WP_Query, WP_Post) for plugin-defined schemas, so direct $wpdb calls are intentional and correct here. NoCaching is suppressed because caching belongs at the caller layer. UnescapedDBParameter is suppressed because $table is always $wpdb->prefix . 'ugcc_carousels' — a server-controlled constant never derived from user input; table names cannot use $wpdb->prepare() placeholders. All user-supplied values are sanitised and parameterised via $wpdb->prepare() or the typed wrappers.
 
 use WPHZ\UGCCarousels\AbstractSingleton;
 

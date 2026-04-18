@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange -- Schema operations (CREATE TABLE via dbDelta, ALTER TABLE, SHOW COLUMNS, SELECT COUNT) have no WordPress API equivalent and caching is meaningless for one-time activation queries. All queries run only during plugin activation by a privileged admin. Table names are derived from $wpdb->prefix and are never user-supplied.
+// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange, PluginCheck.Security.DirectDB.UnescapedDBParameter -- Schema operations (CREATE TABLE via dbDelta, ALTER TABLE, SHOW COLUMNS, SELECT COUNT) have no WordPress API equivalent and caching is meaningless for one-time activation queries. UnescapedDBParameter is suppressed because all table name variables are $wpdb->prefix . 'ugcc_*' — server-controlled constants, never user-supplied; table names cannot use $wpdb->prepare() placeholders. All queries run only during plugin activation by a privileged admin.
 
 /**
  * Installer.

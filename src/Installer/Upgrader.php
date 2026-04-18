@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange -- SHOW TABLES and RENAME TABLE are schema-inspection and DDL statements with no WordPress API equivalent; caching is meaningless for one-time upgrade queries. These queries run only on plugin activation or upgrade by a privileged admin. Table names are derived from $wpdb->prefix and are never user-supplied; SHOW TABLES arguments are fully prepared via $wpdb->prepare().
+// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange, PluginCheck.Security.DirectDB.UnescapedDBParameter -- SHOW TABLES and RENAME TABLE are DDL statements with no WordPress API equivalent; caching is meaningless for one-time upgrade queries. UnescapedDBParameter is suppressed because all table name variables are $wpdb->prefix . 'ugcc_*' or 'wphz_ugc_*' — server-controlled constants, never user-supplied; table names cannot use $wpdb->prepare() placeholders. SHOW TABLES arguments ARE prepared via $wpdb->prepare(). These queries run only on activation/upgrade by a privileged admin.
 
 /**
  * Upgrader.
