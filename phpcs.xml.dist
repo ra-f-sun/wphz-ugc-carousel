@@ -12,7 +12,7 @@
 
     <file>src</file>
     <file>templates</file>
-    <file>wphz-ugc-carousel.php</file>
+    <file>ugc-carousels-for-woo.php</file>
     <file>debug.php</file>
 
     <exclude-pattern>*/vendor/*</exclude-pattern>

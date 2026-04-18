@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery -- SHOW TABLES and RENAME TABLE are schema-inspection and DDL statements with no WordPress API equivalent. These queries run only on plugin activation or upgrade by a privileged admin. Table names are derived from $wpdb->prefix and are never user-supplied; SHOW TABLES arguments are fully prepared via $wpdb->prepare().
+// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange -- SHOW TABLES and RENAME TABLE are schema-inspection and DDL statements with no WordPress API equivalent; caching is meaningless for one-time upgrade queries. These queries run only on plugin activation or upgrade by a privileged admin. Table names are derived from $wpdb->prefix and are never user-supplied; SHOW TABLES arguments are fully prepared via $wpdb->prepare().
 
 /**
  * Upgrader.

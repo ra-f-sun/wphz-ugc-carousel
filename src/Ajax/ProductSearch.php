@@ -76,7 +76,7 @@ class ProductSearch extends AbstractSingleton {
 		$ordered_ids = array();
 
 		// Exact SKU match (case-insensitive).
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- WP_Query cannot filter postmeta by meta_key='_sku' with the required exact-then-partial ordering. The full result set is cached via TransientHelper immediately after all queries run.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- WP_Query cannot filter postmeta by meta_key='_sku' with the required exact-then-partial ordering. The full result set is cached via TransientHelper (5-minute TTL) immediately after all queries complete.
 		$exact_sku_ids = $wpdb->get_col(
 			$wpdb->prepare(
 				"SELECT DISTINCT post_id FROM {$wpdb->postmeta}
@@ -90,7 +90,7 @@ class ProductSearch extends AbstractSingleton {
 		}
 
 		// Partial SKU match.
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- Same reason as exact SKU match above; postmeta must be queried directly for _sku filtering.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Same reason as exact SKU match above; postmeta must be queried directly for _sku filtering. Cached together with the full result set via TransientHelper.
 		$partial_sku_ids = $wpdb->get_col(
 			$wpdb->prepare(
 				"SELECT DISTINCT post_id FROM {$wpdb->postmeta}
