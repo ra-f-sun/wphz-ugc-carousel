@@ -11,6 +11,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery -- This class IS the database abstraction layer for the plugin-owned ugcc_items table. WordPress provides no object model (WP_Query, WP_Post) for plugin-defined schemas, so direct $wpdb calls are intentional and correct here. All user-supplied values are sanitised before reaching this layer and parameterised via $wpdb->prepare() or the typed $wpdb->insert/update/delete wrappers.
+
 use WPHZ\UGCCarousels\AbstractSingleton;
 
 /**
@@ -142,7 +144,7 @@ class ItemRepository extends AbstractSingleton {
 	 */
 	public function delete_by_carousel( int $carousel_id ): void {
 		global $wpdb;
-		$wpdb->delete( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$wpdb->delete(
 			$this->table(),
 			array( 'carousel_id' => (string) $carousel_id ),
 			array( '%s' )

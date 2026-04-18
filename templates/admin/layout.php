@@ -6,6 +6,7 @@
  */
 
 defined( 'ABSPATH' ) || exit;
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- Template variables are injected by TemplateLoader::render(), which calls include() inside a static method. PHP scopes the included file to that function's stack frame, so these variables never enter global scope. Plugin Check flags them as a false positive due to the static-analysis limitation.
 ?>
 <div class="wrap ugcc-admin">
 	<a href="?page=ugc-carousels-for-woo" class="page-title-action" style="margin-bottom: 10px; display: inline-block;">&larr; Back to All Carousels</a>

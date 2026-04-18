@@ -79,7 +79,7 @@ class ImportCsv extends AbstractSingleton {
 			wp_send_json_error( array( 'message' => __( 'Invalid file type. Please upload a CSV file.', 'ugc-carousels-for-woo' ) ) );
 		}
 		// phpcs:enable
-		
+
 		$csv_path = sanitize_file_name( (string) $_FILES['csv_file']['tmp_name'] );
 		try {
 			$csv = new \SplFileObject( $csv_path, 'r' );

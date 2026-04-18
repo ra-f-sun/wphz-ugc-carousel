@@ -6,6 +6,7 @@
  */
 
 defined( 'ABSPATH' ) || exit;
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- Template variables are injected by TemplateLoader::render(), which calls include() inside a static method. PHP scopes the included file to that function's stack frame, so these variables never enter global scope. Plugin Check flags them as a false positive due to the static-analysis limitation.
 $video_id     = (int) ( $item['video_id'] ?? 0 );
 $video_url_hd = $item['video_url_hd'] ?? '';
 $video_url_sd = $item['video_url_sd'] ?? '';

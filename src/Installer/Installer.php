@@ -11,6 +11,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery -- Schema operations (CREATE TABLE via dbDelta, ALTER TABLE, SHOW COLUMNS, SELECT COUNT) have no WordPress API equivalent. All queries in this file run only during plugin activation or upgrade, executed by a privileged admin. Table names are derived from $wpdb->prefix and are never user-supplied.
+
 /**
  * Installer.
  */

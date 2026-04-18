@@ -5,7 +5,9 @@
  * @package WPHZ\UGCCarousels
  */
 
-defined( 'ABSPATH' ) || exit; ?>
+defined( 'ABSPATH' ) || exit;
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- Template variables are injected by TemplateLoader::render(), which calls include() inside a static method. PHP scopes the included file to that function's stack frame, so these variables never enter global scope. Plugin Check flags them as a false positive due to the static-analysis limitation.
+?>
 <form id="ugcc-config-form" data-action="ugcc_save_config">
 	<?php wp_nonce_field( 'ugcc_admin', 'ugcc_nonce' ); ?>
 	<input type="hidden" name="carousel_id" value="<?php echo esc_attr( $id ); ?>">

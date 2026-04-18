@@ -14,6 +14,7 @@ while ( ! file_exists( $dir . '/wp-load.php' ) && $dir_length > 5 ) {
 if ( file_exists( $dir . '/wp-load.php' ) ) {
 	require_once $dir . '/wp-load.php';
 	global $wpdb;
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- Development-only debug script; hardcoded read-only query with no user-supplied input.
 	$rows = $wpdb->get_results( 'SELECT id, video_id, product_ids FROM wp_ugcc_items ORDER BY id DESC LIMIT 5', ARRAY_A );
 	echo '<pre>' . esc_html( wp_json_encode( $rows, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES ) ) . '</pre>';
 } else {

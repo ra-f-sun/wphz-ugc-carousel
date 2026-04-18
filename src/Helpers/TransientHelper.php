@@ -66,6 +66,7 @@ class TransientHelper {
 		wc_delete_product_transients();
 		// Clear our own search-result transients by SQL LIKE pattern.
 		global $wpdb;
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- WordPress provides no API to bulk-delete transients by LIKE pattern; get_transient()/delete_transient() operate on one key at a time. Direct SQL is the only way to atomically flush all plugin search caches. The query is fully prepared and only targets option_name rows matching the plugin's own prefix.
 		$wpdb->query(
 			$wpdb->prepare(
 				"DELETE FROM {$wpdb->options} WHERE option_name LIKE %s",
