@@ -2,7 +2,7 @@
 Contributors: wphelpzone
 Tags: ugc, carousel, woocommerce, video, shoppable video
 Requires at least: 6.0
-Tested up to: 6.7
+Tested up to: 6.9
 Requires PHP: 8.0
 Requires Plugins: woocommerce
 Stable tag: 1.0.8
