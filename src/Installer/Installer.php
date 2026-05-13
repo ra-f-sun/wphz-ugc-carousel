@@ -44,6 +44,18 @@ class Installer {
 	}
 
 	/**
+	 * Carousels_has_show_products_column.
+	 *
+	 * @return bool Return value.
+	 */
+	public static function carousels_has_show_products_column(): bool {
+		global $wpdb;
+		$table_carousels = $wpdb->prefix . 'ugcc_carousels';
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table_carousels is derived from $wpdb->prefix; table names cannot use prepare() placeholders.
+		return (bool) $wpdb->get_var( "SHOW COLUMNS FROM {$table_carousels} LIKE 'show_products'" );
+	}
+
+	/**
 	 * Activate.
 	 *
 	 * @return void Return value.
@@ -101,6 +113,7 @@ class Installer {
             mute tinyint(1) DEFAULT 1,
             direction varchar(10) DEFAULT 'ltr',
             hide_atc tinyint(1) DEFAULT 0,
+            show_products tinyint(1) DEFAULT 1,
             on_arrow_right varchar(255),
             on_arrow_left varchar(255),
             custom_css longtext DEFAULT NULL,
@@ -140,6 +153,13 @@ class Installer {
 		if ( ! $wpdb->get_var( "SHOW COLUMNS FROM {$table_carousels} LIKE 'hide_atc'" ) ) {
 			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table names cannot use prepare() placeholders; $table_carousels is derived from $wpdb->prefix.
 			$wpdb->query( "ALTER TABLE {$table_carousels} ADD COLUMN hide_atc tinyint(1) DEFAULT 0" );
+		}
+
+		// Safe migration: add show_products column to carousels table on existing installs.
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table names cannot use prepare() placeholders; $table_carousels is derived from $wpdb->prefix.
+		if ( ! $wpdb->get_var( "SHOW COLUMNS FROM {$table_carousels} LIKE 'show_products'" ) ) {
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table names cannot use prepare() placeholders; $table_carousels is derived from $wpdb->prefix.
+			$wpdb->query( "ALTER TABLE {$table_carousels} ADD COLUMN show_products tinyint(1) DEFAULT 1" );
 		}
 
 		update_option( 'ugcc_db_version', WPHZ_UGCC_VERSION );

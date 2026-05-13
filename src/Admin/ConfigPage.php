@@ -40,6 +40,7 @@ class ConfigPage extends AbstractSingleton {
 			'mute'           => (bool) ( $config['mute'] ?? true ),
 			'direction'      => $config['direction'] ?? 'ltr',
 			'hide_atc'       => (int) ( $config['hide_atc'] ?? 0 ),
+			'show_products'  => (int) ( $config['show_products'] ?? 1 ),
 			'on_arrow_right' => $config['on_arrow_right'] ?? '',
 			'on_arrow_left'  => $config['on_arrow_left'] ?? '',
 			'custom_css'     => $config['custom_css'] ?? '',

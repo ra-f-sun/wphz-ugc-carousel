@@ -76,6 +76,7 @@ class ShortcodeRenderer extends AbstractSingleton {
 				'slide'           => $carousel_config['direction'] ?? 'ltr',
 				'is_muted'        => ! empty( $carousel_config['mute'] ),
 				'global_hide_atc' => (int) ( $carousel_config['hide_atc'] ?? 0 ),
+				'show_products'   => (bool) (int) ( $carousel_config['show_products'] ?? 1 ),
 			)
 		);
 	}

@@ -80,6 +80,7 @@ class CarouselRepository extends AbstractSingleton {
 			'mute'           => isset( $data['mute'] ) ? (int) $data['mute'] : 1,
 			'direction'      => sanitize_text_field( $data['direction'] ?? 'ltr' ),
 			'hide_atc'       => isset( $data['hide_atc'] ) ? (int) $data['hide_atc'] : 0,
+			'show_products'  => isset( $data['show_products'] ) ? (int) $data['show_products'] : 1,
 			'on_arrow_right' => sanitize_text_field( $data['on_arrow_right'] ?? '' ),
 			'on_arrow_left'  => sanitize_text_field( $data['on_arrow_left'] ?? '' ),
 		);
@@ -124,9 +125,12 @@ class CarouselRepository extends AbstractSingleton {
 		if ( isset( $data['direction'] ) ) {
 			$fields['direction'] = sanitize_text_field( $data['direction'] );
 		}
-		// array_key_exists: hide_atc value of 0 is falsy, so isset() would skip it.
+		// array_key_exists: hide_atc/show_products value of 0 is falsy, so isset() would skip it.
 		if ( array_key_exists( 'hide_atc', $data ) ) {
 			$fields['hide_atc'] = (int) $data['hide_atc'];
+		}
+		if ( array_key_exists( 'show_products', $data ) ) {
+			$fields['show_products'] = (int) $data['show_products'];
 		}
 		if ( isset( $data['on_arrow_right'] ) ) {
 			$fields['on_arrow_right'] = sanitize_text_field( $data['on_arrow_right'] );

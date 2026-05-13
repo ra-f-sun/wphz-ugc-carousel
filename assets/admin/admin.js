@@ -20,9 +20,10 @@ jQuery(function ($) {
             nonce:       ugccAdmin.nonce,
             carousel_id: $form.find('[name="carousel_id"]').val(),
             name:        $form.find('[name="name"]').val(),
-            mute:        $form.find('[name="mute"]:checked').val(),
-            direction:   $form.find('[name="direction"]:checked').val(),
-            hide_atc:    $form.find('[name="hide_atc"]:checked').val(),
+            mute:          $form.find('[name="mute"]:checked').val(),
+            direction:     $form.find('[name="direction"]:checked').val(),
+            hide_atc:      $form.find('[name="hide_atc"]:checked').val(),
+            show_products: $form.find('[name="show_products"]:checked').val(),
         })
         .done(function (res) {
             $status.text((res.data && res.data.message) ? res.data.message : 'Saved!')

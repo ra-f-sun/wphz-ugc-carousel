@@ -16,6 +16,7 @@ defined( 'ABSPATH' ) || exit;
  * @var string $slide
  * @var bool   $is_muted
  * @var int    $global_hide_atc
+ * @var bool   $show_products
  */
 ?>
 <div class="ugcc-carousel"
@@ -35,6 +36,7 @@ defined( 'ABSPATH' ) || exit;
 						'is_muted'        => $is_muted,
 						'active'          => 0 === $index, // First item is active by default.
 						'global_hide_atc' => $global_hide_atc,
+						'show_products'   => $show_products,
 					)
 				);
 				?>

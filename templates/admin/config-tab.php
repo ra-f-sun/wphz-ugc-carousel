@@ -52,6 +52,20 @@ defined( 'ABSPATH' ) || exit;
 			</td>
 		</tr>
 		<tr>
+			<th><?php esc_html_e( 'Product Carousel', 'ugc-carousels-for-woo' ); ?></th>
+			<td>
+				<label>
+					<input type="radio" name="show_products" value="1" <?php checked( (int) ( $show_products ?? 1 ), 1 ); ?>>
+					<?php esc_html_e( 'Show', 'ugc-carousels-for-woo' ); ?>
+				</label>
+				<label style="margin-left:16px">
+					<input type="radio" name="show_products" value="0" <?php checked( (int) ( $show_products ?? 1 ), 0 ); ?>>
+					<?php esc_html_e( 'Hide', 'ugc-carousels-for-woo' ); ?>
+				</label>
+				<p class="description"><?php esc_html_e( 'When hidden, no product cards are shown on any slide regardless of attached products.', 'ugc-carousels-for-woo' ); ?></p>
+			</td>
+		</tr>
+		<tr>
 			<th><?php esc_html_e( 'Default Add to Cart', 'ugc-carousels-for-woo' ); ?></th>
 			<td>
 				<label>

@@ -76,6 +76,7 @@ final class Plugin extends AbstractSingleton {
 				get_option( 'ugcc_db_version' ) !== WPHZ_UGCC_VERSION
 				|| ! Installer::items_has_poster_column()
 				|| ! Installer::carousels_has_hide_atc_column()
+				|| ! Installer::carousels_has_show_products_column()
 				) {
 					Installer::activate();
 				}

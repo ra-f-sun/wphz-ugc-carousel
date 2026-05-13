@@ -15,6 +15,7 @@ defined( 'ABSPATH' ) || exit;
  * @var bool  $is_muted
  * @var bool  $active
  * @var int   $global_hide_atc
+ * @var bool  $show_products
  */
 
 $products     = $item['products'] ?? array();
@@ -79,7 +80,7 @@ if ( $primary_video_url ) {
 	</div>
 
 	<!-- Product Sub-Carousel Area -->
-	<?php if ( $has_products ) : ?>
+	<?php if ( $show_products && $has_products ) : ?>
 		<div class="ugcc-products <?php echo $multi_prod ? 'ugcc-products--carousel' : ''; ?>">
 			<div class="ugcc-products-track">
 				<?php foreach ( $products as $p_data ) : ?>
