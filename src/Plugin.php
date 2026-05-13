@@ -23,6 +23,8 @@ use WPHZ\UGCCarousels\Ajax\CreateCarousel;
 use WPHZ\UGCCarousels\Ajax\DeleteCarousel;
 use WPHZ\UGCCarousels\Ajax\ExportCsv;
 use WPHZ\UGCCarousels\Ajax\ImportCsv;
+use WPHZ\UGCCarousels\Ajax\ParseCsv;
+use WPHZ\UGCCarousels\Ajax\ConfirmImport;
 use WPHZ\UGCCarousels\Frontend\CartHandler;
 use WPHZ\UGCCarousels\Ajax\SaveCustomCss;
 use WPHZ\UGCCarousels\Ajax\DuplicateCarousel;
@@ -96,6 +98,8 @@ final class Plugin extends AbstractSingleton {
 		DuplicateCarousel::instance()->init();
 		ExportCsv::instance()->init();
 		ImportCsv::instance()->init();
+		ParseCsv::instance()->init();
+		ConfirmImport::instance()->init();
 	}
 
 	/**

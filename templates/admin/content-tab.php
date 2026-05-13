@@ -161,6 +161,28 @@ defined( 'ABSPATH' ) || exit;
 		</li>
 	</script>
 
+	<!-- CSV Import Verification Modal -->
+	<div id="ugcc-import-modal" style="display:none;" class="ugcc-modal-overlay">
+		<div class="ugcc-modal">
+			<div class="ugcc-modal-header">
+				<h2><?php esc_html_e( 'Verify Products Before Importing', 'ugc-carousels-for-woo' ); ?></h2>
+				<button type="button" id="ugcc-modal-close" class="button">&times;</button>
+			</div>
+			<div class="ugcc-modal-body" id="ugcc-modal-body">
+				<!-- Populated by JS -->
+			</div>
+			<div class="ugcc-modal-footer">
+				<span id="ugcc-modal-status"></span>
+				<button type="button" id="ugcc-modal-confirm" class="button button-primary">
+					<?php esc_html_e( 'Confirm Import', 'ugc-carousels-for-woo' ); ?>
+				</button>
+				<button type="button" id="ugcc-modal-cancel" class="button">
+					<?php esc_html_e( 'Cancel', 'ugc-carousels-for-woo' ); ?>
+				</button>
+			</div>
+		</div>
+	</div>
+
 	<script type="text/html" id="tmpl-ugcc-product-suggestion">
 		<li data-id="{{productId}}" data-name="{{productNameRaw}}">
 			{{thumbHtml}}

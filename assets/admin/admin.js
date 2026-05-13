@@ -339,24 +339,230 @@ jQuery(function ($) {
     $('#ugcc-save-content').on('click', onSaveContentClick);
 
     /**
-     * Handle CSV file input change — immediately posts file as FormData via AJAX.
+     * Escape a plain string for safe insertion into HTML text nodes.
+     *
+     * @param {string} str - Raw string that may contain HTML characters.
+     * @return {string} HTML-escaped string.
+     */
+    function ugccEscHtml( str ) {
+        return $('<div>').text(String(str)).html();
+    }
+
+    /**
+     * Escape a value for safe use as an HTML attribute value.
+     *
+     * @param {*} val - Value to escape.
+     * @return {string} Escaped attribute value.
+     */
+    function ugccEscAttr( val ) {
+        return String(val == null ? '' : val)
+            .replace(/&/g, '&amp;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+    }
+
+    /**
+     * Format a variation attributes object into a readable string.
+     *
+     * @param {Object} attrs - Key/value map of attribute name → value.
+     * @return {string} Human-readable string, e.g. "Color: Red, Size: M".
+     */
+    function ugccFormatVariation( attrs ) {
+        if ( !attrs || typeof attrs !== 'object' ) { return ''; }
+        return Object.keys(attrs).map(function (k) {
+            return ugccEscHtml(k) + ': ' + ugccEscHtml(attrs[k]);
+        }).join(', ');
+    }
+
+    /**
+     * Build a catalog-visibility badge HTML string.
+     *
+     * @param {string} vis - WooCommerce catalog_visibility value.
+     * @return {string} Badge HTML, or empty string for 'visible'.
+     */
+    function ugccVisibilityBadge( vis ) {
+        if ( vis === 'hidden' ) {
+            return '<span class="ugcc-badge ugcc-badge--warn">⚠ Hidden from catalog</span>';
+        }
+        if ( vis === 'catalog' ) {
+            return '<span class="ugcc-badge ugcc-badge--info">Catalog only</span>';
+        }
+        if ( vis === 'search' ) {
+            return '<span class="ugcc-badge ugcc-badge--info">Search only</span>';
+        }
+        return '';
+    }
+
+    /**
+     * Build a product status badge HTML string.
+     *
+     * @param {string} status - WordPress post status value.
+     * @return {string} Badge HTML, or empty string for 'publish'.
+     */
+    function ugccStatusBadge( status ) {
+        if ( status && status !== 'publish' ) {
+            var label = status.charAt(0).toUpperCase() + status.slice(1);
+            return '<span class="ugcc-badge ugcc-badge--draft">' + ugccEscHtml(label) + '</span>';
+        }
+        return '';
+    }
+
+    /** Parsed rows stored so the confirm handler can access them. */
+    var ugccModalRows = [];
+
+    /**
+     * Build and display the import verification modal from parsed row data.
+     *
+     * @param {Array} rows - Row data returned by ugcc_parse_csv.
+     * @return {void}
+     */
+    function ugccShowImportModal( rows ) {
+        ugccModalRows = rows;
+        var html = '';
+
+        rows.forEach(function ( row, rowIndex ) {
+            html += '<div class="ugcc-modal-row">';
+            html += '<h3>' + ugccEscHtml('Row ' + ( rowIndex + 1 )) + '</h3>';
+
+            if ( row.video_url_hd ) {
+                html += '<p class="ugcc-modal-video"><strong>HD:</strong> ' + ugccEscHtml(row.video_url_hd) + '</p>';
+            }
+
+            if ( !row.products || !row.products.length ) {
+                html += '<p><em>No products in this row.</em></p>';
+            }
+
+            (row.products || []).forEach(function ( productEntry, pIndex ) {
+                var exp = productEntry.exported;
+
+                html += '<div class="ugcc-modal-product">';
+
+                // Exported-as summary for cross-environment reference.
+                var exportedLabel = ugccEscHtml( exp.name || exp.sku );
+                if ( exp.variation ) {
+                    exportedLabel += ' <em>(' + ugccFormatVariation(exp.variation) + ')</em>';
+                }
+                html += '<p class="ugcc-modal-exported"><em>Exported as: ' + exportedLabel + '</em></p>';
+
+                if ( productEntry.missing ) {
+                    html += '<p class="ugcc-modal-missing">⚠ No matching product found on this site.</p>';
+                } else {
+                    productEntry.matches.forEach(function ( match, mIndex ) {
+                        var cbId    = 'ugcc-prod-' + rowIndex + '-' + pIndex + '-m' + mIndex;
+                        var badge   = ugccVisibilityBadge(match.catalog_visibility) + ugccStatusBadge(match.status);
+                        // Pre-check only when there is exactly one unambiguous match.
+                        var checked = ( productEntry.matches.length === 1 ) ? 'checked' : '';
+
+                        var matchLabel = ugccEscHtml(match.name);
+                        if ( match.variation_attributes ) {
+                            matchLabel += ' <em>(' + ugccFormatVariation(match.variation_attributes) + ')</em>';
+                        }
+
+                        html += '<label class="ugcc-modal-match" for="' + ugccEscAttr(cbId) + '">' +
+                            '<input type="checkbox"' +
+                            ' id="' + ugccEscAttr(cbId) + '"' +
+                            ' class="ugcc-match-cb"' +
+                            ' data-row="' + rowIndex + '"' +
+                            ' data-hide-atc="' + ugccEscAttr(exp.hide_atc) + '"' +
+                            ' value="' + ugccEscAttr(match.id) + '"' +
+                            ' ' + checked + '>' +
+                            ' ' + matchLabel +
+                            ' <small>SKU: ' + ugccEscHtml(match.sku) + '</small>' +
+                            badge +
+                            '</label>';
+                    });
+                }
+
+                html += '</div>'; // .ugcc-modal-product
+            });
+
+            html += '</div>'; // .ugcc-modal-row
+        });
+
+        $('#ugcc-modal-body').html(html);
+        $('#ugcc-modal-status').text('').css('color', '');
+        $('#ugcc-modal-confirm').prop('disabled', false);
+        $('#ugcc-import-modal').show();
+    }
+
+    /**
+     * Collect confirmed product selections from the modal and post to ugcc_confirm_import.
+     *
+     * @return {void}
+     */
+    function ugccConfirmImport() {
+        // Build a map of rowIndex → [{id, hide_atc}] from checked checkboxes.
+        var rowMap = {};
+        $('.ugcc-match-cb:checked').each(function () {
+            var rowIndex = parseInt( $(this).data('row'), 10 );
+            var hideAtcRaw = $(this).data('hide-atc');
+            var hideAtc  = (hideAtcRaw === 0 || hideAtcRaw === '0' || hideAtcRaw === 1 || hideAtcRaw === '1')
+                ? parseInt(hideAtcRaw, 10)
+                : null;
+            if ( !rowMap[rowIndex] ) { rowMap[rowIndex] = []; }
+            rowMap[rowIndex].push({ id: parseInt(this.value, 10), hide_atc: hideAtc });
+        });
+
+        // Rebuild the full items array, injecting confirmed product selections.
+        var items = ugccModalRows.map(function ( row, i ) {
+            return {
+                video_url_hd: row.video_url_hd,
+                video_url_sd: row.video_url_sd,
+                poster_url:   row.poster_url,
+                products:     rowMap[i] || [],
+            };
+        });
+
+        var $status = $('#ugcc-modal-status');
+        $status.text('Importing…').css('color', '');
+        $('#ugcc-modal-confirm').prop('disabled', true);
+
+        $.post(ugccAdmin.ajaxurl, {
+            action:      'ugcc_confirm_import',
+            nonce:       ugccAdmin.nonce,
+            carousel_id: $('#ugcc-carousel-id').val(),
+            items:       JSON.stringify(items),
+        })
+        .done(function ( res ) {
+            if ( res.success ) {
+                $status.text( res.data.imported + ' row(s) imported.' ).css('color', 'green');
+                setTimeout(function () { location.reload(); }, 1500);
+            } else {
+                $status.text( (res.data && res.data.message) || 'Import failed.' ).css('color', 'red');
+                $('#ugcc-modal-confirm').prop('disabled', false);
+            }
+        })
+        .fail(function () {
+            $status.text('Request failed.').css('color', 'red');
+            $('#ugcc-modal-confirm').prop('disabled', false);
+        });
+    }
+
+    $('#ugcc-modal-confirm').on('click', ugccConfirmImport);
+    $('#ugcc-modal-close, #ugcc-modal-cancel').on('click', function () {
+        $('#ugcc-import-modal').hide();
+        $('#ugcc-modal-status').text('');
+    });
+
+    /**
+     * Handle CSV file input change — Phase 1: upload to ugcc_parse_csv and open modal.
      *
      * @return {void}
      */
     function onImportFileChange() {
         var file = this.files[0];
-        if (!file) return;
+        if ( !file ) { return; }
 
-        var carouselId = $('#ugcc-carousel-id').val();
-        var $status    = $('#ugcc-import-status');
+        var $status = $('#ugcc-import-status');
+        $status.text('Analysing…').css('color', '#888');
 
         var formData = new FormData();
-        formData.append('action',      'ugcc_import_csv');
+        formData.append('action',      'ugcc_parse_csv');
         formData.append('nonce',       ugccAdmin.nonce);
-        formData.append('carousel_id', carouselId);
+        formData.append('carousel_id', $('#ugcc-carousel-id').val());
         formData.append('csv_file',    file);
-
-        $status.text('Importing...').css('color', '#888');
 
         $.ajax({
             url:         ugccAdmin.ajaxurl,
@@ -365,23 +571,19 @@ jQuery(function ($) {
             processData: false,
             contentType: false,
         })
-        .done(function (res) {
-            if (res.success) {
-                var msg = res.data.message;
-                if (res.data.errors && res.data.errors.length) {
-                    msg += ' (' + res.data.errors.length + ' warning(s))';
-                }
-                $status.text(msg).css('color', 'green');
-                setTimeout(function () { location.reload(); }, 1500);
-            } else {
-                $status.text((res.data && res.data.message) || 'Import failed.').css('color', 'red');
+        .done(function ( res ) {
+            if ( !res.success ) {
+                $status.text( (res.data && res.data.message) || 'Parse failed.' ).css('color', 'red');
+                return;
             }
+            $status.text('');
+            ugccShowImportModal( res.data.rows );
         })
         .fail(function () {
-            $status.text('Import request failed.').css('color', 'red');
+            $status.text('Request failed.').css('color', 'red');
         })
         .always(function () {
-            // Reset so re-importing the same file fires change again.
+            // Reset so re-selecting the same file fires change again.
             $('#ugcc-import-file').val('');
         });
     }

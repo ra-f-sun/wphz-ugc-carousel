@@ -84,10 +84,22 @@ class ExportCsv extends AbstractSingleton {
 				// hide_atc: null = inherit, 0 = force show, 1 = force hide.
 				$hide_atc = array_key_exists( 'hide_atc', $product_id_raw ) ? $product_id_raw['hide_atc'] : null;
 
+				$variation_attrs = array();
+				if ( $product && $product->is_type( 'variation' ) ) {
+					foreach ( $product->get_variation_attributes() as $attr_key => $attr_val ) {
+						$clean_key                                = str_replace( array( 'attribute_pa_', 'attribute_' ), '', $attr_key );
+						$variation_attrs[ ucfirst( $clean_key ) ] = ucfirst( $attr_val );
+					}
+				}
+
 				$products_export[] = array(
-					'sku'      => $sku,
-					'id'       => $product_id,
-					'hide_atc' => $hide_atc,
+					'sku'                => $sku,
+					'id'                 => $product_id,
+					'hide_atc'           => $hide_atc,
+					'name'               => $product ? $product->get_name() : '',
+					'variation'          => ! empty( $variation_attrs ) ? $variation_attrs : null,
+					'catalog_visibility' => $product ? $product->get_catalog_visibility() : '',
+					'status'             => $product ? $product->get_status() : '',
 				);
 			}
 
