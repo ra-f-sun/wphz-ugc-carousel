@@ -326,6 +326,7 @@ class UGCCCarousel {
       this._applyTransform(false);
       this._updateSlideClasses();
       this._resetDistantVideos();
+      this._syncNearbyCloneOverlays();
       this._playCenter();
     }, 550);
   }
@@ -409,6 +410,65 @@ class UGCCCarousel {
         if (videoElement) videoElement.poster = frameUrl;
       });
     }
+  }
+
+  /**
+   * After a snapback teleport, capture the current frame of the originals for
+   * clone slides that are now visible near the boundary and write it to their
+   * <img> overlay src so they show the paused frame instead of the static poster.
+   *
+   * Only called from _scheduleSnapback() — fires at most once per boundary
+   * crossing and touches only the handful of clones within the visible threshold.
+   *
+   * @return {void}
+   */
+  _syncNearbyCloneOverlays() {
+    const cloneRangeStart  = this.cloneCount;
+    const cloneRangeEnd    = this.cloneCount + this.totalOrig;
+    const currentItemIndex = this._getItemIndexFromSlide(this.slides[this.current]);
+    if (currentItemIndex < 0) return;
+
+    // One slot wider than _resetDistantVideos threshold to cover all visible slides.
+    const threshold = Math.ceil(this._getVisibleCount() / 2) + 1;
+
+    this.slides.forEach((slide, idx) => {
+      if (idx >= cloneRangeStart && idx < cloneRangeEnd) return; // skip originals
+
+      const itemIndex = this._getItemIndexFromSlide(slide);
+      if (itemIndex < 0) return;
+
+      const diff     = Math.abs(currentItemIndex - itemIndex);
+      const distance = Math.min(diff, this.totalOrig - diff);
+      if (distance > threshold) return;
+
+      // Find the corresponding original and verify it has decoded frames.
+      let origVideo = null;
+      for (let i = cloneRangeStart; i < cloneRangeEnd; i++) {
+        if (this._getItemIndexFromSlide(this.slides[i]) !== itemIndex) continue;
+        const v = this.slides[i].querySelector(".ugcc-video");
+        if (v && v.readyState >= 2 && v.videoWidth) origVideo = v;
+        break;
+      }
+      if (!origVideo) return;
+
+      let frameUrl;
+      try {
+        const canvas = document.createElement("canvas");
+        canvas.width  = origVideo.videoWidth;
+        canvas.height = origVideo.videoHeight;
+        canvas.getContext("2d").drawImage(origVideo, 0, 0, canvas.width, canvas.height);
+        frameUrl = canvas.toDataURL("image/png");
+      } catch (_) {
+        // Cross-origin canvas taint — fall back to static poster silently.
+        return;
+      }
+
+      const cloneVideo = slide.querySelector(".ugcc-video");
+      if (!cloneVideo) return;
+      cloneVideo.poster = frameUrl;
+      const img = cloneVideo.parentElement?.querySelector(".ugcc-poster-img");
+      if (img) img.src = frameUrl;
+    });
   }
 
   /**
